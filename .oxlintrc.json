@@ -17,5 +17,15 @@
     "browser": true,
     "es2022": true
   },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/src/test/**"],
+      "rules": {
+        "react-perf/jsx-no-new-object-as-prop": "off",
+        "react-perf/jsx-no-new-array-as-prop": "off",
+        "react-perf/jsx-no-new-function-as-prop": "off"
+      }
+    }
+  ],
   "ignorePatterns": ["dist/", "coverage/", "node_modules/"]
 }

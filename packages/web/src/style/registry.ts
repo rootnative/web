@@ -85,6 +85,21 @@ export class StyleRegistry {
     return names.join(' ')
   }
 
+  // Inserts a fixed set of rules under one class name, once. For rules an atomic
+  // declaration cannot express, for example a child selector.
+  staticClass(className: string, rules: ReadonlyArray<string>): string {
+    if (this.classNames.has(className)) return className
+    this.classNames.set(className, className)
+    for (const rule of rules) {
+      this.longhandRules.push(rule)
+      if (!this.adopted.has(className)) {
+        const sheet = this.sheets.longhand
+        sheet?.insertRule(rule, sheet.cssRules.length)
+      }
+    }
+    return className
+  }
+
   // The rules of each sheet, for server rendering.
   cssText(): { shorthand: string; longhand: string } {
     return { shorthand: this.shorthandRules.join('\n'), longhand: this.longhandRules.join('\n') }

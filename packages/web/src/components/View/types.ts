@@ -1,0 +1,140 @@
+import type { DOMAttributes, ReactNode, Ref } from 'react'
+
+import type { StyleProp } from '../../style/types'
+
+export type LayoutRectangle = { x: number; y: number; width: number; height: number }
+
+export type LayoutChangeEvent = { nativeEvent: { layout: LayoutRectangle } }
+
+export type AccessibilityState = {
+  disabled?: boolean | undefined
+  selected?: boolean | undefined
+  checked?: boolean | 'mixed' | undefined
+  busy?: boolean | undefined
+  expanded?: boolean | undefined
+}
+
+export type AccessibilityValue = {
+  min?: number | undefined
+  max?: number | undefined
+  now?: number | undefined
+  text?: string | undefined
+}
+
+export type Role =
+  | 'alert'
+  | 'alertdialog'
+  | 'application'
+  | 'article'
+  | 'banner'
+  | 'button'
+  | 'cell'
+  | 'checkbox'
+  | 'columnheader'
+  | 'combobox'
+  | 'complementary'
+  | 'contentinfo'
+  | 'definition'
+  | 'dialog'
+  | 'directory'
+  | 'document'
+  | 'feed'
+  | 'figure'
+  | 'form'
+  | 'grid'
+  | 'group'
+  | 'heading'
+  | 'img'
+  | 'link'
+  | 'list'
+  | 'listitem'
+  | 'log'
+  | 'main'
+  | 'marquee'
+  | 'math'
+  | 'menu'
+  | 'menubar'
+  | 'menuitem'
+  | 'meter'
+  | 'navigation'
+  | 'none'
+  | 'note'
+  | 'option'
+  | 'presentation'
+  | 'progressbar'
+  | 'radio'
+  | 'radiogroup'
+  | 'region'
+  | 'row'
+  | 'rowgroup'
+  | 'rowheader'
+  | 'scrollbar'
+  | 'searchbox'
+  | 'separator'
+  | 'slider'
+  | 'spinbutton'
+  | 'status'
+  | 'summary'
+  | 'switch'
+  | 'tab'
+  | 'table'
+  | 'tablist'
+  | 'tabpanel'
+  | 'term'
+  | 'timer'
+  | 'toolbar'
+  | 'tooltip'
+  | 'tree'
+  | 'treegrid'
+  | 'treeitem'
+
+// Every DOM handler react-dom accepts, minus the two that are not events.
+export type DOMEventHandlers<T> = Omit<DOMAttributes<T>, 'children' | 'dangerouslySetInnerHTML'>
+
+export type AccessibilityProps = {
+  accessible?: boolean | undefined
+  accessibilityLabel?: string | undefined
+  accessibilityLabelledBy?: string | ReadonlyArray<string> | undefined
+  accessibilityHint?: string | undefined
+  accessibilityRole?: string | undefined
+  accessibilityState?: AccessibilityState | undefined
+  accessibilityValue?: AccessibilityValue | undefined
+  accessibilityLiveRegion?: 'none' | 'polite' | 'assertive' | undefined
+  accessibilityElementsHidden?: boolean | undefined
+  accessibilityViewIsModal?: boolean | undefined
+  importantForAccessibility?: 'auto' | 'yes' | 'no' | 'no-hide-descendants' | undefined
+  role?: Role | undefined
+  'aria-busy'?: boolean | undefined
+  'aria-checked'?: boolean | 'mixed' | undefined
+  'aria-disabled'?: boolean | undefined
+  'aria-expanded'?: boolean | undefined
+  'aria-hidden'?: boolean | undefined
+  'aria-label'?: string | undefined
+  'aria-labelledby'?: string | undefined
+  'aria-live'?: 'polite' | 'assertive' | 'off' | undefined
+  'aria-modal'?: boolean | undefined
+  'aria-selected'?: boolean | undefined
+  'aria-valuemax'?: number | undefined
+  'aria-valuemin'?: number | undefined
+  'aria-valuenow'?: number | undefined
+  'aria-valuetext'?: string | undefined
+}
+
+export type ViewProps = AccessibilityProps &
+  DOMEventHandlers<HTMLElement> & {
+    children?: ReactNode
+    style?: StyleProp<Record<string, unknown>> | undefined
+    ref?: Ref<HTMLElement> | undefined
+    id?: string | undefined
+    nativeID?: string | undefined
+    testID?: string | undefined
+    tabIndex?: 0 | -1 | undefined
+    focusable?: boolean | undefined
+    pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only' | undefined
+    collapsable?: boolean | undefined
+    onLayout?: ((event: LayoutChangeEvent) => void) | undefined
+    // Web only. The level of a `heading` role, 1 to 6.
+    'aria-level'?: number | undefined
+    // Web only. Renders an anchor.
+    href?: string | undefined
+  }
