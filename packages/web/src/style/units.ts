@@ -9,6 +9,8 @@ export const unitlessProperties: ReadonlySet<string> = new Set([
   'flexGrow',
   'flexShrink',
   'fontWeight',
+  'lineClamp',
+  'WebkitLineClamp',
   'opacity',
   'zIndex',
   'scale',

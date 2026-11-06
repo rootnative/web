@@ -85,6 +85,10 @@ const resizeModeToObjectFit: Record<string, string> = {
   repeat: 'none',
 }
 
+// The font React Native calls "System".
+const systemFontStack =
+  'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+
 const textAlignVerticalToVerticalAlign: Record<string, string> = {
   top: 'top',
   center: 'middle',
@@ -142,6 +146,9 @@ const resolveProperty = (name: string, value: unknown, out: CSSDeclarations): vo
     }
     case 'fontWeight':
       out['fontWeight'] = fontWeightNames[String(value)] ?? String(value)
+      return
+    case 'fontFamily':
+      out['fontFamily'] = value === 'System' ? systemFontStack : String(value)
       return
     case 'fontVariant':
       out['fontVariant'] = Array.isArray(value) ? value.join(' ') : String(value)

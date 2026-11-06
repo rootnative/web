@@ -10,6 +10,11 @@ const liveRegionToAriaLive: Record<string, string> = {
   assertive: 'assertive',
 }
 
+// React Native handlers that are not DOM events. A component maps them itself.
+const nativeHandler = /^on(Press|Layout|TextLayout|Accessibility|Magic|Responder|.*ShouldSet)/
+
+const passThrough = new Set(['lang', 'dir', 'target', 'rel', 'download'])
+
 // Maps React Native props to DOM attributes. Unknown props are dropped, so they never
 // reach the element. `aria-*`, `data-*`, and `on*` props pass through as they are.
 export const toDOMProps = (props: Input): DOMProps => {
@@ -18,9 +23,9 @@ export const toDOMProps = (props: Input): DOMProps => {
   for (const name in props) {
     const value = props[name]
     if (value === undefined) continue
-    if (name.startsWith('aria-') || name.startsWith('data-')) {
+    if (name.startsWith('aria-') || name.startsWith('data-') || passThrough.has(name)) {
       out[name] = value
-    } else if (name.startsWith('on') && name.length > 2 && name !== 'onLayout') {
+    } else if (name.startsWith('on') && name.length > 2 && !nativeHandler.test(name)) {
       out[name] = value
     }
   }
