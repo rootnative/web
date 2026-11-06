@@ -1,12 +1,8 @@
 import { toCSSColor } from './color'
 import { legacyBoxShadow, toCSSBoxShadow, toCSSFilter, toCSSTextShadow } from './shadow'
 import { toCSSTransform, toCSSTransformOrigin } from './transform'
+import type { CSSDeclarations, FlatStyle } from './types'
 import { toUnit, unitlessProperties } from './units'
-
-export type FlatStyle = Readonly<Record<string, unknown>>
-
-// camelCase CSS property names, as react-dom accepts them in `style`.
-export type CSSDeclarations = Record<string, string>
 
 const colorProperties = new Set([
   'backgroundColor',
