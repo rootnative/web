@@ -9,6 +9,7 @@ export default defineConfig({
       'react',
       'react/jsx-dev-runtime',
       'react-dom/client',
+      'react-dom/server.browser',
       '@react-native/normalize-colors',
     ],
   },

@@ -4,7 +4,8 @@ import { toDOMProps } from '../../render/domProps'
 import { resolveTag } from '../../render/resolveTag'
 import { useElementLayout } from '../../render/useElementLayout'
 import { compileStyle } from '../../style/compile'
-import { getStyleRegistry } from '../../style/registry'
+import type { StyleRegistry } from '../../style/registry'
+import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import type { ViewProps } from './types'
 
 export type {
@@ -38,8 +39,8 @@ const resetStyle = Object.freeze({
   zIndex: 0,
 })
 
-const pointerEventsClass = (value: 'box-none' | 'box-only'): string =>
-  getStyleRegistry().staticClass(
+const pointerEventsClass = (registry: StyleRegistry, value: 'box-none' | 'box-only'): string =>
+  registry.staticClass(
     `rn-pe-${value}`,
     value === 'box-none'
       ? ['.rn-pe-box-none{pointer-events:none}', '.rn-pe-box-none>*{pointer-events:auto}']
@@ -52,14 +53,15 @@ export function View(props: ViewProps): ReactElement {
   const element = useRef<HTMLElement | null>(null)
   useImperativeHandle(ref, () => element.current as HTMLElement, [])
   useElementLayout(element, onLayout)
+  const registry = useStyleRegistry()
 
   const { tag, role } = resolveTag(rest, 'div')
 
   const pointerStyle =
     pointerEvents === 'none' || pointerEvents === 'auto' ? { pointerEvents } : undefined
-  let className = compileStyle([resetStyle, style, pointerStyle])
+  let className = compileStyle([resetStyle, style, pointerStyle], registry)
   if (pointerEvents === 'box-none' || pointerEvents === 'box-only') {
-    className = `${className} ${pointerEventsClass(pointerEvents)}`
+    className = `${className} ${pointerEventsClass(registry, pointerEvents)}`
   }
 
   const domProps = toDOMProps(rest)

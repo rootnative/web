@@ -13,7 +13,8 @@ import { resolveTag } from '../../render/resolveTag'
 import { useElementLayout } from '../../render/useElementLayout'
 import { toCSSColor } from '../../style/color'
 import { compileStyle } from '../../style/compile'
-import { getStyleRegistry } from '../../style/registry'
+import type { StyleRegistry } from '../../style/registry'
+import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { TextAncestorContext } from './TextAncestorContext'
 import type { TextProps } from './types'
 
@@ -61,11 +62,11 @@ const multiLineStyle = (lines: number): Record<string, unknown> => ({
   overflow: 'hidden',
 })
 
-const selectionClass = (color: string): string | undefined => {
+const selectionClass = (registry: StyleRegistry, color: string): string | undefined => {
   const css = toCSSColor(color)
   if (css === undefined) return undefined
   const name = `rn-sel-${css.replace(/[^a-z0-9]/g, '')}`
-  return getStyleRegistry().staticClass(name, [`.${name}::selection{background-color:${css}}`])
+  return registry.staticClass(name, [`.${name}::selection{background-color:${css}}`])
 }
 
 export function Text(props: TextProps): ReactElement {
@@ -89,6 +90,7 @@ export function Text(props: TextProps): ReactElement {
   const element = useRef<HTMLElement | null>(null)
   useImperativeHandle(ref, () => element.current as HTMLElement, [])
   useElementLayout(element, onLayout)
+  const registry = useStyleRegistry()
 
   const { tag, role } = resolveTag(rest, 'span')
 
@@ -103,16 +105,19 @@ export function Text(props: TextProps): ReactElement {
   const pointerStyle =
     pointerEvents === 'none' || pointerEvents === 'auto' ? { pointerEvents } : undefined
 
-  let className = compileStyle([
-    nested ? nestedResetStyle : resetStyle,
-    style,
-    lineStyle,
-    clipStyle,
-    selectStyle,
-    pointerStyle,
-  ])
+  let className = compileStyle(
+    [
+      nested ? nestedResetStyle : resetStyle,
+      style,
+      lineStyle,
+      clipStyle,
+      selectStyle,
+      pointerStyle,
+    ],
+    registry,
+  )
   if (selectionColor !== undefined) {
-    const extra = selectionClass(selectionColor)
+    const extra = selectionClass(registry, selectionColor)
     if (extra !== undefined) className = `${className} ${extra}`
   }
 
