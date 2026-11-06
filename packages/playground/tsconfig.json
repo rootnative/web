@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": ".tsbuild",
+    "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo",
+    "emitDeclarationOnly": true,
+    "isolatedDeclarations": false,
+    "types": ["vite/client"],
+    "paths": {
+      "react-native": ["../web/src/index.ts"],
+      "@rootnative/web": ["../web/src/index.ts"],
+      "@rootnative/web/dom": ["../web/src/dom/index.ts"]
+    }
+  },
+  "include": ["src", "vite.config.ts"],
+  "references": [{ "path": "../web" }]
+}

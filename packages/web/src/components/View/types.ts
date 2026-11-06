@@ -92,6 +92,9 @@ export type Role =
 export type DOMEventHandlers<T> = Omit<DOMAttributes<T>, 'children' | 'dangerouslySetInnerHTML'>
 
 export type AccessibilityProps = {
+  // Web only. Any other ARIA or data attribute passes through to the element.
+  [key: `aria-${string}`]: string | number | boolean | undefined
+  [key: `data-${string}`]: string | number | boolean | undefined
   accessible?: boolean | undefined
   accessibilityLabel?: string | undefined
   accessibilityLabelledBy?: string | ReadonlyArray<string> | undefined

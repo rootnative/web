@@ -19,7 +19,7 @@
   },
   "overrides": [
     {
-      "files": ["**/*.test.ts", "**/*.test.tsx", "**/src/test/**"],
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/src/test/**", "packages/playground/**"],
       "rules": {
         "react-perf/jsx-no-new-object-as-prop": "off",
         "react-perf/jsx-no-new-array-as-prop": "off",

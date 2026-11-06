@@ -1,4 +1,4 @@
 {
   "files": [],
-  "references": [{ "path": "packages/web" }]
+  "references": [{ "path": "packages/web" }, { "path": "packages/playground" }]
 }

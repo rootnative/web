@@ -10,6 +10,7 @@
     "lint": "oxlint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "tsc -b"
   },
