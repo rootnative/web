@@ -48,6 +48,11 @@ const pointerEventsClass = (registry: StyleRegistry, value: 'box-none' | 'box-on
   )
 
 export function View(props: ViewProps): ReactElement {
+  return useViewElement(props)
+}
+
+// Internal. The body of View, with an extra class for components built on it.
+export function useViewElement(props: ViewProps, extraClassName?: string): ReactElement {
   const { children, onLayout, pointerEvents, ref, style, ...rest } = props
 
   const element = useRef<HTMLElement | null>(null)
@@ -63,10 +68,13 @@ export function View(props: ViewProps): ReactElement {
   if (pointerEvents === 'box-none' || pointerEvents === 'box-only') {
     className = `${className} ${pointerEventsClass(registry, pointerEvents)}`
   }
+  if (extraClassName !== undefined) className = `${className} ${extraClassName}`
 
   const domProps = toDOMProps(rest)
   if (role !== undefined) domProps['role'] = role
   if (tag.length === 2 && tag[0] === 'h') delete domProps['aria-level']
+  // A button submits its form by default. A React Native button never does.
+  if (tag === 'button') domProps['type'] = 'button'
   domProps['className'] = className
   domProps['ref'] = element
 

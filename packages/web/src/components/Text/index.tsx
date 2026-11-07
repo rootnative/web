@@ -133,6 +133,8 @@ export function Text(props: TextProps): ReactElement {
   const domProps = toDOMProps(rest)
   if (role !== undefined) domProps['role'] = role
   if (tag.length === 2 && tag[0] === 'h') delete domProps['aria-level']
+  // A button submits its form by default. A React Native button never does.
+  if (tag === 'button') domProps['type'] = 'button'
   if (disabled === true) domProps['aria-disabled'] = true
   if (onPress !== undefined || onClick !== undefined) domProps['onClick'] = handleClick
   domProps['className'] = className

@@ -179,6 +179,11 @@ describe('Text', () => {
       expect(first(container).hasAttribute('aria-level')).toBe(false)
     })
 
+    test('a button role renders a button that does not submit a form', () => {
+      const { container } = render(<Text role="button">Go</Text>)
+      expect((first(container) as HTMLButtonElement).type).toBe('button')
+    })
+
     test('a separator with text is a span with the role', () => {
       const { container } = render(<Text role="separator">·</Text>)
       expect(first(container).tagName).toBe('SPAN')

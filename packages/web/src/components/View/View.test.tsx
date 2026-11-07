@@ -121,6 +121,11 @@ describe('View', () => {
       expect(parent?.getAttribute('role')).toBe('separator')
     })
 
+    test('a button role renders a button that does not submit a form', () => {
+      const { container } = render(<View role="button" />)
+      expect((first(container) as HTMLButtonElement).type).toBe('button')
+    })
+
     test('href renders an anchor', () => {
       const { container } = render(<View href="/a" role="link" />)
       const a = first(container) as HTMLAnchorElement

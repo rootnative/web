@@ -127,7 +127,7 @@ A Vite plugin that sets the alias, resolves `.web.tsx` files, and inlines `Platf
 
 ## Supported APIs
 
-**Components:** `View`, `Text`
+**Components:** `View`, `Text`, `Pressable`
 
 **APIs:** `StyleSheet`, `Platform`, `Dimensions`, `useWindowDimensions`, `usePressability`
 
@@ -148,12 +148,17 @@ Notes on the web behavior of shipped props:
 | `numberOfLines`                      | 1 truncates with an ellipsis. More lines clamp.                                                                                                                      |
 | `ellipsizeMode`                      | `tail` and `clip`. `head` and `middle` fall back to `tail` for now.                                                                                                  |
 | `selectable`                         | On by default on the web. `false` sets `user-select: none`.                                                                                                          |
-| `Text` `onPress`                     | A click. Press in, press out, long press, and keyboard activation come with `Pressable`.                                                                             |
+| `Text` `onPress`                     | A click. `Text` has no `onPressIn`, `onPressOut`, or `onLongPress` yet.                                                                                              |
 | `Platform.isDisableAnimations`       | Follows `prefers-reduced-motion`.                                                                                                                                    |
 | `Dimensions.get('window').fontScale` | The root font size divided by 16, the browser's font-size preference.                                                                                                |
 | `usePressability`                    | Returns pointer, keyboard, and focus handlers, not responder handlers. Spread them on a `View`.                                                                      |
 | `usePressability` `onPress`          | Gets the `pointerup` event. A keyboard or assistive-technology activation gets the `click` event. `preventDefault()` cancels the click, so a link does not navigate. |
 | Press events                         | `nativeEvent` is the DOM event, with `locationX`, `locationY`, `pageX`, `pageY`, `timestamp`, `touches`, and `changedTouches` added.                                 |
+| `Pressable` state                    | `pressed`, and web-only `hovered` and `focused`. `focused` is true for keyboard focus only (`:focus-visible`).                                                       |
+| `Pressable` `hitSlop`                | An invisible `::before` box grows the hit area. A parent with `overflow: hidden` clips it.                                                                           |
+| `Pressable` `cancelable={false}`     | Sets `touch-action: none`, so a scroll that starts on the element cannot cancel the press.                                                                           |
+| `Pressable` `disabled`               | Sets `aria-disabled` and takes the element out of the tab order.                                                                                                     |
+| `role="button"`                      | Renders `<button type="button">`, so it never submits a form.                                                                                                        |
 
 ## Not supported
 

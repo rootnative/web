@@ -10,6 +10,13 @@ export type { PlatformOSType, PlatformSelectSpec, PlatformType } from './apis/Pl
 export { StyleSheet } from './apis/StyleSheet'
 export type { AbsoluteFillStyle, StyleProp } from './apis/StyleSheet'
 export { useWindowDimensions } from './apis/useWindowDimensions'
+export { Pressable } from './components/Pressable'
+export type {
+  PressableAndroidRippleConfig,
+  PressableInstance,
+  PressableProps,
+  PressableStateCallbackType,
+} from './components/Pressable'
 export { Text, TextAncestorContext } from './components/Text'
 export type { PressEvent, TextProps } from './components/Text'
 export { View } from './components/View'
