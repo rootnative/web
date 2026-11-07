@@ -85,6 +85,25 @@ describe('View', () => {
       )
     })
 
+    test('table roles render divs with role attributes', () => {
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const { container } = render(
+        <View role="table">
+          <View role="row">
+            <View role="cell" />
+          </View>
+        </View>,
+      )
+      expect(container.innerHTML).toMatch(
+        /^<div role="table" class="[^"]*"><div role="row" class="[^"]*"><div role="cell" class="[^"]*"><\/div><\/div><\/div>$/,
+      )
+      const nesting = error.mock.calls
+        .map((call) => String(call[0]))
+        .filter((message) => /cannot (be a child of|contain a nested)/.test(message))
+      expect(nesting).toEqual([])
+      error.mockRestore()
+    })
+
     test('href renders an anchor', () => {
       const { container } = render(<View href="/a" role="link" />)
       const a = first(container) as HTMLAnchorElement

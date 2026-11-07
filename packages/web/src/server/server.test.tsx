@@ -62,4 +62,21 @@ describe('server', () => {
       expect(css).toContain(`.${className}`)
     }
   })
+
+  // The HTML parser must keep the tree, or hydration does not match.
+  test('the HTML parser keeps the markup of a table', () => {
+    const html = renderToString(
+      <StyleRegistryProvider registry={createStyleRegistry()}>
+        <View role="table">
+          <Text>Caption</Text>
+          <View role="row">
+            <Text role="rowheader">width</Text>
+            <Text role="cell">100</Text>
+          </View>
+        </View>
+      </StyleRegistryProvider>,
+    )
+    const parsed = new DOMParser().parseFromString(html, 'text/html')
+    expect(parsed.body.innerHTML).toBe(html)
+  })
 })

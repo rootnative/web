@@ -23,12 +23,15 @@ const legacyRoleToRole: Record<string, string> = {
 }
 
 // Roles whose HTML element carries the role on its own.
+//
+// The table roles are not here. The HTML parser moves any child of a <table> that is not a
+// row group out of the table, and wraps a bare <tr> in a <tbody>. Server-rendered markup
+// then does not match the React tree, and the flex reset breaks table layout. A div with
+// the ARIA table roles has the same semantics.
 const roleToTag: Record<string, string> = {
   article: 'article',
   banner: 'header',
   button: 'button',
-  cell: 'td',
-  columnheader: 'th',
   complementary: 'aside',
   contentinfo: 'footer',
   figure: 'figure',
@@ -37,11 +40,7 @@ const roleToTag: Record<string, string> = {
   listitem: 'li',
   main: 'main',
   navigation: 'nav',
-  row: 'tr',
-  rowgroup: 'tbody',
-  rowheader: 'th',
   separator: 'hr',
-  table: 'table',
 }
 
 const headingLevel = (level: number | undefined): number =>

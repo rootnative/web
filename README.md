@@ -139,7 +139,7 @@ Notes on the web behavior of shipped props:
 
 | Prop                                 | Behavior                                                                                                                                                             |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `role`                               | Picks the element. Roles with no implicit element keep a `role` attribute.                                                                                           |
+| `role`                               | Picks the element. Roles with no implicit element, and the table roles, keep a `role` attribute.                                                                     |
 | `aria-level`                         | Web only. The heading level, 1 to 6. Default 2.                                                                                                                      |
 | `href`, `target`, `rel`, `download`  | Web only. Render an anchor.                                                                                                                                          |
 | `on*` DOM handlers                   | Pass through to the element. `onClick`, `onKeyDown`, `onPointerDown`, and the rest.                                                                                  |

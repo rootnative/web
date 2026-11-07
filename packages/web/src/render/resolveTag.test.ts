@@ -52,8 +52,6 @@ describe('resolveTag', () => {
       ['article', 'article'],
       ['banner', 'header'],
       ['button', 'button'],
-      ['cell', 'td'],
-      ['columnheader', 'th'],
       ['complementary', 'aside'],
       ['contentinfo', 'footer'],
       ['figure', 'figure'],
@@ -62,14 +60,20 @@ describe('resolveTag', () => {
       ['listitem', 'li'],
       ['main', 'main'],
       ['navigation', 'nav'],
-      ['row', 'tr'],
-      ['rowgroup', 'tbody'],
-      ['rowheader', 'th'],
       ['separator', 'hr'],
-      ['table', 'table'],
     ])('%s renders <%s> without a role attribute', (role, tag) => {
       expect(resolveTag({ role }, 'div')).toEqual({ tag, role: undefined })
     })
+  })
+
+  describe('table roles', () => {
+    test.each(['table', 'rowgroup', 'row', 'cell', 'columnheader', 'rowheader'])(
+      '%s keeps the default tag and the role attribute',
+      (role) => {
+        expect(resolveTag({ role }, 'div')).toEqual({ tag: 'div', role })
+        expect(resolveTag({ role }, 'span')).toEqual({ tag: 'span', role })
+      },
+    )
   })
 
   describe('roles without an implicit element', () => {
