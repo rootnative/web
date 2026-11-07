@@ -66,6 +66,23 @@ describe('resolveTag', () => {
     })
   })
 
+  describe('void elements', () => {
+    test('a separator with children keeps the default tag and the role', () => {
+      expect(resolveTag({ role: 'separator' }, 'div', true)).toEqual({
+        tag: 'div',
+        role: 'separator',
+      })
+      expect(resolveTag({ role: 'separator' }, 'span', true)).toEqual({
+        tag: 'span',
+        role: 'separator',
+      })
+    })
+
+    test('children do not change a tag that takes children', () => {
+      expect(resolveTag({ role: 'list' }, 'div', true)).toEqual({ tag: 'ul', role: undefined })
+    })
+  })
+
   describe('table roles', () => {
     test.each(['table', 'rowgroup', 'row', 'cell', 'columnheader', 'rowheader'])(
       '%s keeps the default tag and the role attribute',

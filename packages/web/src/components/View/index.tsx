@@ -55,7 +55,7 @@ export function View(props: ViewProps): ReactElement {
   useElementLayout(element, onLayout)
   const registry = useStyleRegistry()
 
-  const { tag, role } = resolveTag(rest, 'div')
+  const { tag, role } = resolveTag(rest, 'div', children != null)
 
   const pointerStyle =
     pointerEvents === 'none' || pointerEvents === 'auto' ? { pointerEvents } : undefined

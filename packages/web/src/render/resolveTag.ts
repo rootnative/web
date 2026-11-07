@@ -46,9 +46,25 @@ const roleToTag: Record<string, string> = {
 const headingLevel = (level: number | undefined): number =>
   level !== undefined && Number.isInteger(level) && level >= 1 && level <= 6 ? level : 2
 
-export const resolveTag = (props: ResolveTagInput, defaultTag: string): ResolvedTag => {
-  const role = props.role ?? mapLegacyRole(props.accessibilityRole)
+// Elements that take no children. React throws when one gets children.
+const voidTags = new Set(['hr'])
 
+// `hasChildren` matches React's check for a void element: children that are not null.
+export const resolveTag = (
+  props: ResolveTagInput,
+  defaultTag: string,
+  hasChildren = false,
+): ResolvedTag => {
+  const role = props.role ?? mapLegacyRole(props.accessibilityRole)
+  const resolved = tagForRole(role, props, defaultTag)
+  return hasChildren && voidTags.has(resolved.tag) ? { tag: defaultTag, role } : resolved
+}
+
+const tagForRole = (
+  role: string | undefined,
+  props: ResolveTagInput,
+  defaultTag: string,
+): ResolvedTag => {
   if (role === 'heading') {
     return { tag: `h${headingLevel(props['aria-level'])}`, role: undefined }
   }

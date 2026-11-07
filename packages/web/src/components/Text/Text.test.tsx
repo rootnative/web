@@ -178,6 +178,12 @@ describe('Text', () => {
       expect(first(container).tagName).toBe('H3')
       expect(first(container).hasAttribute('aria-level')).toBe(false)
     })
+
+    test('a separator with text is a span with the role', () => {
+      const { container } = render(<Text role="separator">·</Text>)
+      expect(first(container).tagName).toBe('SPAN')
+      expect(first(container).getAttribute('role')).toBe('separator')
+    })
   })
 
   test('ref is the DOM element', () => {

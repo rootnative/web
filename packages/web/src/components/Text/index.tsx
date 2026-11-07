@@ -92,7 +92,7 @@ export function Text(props: TextProps): ReactElement {
   useElementLayout(element, onLayout)
   const registry = useStyleRegistry()
 
-  const { tag, role } = resolveTag(rest, 'span')
+  const { tag, role } = resolveTag(rest, 'span', children != null)
 
   const lineStyle =
     numberOfLines === undefined || numberOfLines < 1

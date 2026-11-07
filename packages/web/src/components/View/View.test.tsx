@@ -104,6 +104,23 @@ describe('View', () => {
       error.mockRestore()
     })
 
+    test('a separator is an <hr>, or a div with the role when it has children', () => {
+      const { container } = render(
+        <View>
+          <View role="separator" />
+          <View role="separator">{false}</View>
+          <View role="separator">
+            <View />
+          </View>
+        </View>,
+      )
+      const [empty, falsy, parent] = Array.from(first(container).children)
+      expect(empty?.tagName).toBe('HR')
+      expect(falsy?.tagName).toBe('DIV')
+      expect(parent?.tagName).toBe('DIV')
+      expect(parent?.getAttribute('role')).toBe('separator')
+    })
+
     test('href renders an anchor', () => {
       const { container } = render(<View href="/a" role="link" />)
       const a = first(container) as HTMLAnchorElement
