@@ -23,3 +23,13 @@ export type {
   Role,
   ViewProps,
 } from './components/View'
+export { usePressability } from './events/press'
+export type { Insets, PressabilityConfig, PressabilityEventHandlers } from './events/press'
+export type {
+  BlurEvent,
+  FocusEvent,
+  GestureResponderEvent,
+  MouseEvent,
+  NativeSyntheticEvent,
+  NativeTouchEvent,
+} from './events/types'

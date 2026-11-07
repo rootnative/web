@@ -129,7 +129,7 @@ A Vite plugin that sets the alias, resolves `.web.tsx` files, and inlines `Platf
 
 **Components:** `View`, `Text`
 
-**APIs:** `StyleSheet`, `Platform`, `Dimensions`, `useWindowDimensions`
+**APIs:** `StyleSheet`, `Platform`, `Dimensions`, `useWindowDimensions`, `usePressability`
 
 **Web layer:** `Head`
 
@@ -137,20 +137,23 @@ A Vite plugin that sets the alias, resolves `.web.tsx` files, and inlines `Platf
 
 Notes on the web behavior of shipped props:
 
-| Prop                                 | Behavior                                                                                 |
-| ------------------------------------ | ---------------------------------------------------------------------------------------- |
-| `role`                               | Picks the element. Roles with no implicit element keep a `role` attribute.               |
-| `aria-level`                         | Web only. The heading level, 1 to 6. Default 2.                                          |
-| `href`, `target`, `rel`, `download`  | Web only. Render an anchor.                                                              |
-| `on*` DOM handlers                   | Pass through to the element. `onClick`, `onKeyDown`, `onPointerDown`, and the rest.      |
-| `onLayout`                           | A `ResizeObserver`. Fires after mount and after each size change.                        |
-| `pointerEvents`                      | `none`, `auto`, `box-none`, and `box-only`.                                              |
-| `numberOfLines`                      | 1 truncates with an ellipsis. More lines clamp.                                          |
-| `ellipsizeMode`                      | `tail` and `clip`. `head` and `middle` fall back to `tail` for now.                      |
-| `selectable`                         | On by default on the web. `false` sets `user-select: none`.                              |
-| `onPress`                            | A click. Press in, press out, long press, and keyboard activation come with `Pressable`. |
-| `Platform.isDisableAnimations`       | Follows `prefers-reduced-motion`.                                                        |
-| `Dimensions.get('window').fontScale` | The root font size divided by 16, the browser's font-size preference.                    |
+| Prop                                 | Behavior                                                                                                                                                             |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `role`                               | Picks the element. Roles with no implicit element keep a `role` attribute.                                                                                           |
+| `aria-level`                         | Web only. The heading level, 1 to 6. Default 2.                                                                                                                      |
+| `href`, `target`, `rel`, `download`  | Web only. Render an anchor.                                                                                                                                          |
+| `on*` DOM handlers                   | Pass through to the element. `onClick`, `onKeyDown`, `onPointerDown`, and the rest.                                                                                  |
+| `onLayout`                           | A `ResizeObserver`. Fires after mount and after each size change.                                                                                                    |
+| `pointerEvents`                      | `none`, `auto`, `box-none`, and `box-only`.                                                                                                                          |
+| `numberOfLines`                      | 1 truncates with an ellipsis. More lines clamp.                                                                                                                      |
+| `ellipsizeMode`                      | `tail` and `clip`. `head` and `middle` fall back to `tail` for now.                                                                                                  |
+| `selectable`                         | On by default on the web. `false` sets `user-select: none`.                                                                                                          |
+| `Text` `onPress`                     | A click. Press in, press out, long press, and keyboard activation come with `Pressable`.                                                                             |
+| `Platform.isDisableAnimations`       | Follows `prefers-reduced-motion`.                                                                                                                                    |
+| `Dimensions.get('window').fontScale` | The root font size divided by 16, the browser's font-size preference.                                                                                                |
+| `usePressability`                    | Returns pointer, keyboard, and focus handlers, not responder handlers. Spread them on a `View`.                                                                      |
+| `usePressability` `onPress`          | Gets the `pointerup` event. A keyboard or assistive-technology activation gets the `click` event. `preventDefault()` cancels the click, so a link does not navigate. |
+| Press events                         | `nativeEvent` is the DOM event, with `locationX`, `locationY`, `pageX`, `pageY`, `timestamp`, `touches`, and `changedTouches` added.                                 |
 
 ## Not supported
 
