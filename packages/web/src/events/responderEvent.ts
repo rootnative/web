@@ -5,9 +5,15 @@ import type { GestureResponderEvent, MouseEvent, NativeTouchEvent } from './type
 type DOMEvent = Event & {
   clientX?: number
   clientY?: number
+  detail?: number
   pointerId?: number
   pressure?: number
 }
+
+// A click from the keyboard, assistive technology, or element.click() has detail 0, and its
+// clientX and clientY are 0, not the point of a pointer.
+const hasPoint = (event: DOMEvent): boolean =>
+  event.clientX !== undefined && !(event.type === 'click' && event.detail === 0)
 
 const activeTypes = new Set(['pointerdown', 'pointermove', 'keydown'])
 
@@ -28,8 +34,9 @@ export const toGestureResponderEvent = (
   const native = event.nativeEvent as DOMEvent
   if (!('locationX' in native)) {
     const rect = element.getBoundingClientRect()
-    const clientX = native.clientX ?? rect.left + rect.width / 2
-    const clientY = native.clientY ?? rect.top + rect.height / 2
+    const point = hasPoint(native)
+    const clientX = point ? (native.clientX ?? 0) : rect.left + rect.width / 2
+    const clientY = point ? (native.clientY ?? 0) : rect.top + rect.height / 2
     const touch: NativeTouchEvent = {
       changedTouches: [],
       force: native.pressure,

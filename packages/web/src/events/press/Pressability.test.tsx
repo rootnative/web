@@ -378,7 +378,7 @@ describe('usePressability', () => {
     })
 
     test('a native button presses once, through its click', async () => {
-      const onPress = vi.fn()
+      const onPress = vi.fn<(event: GestureResponderEvent) => void>()
       const onPressIn = vi.fn()
       render(<Target role="button" config={{ onPress, onPressIn }} />)
       const element = byTestId()
@@ -387,6 +387,11 @@ describe('usePressability', () => {
       await userEvent.keyboard('{Enter}')
       expect(onPress).toHaveBeenCalledTimes(1)
       expect(onPressIn).not.toHaveBeenCalled()
+
+      // A keyboard click has no pointer, so the location is the center.
+      const native = onPress.mock.calls[0]?.[0].nativeEvent
+      expect(native?.locationX).toBe(50)
+      expect(native?.locationY).toBe(50)
     })
 
     test('a key on a child does not press', () => {
