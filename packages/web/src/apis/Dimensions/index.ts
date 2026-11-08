@@ -35,17 +35,25 @@ let current: DimensionsValue | null = null
 const handlers = new Set<DimensionsChangeHandler>()
 let listening = false
 
-const update = (): void => {
+// Keeps the cached object while nothing changed, so a useSyncExternalStore
+// snapshot stays the same object between reads.
+const refresh = (): DimensionsValue => {
   const next = read()
   if (
-    current !== null &&
-    sameSize(current.window, next.window) &&
-    sameSize(current.screen, next.screen)
+    current === null ||
+    !sameSize(current.window, next.window) ||
+    !sameSize(current.screen, next.screen)
   ) {
-    return
+    current = next
   }
-  current = next
-  for (const handler of handlers) handler(next)
+  return current
+}
+
+const update = (): void => {
+  const previous = current
+  const value = refresh()
+  if (value === previous) return
+  for (const handler of handlers) handler(value)
 }
 
 const listen = (): void => {
@@ -59,13 +67,14 @@ export const Dimensions: {
   addEventListener: (type: 'change', handler: DimensionsChangeHandler) => EmitterSubscription
 } = {
   get(dimension) {
-    if (current === null) current = read()
-    return current[dimension]
+    // Only the resize listener keeps the cache fresh. Before it starts, read again.
+    const value = current === null || !listening ? refresh() : current
+    return value[dimension]
   },
 
   addEventListener(type, handler) {
     if (type !== 'change') throw new Error(`Dimensions: unknown event "${String(type)}"`)
-    if (current === null) current = read()
+    refresh()
     handlers.add(handler)
     listen()
     return { remove: () => handlers.delete(handler) }

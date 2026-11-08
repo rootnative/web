@@ -37,6 +37,17 @@ describe('Dimensions', () => {
     expect(Dimensions.get('window').fontScale).toBe(1.25)
   })
 
+  test('get reads the current size before any listener starts', () => {
+    expect(Dimensions.get('window').width).toBe(window.innerWidth)
+    setInnerSize(320, 480)
+    expect(Dimensions.get('window').width).toBe(320)
+    expect(Dimensions.get('window').height).toBe(480)
+  })
+
+  test('get returns the same object while nothing changes', () => {
+    expect(Dimensions.get('window')).toBe(Dimensions.get('window'))
+  })
+
   test('change fires on resize with both sizes', () => {
     const handler = vi.fn()
     Dimensions.addEventListener('change', handler)
