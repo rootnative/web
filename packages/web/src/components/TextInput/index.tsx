@@ -1,5 +1,4 @@
 import {
-  createElement,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -10,6 +9,7 @@ import {
   type KeyboardEvent,
   type MouseEvent,
   type ReactElement,
+  type RefObject,
   type SyntheticEvent,
   type UIEvent,
 } from 'react'
@@ -141,10 +141,10 @@ function TextInputComponent(props: TextInputProps): ReactElement {
     autoComplete,
     autoCorrect,
     autoFocus,
-    blurOnSubmit,
+    blurOnSubmit: _blurOnSubmit,
     caretHidden,
-    clearTextOnFocus,
-    contextMenuHidden,
+    clearTextOnFocus: _clearTextOnFocus,
+    contextMenuHidden: _contextMenuHidden,
     cursorColor,
     defaultValue,
     editable = true,
@@ -154,32 +154,32 @@ function TextInputComponent(props: TextInputProps): ReactElement {
     maxLength,
     multiline = false,
     numberOfLines,
-    onBlur,
-    onChange,
-    onChangeText,
+    onBlur: _onBlur,
+    onChange: _onChange,
+    onChangeText: _onChangeText,
     onContentSizeChange,
-    onContextMenu,
-    onEndEditing,
-    onFocus,
-    onKeyDown,
-    onKeyPress,
+    onContextMenu: _onContextMenu,
+    onEndEditing: _onEndEditing,
+    onFocus: _onFocus,
+    onKeyDown: _onKeyDown,
+    onKeyPress: _onKeyPress,
     onLayout,
-    onScroll,
-    onSelectionChange,
-    onSubmitEditing,
+    onScroll: _onScroll,
+    onSelectionChange: _onSelectionChange,
+    onSubmitEditing: _onSubmitEditing,
     placeholder,
     placeholderTextColor,
     readOnly,
     ref,
     returnKeyType,
     secureTextEntry,
-    selectTextOnFocus,
+    selectTextOnFocus: _selectTextOnFocus,
     selection,
     selectionColor,
     showSoftInputOnFocus,
     spellCheck,
     style,
-    submitBehavior,
+    submitBehavior: _submitBehavior,
     textAlign,
     textContentType,
     value,
@@ -211,6 +211,8 @@ function TextInputComponent(props: TextInputProps): ReactElement {
   const field = useRef<Field | null>(null)
   useElementLayout(field, onLayout)
 
+  // The event handlers read the latest props from here. The `_` props above
+  // only stay out of `rest`.
   const handlers = useRef(props)
   useEffect(() => {
     handlers.current = props
@@ -327,6 +329,8 @@ function TextInputComponent(props: TextInputProps): ReactElement {
     if (element.selectionStart === selectionStart && element.selectionEnd === selectionEnd) return
     element.setSelectionRange(selectionStart, selectionEnd)
     lastSelection.current = { start: selectionStart, end: selectionEnd }
+    // A new value resets the caret in the DOM, so the effect runs on `value` too.
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies
   }, [selectionStart, selectionEnd, value])
 
   // Size after mount and after an outside value change.
@@ -334,6 +338,8 @@ function TextInputComponent(props: TextInputProps): ReactElement {
     const element = field.current
     if (element === null) return
     grow(element)
+    // `value` and `multiline` change the content height, so the effect runs on them.
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies
   }, [grow, value, multiline])
 
   const wantsContentSize = onContentSizeChange !== undefined
@@ -381,7 +387,6 @@ function TextInputComponent(props: TextInputProps): ReactElement {
 
   const domProps = toDOMProps(rest)
   domProps['className'] = className
-  domProps['ref'] = field
   domProps['value'] = value
   domProps['defaultValue'] = defaultValue
   domProps['placeholder'] = placeholder
@@ -406,10 +411,10 @@ function TextInputComponent(props: TextInputProps): ReactElement {
   if (multiline) {
     domProps['rows'] = numberOfLines ?? 1
     domProps['onScroll'] = handleScroll
-    return createElement('textarea', domProps)
+    return <textarea {...domProps} ref={field as RefObject<HTMLTextAreaElement | null>} />
   }
   domProps['type'] = secureTextEntry === true ? 'password' : 'text'
-  return createElement('input', domProps)
+  return <input {...domProps} ref={field as RefObject<HTMLInputElement | null>} />
 }
 
 const State: TextInputState = {

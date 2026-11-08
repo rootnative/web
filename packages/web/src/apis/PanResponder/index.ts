@@ -153,6 +153,8 @@ const updateMove = (responder: Responder, time: number): void => {
   }
   state.moveX = next.x
   state.moveY = next.y
+  // The name matches the field of React Native's gesture state.
+  // oxlint-disable-next-line no-underscore-dangle
   state._accountsForMovesUpTo = time
   responder.last = { x: next.x, y: next.y, time }
 }

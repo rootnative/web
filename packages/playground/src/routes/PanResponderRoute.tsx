@@ -1,15 +1,19 @@
-import { useMemo, useRef, useState, type ReactElement } from 'react'
+import { useCallback, useMemo, useState, type ReactElement } from 'react'
 import { PanResponder, StyleSheet, Text, View } from 'react-native'
 
 export function PanResponderRoute(): ReactElement {
   const [offset, setOffset] = useState({ x: 0, y: 0 })
   const [status, setStatus] = useState('idle')
   const [log, setLog] = useState<string[]>([])
-  const start = useRef({ x: 0, y: 0 })
-
-  const note = (entry: string): void => setLog((entries) => [entry, ...entries].slice(0, 6))
-
   // `start` is where the box rested before this drag. The gesture adds dx and dy.
+  const [start, setStart] = useState({ x: 0, y: 0 })
+
+  const note = useCallback(
+    (entry: string): void => setLog((entries) => [entry, ...entries].slice(0, 6)),
+    [],
+  )
+
+  // A release moves `start`, so the responder is rebuilt between gestures, never during one.
   const responder = useMemo(
     () =>
       PanResponder.create({
@@ -19,22 +23,22 @@ export function PanResponderRoute(): ReactElement {
           note('grant')
         },
         onPanResponderMove: (_event, state) => {
-          setOffset({ x: start.current.x + state.dx, y: start.current.y + state.dy })
+          setOffset({ x: start.x + state.dx, y: start.y + state.dy })
         },
         onPanResponderRelease: (_event, state) => {
-          start.current = { x: start.current.x + state.dx, y: start.current.y + state.dy }
+          setStart({ x: start.x + state.dx, y: start.y + state.dy })
           setStatus('idle')
           note(
             `release dx ${Math.round(state.dx)} dy ${Math.round(state.dy)} vx ${state.vx.toFixed(2)}`,
           )
         },
         onPanResponderTerminate: (_event, state) => {
-          start.current = { x: start.current.x + state.dx, y: start.current.y + state.dy }
+          setStart({ x: start.x + state.dx, y: start.y + state.dy })
           setStatus('idle')
           note('terminate')
         },
       }),
-    [],
+    [note, start],
   )
 
   const horizontal = useMemo(
@@ -45,7 +49,7 @@ export function PanResponderRoute(): ReactElement {
         onPanResponderGrant: () => note('outer took a horizontal drag'),
         onPanResponderRelease: () => note('outer release'),
       }),
-    [],
+    [note],
   )
 
   const inner = useMemo(
@@ -56,7 +60,7 @@ export function PanResponderRoute(): ReactElement {
         onPanResponderTerminate: () => note('inner terminated'),
         onPanResponderRelease: () => note('inner release'),
       }),
-    [],
+    [note],
   )
 
   return (

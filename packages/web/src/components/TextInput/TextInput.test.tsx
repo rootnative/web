@@ -30,6 +30,11 @@ const key = (element: Field, name: string, init: KeyboardEventInit = {}): boolea
     new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true, ...init }),
   )
 
+function Controlled(): React.ReactElement {
+  const [text, setText] = useState('x')
+  return <TextInput value={text} onChangeText={(next) => setText(next.toUpperCase())} />
+}
+
 describe('TextInput', () => {
   test('renders an input with the native reset', () => {
     const { container } = render(<TextInput />)
@@ -161,10 +166,6 @@ describe('TextInput', () => {
     })
 
     test('a controlled value follows the prop', () => {
-      function Controlled(): React.ReactElement {
-        const [text, setText] = useState('x')
-        return <TextInput value={text} onChangeText={(next) => setText(next.toUpperCase())} />
-      }
       const { container } = render(<Controlled />)
       const element = field(container)
       expect(element.value).toBe('x')

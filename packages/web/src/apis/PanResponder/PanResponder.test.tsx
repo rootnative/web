@@ -67,14 +67,16 @@ const style = { width: 100, height: 100 }
 describe('PanResponder', () => {
   test('create returns pointer handlers and a null interaction handle', () => {
     const responder = PanResponder.create({})
-    expect(Object.keys(responder.panHandlers).sort()).toEqual([
-      'onPointerCancel',
-      'onPointerDown',
-      'onPointerDownCapture',
-      'onPointerMove',
-      'onPointerMoveCapture',
-      'onPointerUp',
-    ])
+    expect(new Set(Object.keys(responder.panHandlers))).toEqual(
+      new Set([
+        'onPointerCancel',
+        'onPointerDown',
+        'onPointerDownCapture',
+        'onPointerMove',
+        'onPointerMoveCapture',
+        'onPointerUp',
+      ]),
+    )
     expect(responder.getInteractionHandle()).toBeNull()
   })
 
@@ -150,7 +152,8 @@ describe('PanResponder', () => {
     expect(state.dx).toBe(0)
 
     pointer(element, 'pointermove', 18, 0)
-    expect((config.onPanResponderMove.mock.calls[0]?.[1] as Record<string, number>).dx).toBe(10)
+    const moved = config.onPanResponderMove.mock.calls[0]?.[1] as Record<string, number>
+    expect(moved.dx).toBe(10)
   })
 
   test('the deepest responder wins the bubble phase, and the parent is not asked', () => {
@@ -277,10 +280,10 @@ describe('PanResponder', () => {
     expect(config.onPanResponderStart).toHaveBeenCalledTimes(2)
     const started = config.onPanResponderStart.mock.calls[1]?.[0] as GestureResponderEvent
     expect(started.nativeEvent.touches).toHaveLength(2)
-    expect(
-      (config.onPanResponderStart.mock.calls[1]?.[1] as { numberActiveTouches: number })
-        .numberActiveTouches,
-    ).toBe(2)
+    const startState = config.onPanResponderStart.mock.calls[1]?.[1] as {
+      numberActiveTouches: number
+    }
+    expect(startState.numberActiveTouches).toBe(2)
 
     pointer(element, 'pointermove', 40, 0, 2)
     const moved = config.onPanResponderMove.mock.calls[0]?.[1] as Record<string, number>
@@ -302,8 +305,8 @@ describe('PanResponder', () => {
     pointer(element, 'pointerdown', 0, 0)
     pointer(element, 'pointerup', 0, 0)
     pointer(element, 'pointerdown', 0, 0)
-    const first = (config.onPanResponderGrant.mock.calls[0]?.[1] as { stateID: number }).stateID
-    const second = (config.onPanResponderGrant.mock.calls[1]?.[1] as { stateID: number }).stateID
-    expect(second).not.toBe(first)
+    const first = config.onPanResponderGrant.mock.calls[0]?.[1] as { stateID: number }
+    const second = config.onPanResponderGrant.mock.calls[1]?.[1] as { stateID: number }
+    expect(second.stateID).not.toBe(first.stateID)
   })
 })

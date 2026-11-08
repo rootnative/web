@@ -2,9 +2,10 @@ import { describe, expect, test } from 'vitest'
 
 import { BackHandler, backPressHandlerCount } from './index'
 
+const handler = (): boolean => true
+
 describe('BackHandler', () => {
   test('registers and removes handlers', () => {
-    const handler = (): boolean => true
     const subscription = BackHandler.addEventListener('hardwareBackPress', handler)
     expect(backPressHandlerCount()).toBe(1)
     subscription.remove()
