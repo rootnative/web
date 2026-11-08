@@ -26,6 +26,12 @@ const sidebars: SidebarsConfig = {
         'statusbar',
       ],
     },
+    {
+      type: 'category',
+      label: 'APIs',
+      collapsed: false,
+      items: ['stylesheet', 'platform', 'dimensions', 'appearance', 'pixelratio', 'processcolor'],
+    },
   ],
 }
 
