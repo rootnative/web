@@ -1,6 +1,7 @@
 import { useSyncExternalStore, type ReactElement } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
+import { AppearanceRoute } from './routes/AppearanceRoute'
 import { DimensionsRoute } from './routes/DimensionsRoute'
 import { HeadRoute } from './routes/HeadRoute'
 import { PressabilityRoute } from './routes/PressabilityRoute'
@@ -12,6 +13,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'view', title: 'View', Component: ViewRoute },
   { path: 'text', title: 'Text', Component: TextRoute },
   { path: 'dimensions', title: 'Dimensions', Component: DimensionsRoute },
+  { path: 'appearance', title: 'Appearance', Component: AppearanceRoute },
   { path: 'pressable', title: 'Pressable', Component: PressableRoute },
   { path: 'press', title: 'usePressability', Component: PressabilityRoute },
   { path: 'head', title: 'Head', Component: HeadRoute },

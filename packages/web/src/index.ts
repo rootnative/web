@@ -1,3 +1,10 @@
+export { Appearance } from './apis/Appearance'
+export type {
+  AppearanceListener,
+  AppearancePreferences,
+  ColorSchemeName,
+  NativeEventSubscription,
+} from './apis/Appearance'
 export { Dimensions } from './apis/Dimensions'
 export type {
   DimensionsChangeHandler,
@@ -9,6 +16,7 @@ export { Platform } from './apis/Platform'
 export type { PlatformOSType, PlatformSelectSpec, PlatformType } from './apis/Platform'
 export { StyleSheet } from './apis/StyleSheet'
 export type { AbsoluteFillStyle, StyleProp } from './apis/StyleSheet'
+export { useColorScheme } from './apis/useColorScheme'
 export { useWindowDimensions } from './apis/useWindowDimensions'
 export { Pressable } from './components/Pressable'
 export type {

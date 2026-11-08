@@ -129,7 +129,7 @@ A Vite plugin that sets the alias, resolves `.web.tsx` files, and inlines `Platf
 
 **Components:** `View`, `Text`, `Pressable`
 
-**APIs:** `StyleSheet`, `Platform`, `Dimensions`, `useWindowDimensions`, `usePressability`
+**APIs:** `StyleSheet`, `Platform`, `Dimensions`, `useWindowDimensions`, `Appearance`, `useColorScheme`, `usePressability`
 
 **Web layer:** `Head`
 
@@ -151,6 +151,8 @@ Notes on the web behavior of shipped props:
 | `Text` `onPress`                     | A click. `Text` has no `onPressIn`, `onPressOut`, or `onLongPress` yet.                                                                                              |
 | `Platform.isDisableAnimations`       | Follows `prefers-reduced-motion`.                                                                                                                                    |
 | `Dimensions.get('window').fontScale` | The root font size divided by 16, the browser's font-size preference.                                                                                                |
+| `Appearance.getColorScheme()`        | `prefers-color-scheme`. `light` on the server and during hydration, then the real scheme.                                                                            |
+| `Appearance.setColorScheme()`        | Also sets `color-scheme` on `<html>`, so form controls and scrollbars follow the override. `null` or `unspecified` returns to the preference.                        |
 | `usePressability`                    | Returns pointer, keyboard, and focus handlers, not responder handlers. Spread them on a `View`.                                                                      |
 | `usePressability` `onPress`          | Gets the `pointerup` event. A keyboard or assistive-technology activation gets the `click` event. `preventDefault()` cancels the click, so a link does not navigate. |
 | Press events                         | `nativeEvent` is the DOM event, with `locationX`, `locationY`, `pageX`, `pageY`, `timestamp`, `touches`, and `changedTouches` added.                                 |
