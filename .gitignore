@@ -8,3 +8,5 @@ coverage/
 !.env.example
 .tsbuild/
 .vitest/
+.docusaurus/
+docs/build/

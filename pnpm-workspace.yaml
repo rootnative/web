@@ -1,5 +1,9 @@
 packages:
   - packages/*
+  - docs
   - e2e
+
+allowBuilds:
+  core-js: false
 
 strictPeerDependencies: true

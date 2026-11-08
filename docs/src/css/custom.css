@@ -1,0 +1,109 @@
+:root {
+  --ifm-color-primary: #0a0a0a;
+  --ifm-color-primary-dark: #0a0a0a;
+  --ifm-color-primary-darker: #000;
+  --ifm-color-primary-darkest: #000;
+  --ifm-color-primary-light: #262626;
+  --ifm-color-primary-lighter: #262626;
+  --ifm-color-primary-lightest: #404040;
+
+  --ifm-font-family-base:
+    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  --ifm-font-family-monospace:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+    monospace;
+  --ifm-heading-font-weight: 700;
+  --ifm-heading-line-height: 1.2;
+  --ifm-h1-font-size: 2.4rem;
+  --ifm-h2-font-size: 1.7rem;
+  --ifm-h3-font-size: 1.25rem;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.65;
+  --ifm-global-radius: 10px;
+
+  --ifm-background-color: #fff;
+  --ifm-background-surface-color: #fff;
+
+  --ifm-link-decoration: none;
+  --ifm-link-hover-decoration: underline;
+
+  --ifm-code-font-size: 90%;
+  --ifm-pre-padding: 1.1rem;
+
+  --ifm-navbar-height: 60px;
+  --ifm-navbar-shadow: 0 1px 0 var(--web-border);
+  --ifm-toc-border-color: transparent;
+  --ifm-footer-background-color: var(--web-surface-muted);
+
+  --web-border: rgba(0, 0, 0, 0.09);
+  --web-surface-muted: #fafafa;
+  --web-fg-muted: #52525b;
+}
+
+/* `html[...]`, not `[...]`: Infima sets its dark background under
+   `html[data-theme='dark']`, and a lower specificity never wins. */
+html[data-theme='dark'] {
+  --ifm-color-primary: #fafafa;
+  --ifm-color-primary-dark: #f5f5f5;
+  --ifm-color-primary-darker: #ededed;
+  --ifm-color-primary-darkest: #e0e0e0;
+  --ifm-color-primary-light: #fff;
+  --ifm-color-primary-lighter: #fff;
+  --ifm-color-primary-lightest: #fff;
+  --ifm-background-color: #0a0a0a;
+  --ifm-background-surface-color: #0f0f0f;
+
+  --web-border: hsla(0, 0%, 100%, 0.1);
+  --web-surface-muted: #0e0e10;
+  --web-fg-muted: #a1a1aa;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  margin-top: 2.5rem;
+}
+
+main article > p:first-of-type,
+main article header + p {
+  color: var(--web-fg-muted);
+  font-size: 1.05rem;
+}
+
+article a {
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+:not(pre) > code {
+  background: var(--web-surface-muted);
+  border: 1px solid var(--web-border);
+  border-radius: 6px;
+  padding: 0.1rem 0.4rem;
+}
+
+.footer {
+  border-top: 1px solid var(--web-border);
+}
+
+.navbar-github-link::before {
+  content: '';
+  display: block;
+  width: 22px;
+  height: 22px;
+  background-color: var(--ifm-navbar-link-color);
+  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2 0-.4-.5-1.6.2-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.6.2 2.8.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3Z'/%3E%3C/svg%3E");
+  mask-repeat: no-repeat;
+  mask-size: contain;
+}
+
+.navbar-github-link:hover::before {
+  background-color: var(--ifm-navbar-link-hover-color);
+}
