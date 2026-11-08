@@ -96,7 +96,11 @@ const config: Config = {
       links: [
         {
           title: 'Docs',
-          items: [{ label: 'Introduction', to: '/' }],
+          items: [
+            { label: 'Introduction', to: '/' },
+            { label: 'Installation', to: '/installation' },
+            { label: 'Status', to: '/status' },
+          ],
         },
         {
           title: 'More',

@@ -34,3 +34,8 @@ Your app imports `react-native`. A bundler alias maps that name to `@rootnative/
 | Server | `@rootnative/web/server` | Server rendering helpers                                        |
 
 Import `@rootnative/web/dom` and `@rootnative/web/server` only in code that runs on the web. The rest of your app stays the same code that runs on iOS and Android.
+
+## Next steps
+
+- [Installation](/installation): set up a Vite app in four steps.
+- [Status](/status): what ships today, what's planned, and how it's tested.
