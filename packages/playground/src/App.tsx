@@ -8,6 +8,7 @@ import { ImageRoute } from './routes/ImageRoute'
 import { PressabilityRoute } from './routes/PressabilityRoute'
 import { PressableRoute } from './routes/PressableRoute'
 import { ScrollViewRoute } from './routes/ScrollViewRoute'
+import { TextInputRoute } from './routes/TextInputRoute'
 import { TextRoute } from './routes/TextRoute'
 import { ViewRoute } from './routes/ViewRoute'
 
@@ -16,6 +17,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'text', title: 'Text', Component: TextRoute },
   { path: 'image', title: 'Image', Component: ImageRoute },
   { path: 'scrollview', title: 'ScrollView', Component: ScrollViewRoute },
+  { path: 'textinput', title: 'TextInput', Component: TextInputRoute },
   { path: 'dimensions', title: 'Dimensions', Component: DimensionsRoute },
   { path: 'appearance', title: 'Appearance', Component: AppearanceRoute },
   { path: 'pressable', title: 'Pressable', Component: PressableRoute },

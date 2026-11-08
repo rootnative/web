@@ -52,6 +52,27 @@ export type {
 } from './components/ScrollView'
 export { Text, TextAncestorContext } from './components/Text'
 export type { PressEvent, TextProps } from './components/Text'
+export { TextInput } from './components/TextInput'
+export type {
+  EnterKeyHint,
+  InputMode,
+  KeyboardType,
+  ReturnKeyType,
+  SubmitBehavior,
+  TextInputChangeEvent,
+  TextInputChangeEventData,
+  TextInputContentSizeChangeEvent,
+  TextInputEndEditingEvent,
+  TextInputFocusEvent,
+  TextInputInstance,
+  TextInputKeyPressEvent,
+  TextInputProps,
+  TextInputScrollEvent,
+  TextInputSelection,
+  TextInputSelectionChangeEvent,
+  TextInputState,
+  TextInputSubmitEditingEvent,
+} from './components/TextInput'
 export { View } from './components/View'
 export type {
   AccessibilityProps,
