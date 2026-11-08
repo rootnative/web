@@ -23,6 +23,13 @@ export type {
 } from './apis/Dimensions'
 export { I18nManager } from './apis/I18nManager'
 export type { I18nManagerConstants } from './apis/I18nManager'
+export { PanResponder } from './apis/PanResponder'
+export type {
+  GestureResponderHandlers,
+  PanResponderCallbacks,
+  PanResponderGestureState,
+  PanResponderInstance,
+} from './apis/PanResponder'
 export { PixelRatio } from './apis/PixelRatio'
 export { Platform } from './apis/Platform'
 export type { PlatformOSType, PlatformSelectSpec, PlatformType } from './apis/Platform'

@@ -6,6 +6,7 @@ import { AppearanceRoute } from './routes/AppearanceRoute'
 import { DimensionsRoute } from './routes/DimensionsRoute'
 import { HeadRoute } from './routes/HeadRoute'
 import { ImageRoute } from './routes/ImageRoute'
+import { PanResponderRoute } from './routes/PanResponderRoute'
 import { PressabilityRoute } from './routes/PressabilityRoute'
 import { PressableRoute } from './routes/PressableRoute'
 import { ScrollViewRoute } from './routes/ScrollViewRoute'
@@ -24,6 +25,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'apis', title: 'Small APIs', Component: ApisRoute },
   { path: 'pressable', title: 'Pressable', Component: PressableRoute },
   { path: 'press', title: 'usePressability', Component: PressabilityRoute },
+  { path: 'pan', title: 'PanResponder', Component: PanResponderRoute },
   { path: 'head', title: 'Head', Component: HeadRoute },
 ]
 
