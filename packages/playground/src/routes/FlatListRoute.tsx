@@ -99,7 +99,7 @@ export function FlatListRoute(): ReactElement {
         data={items.slice(0, 11)}
         numColumns={3}
         columnWrapperStyle={styles.columns}
-        renderItem={({ item, index: i }) => (
+        renderItem={({ index: i }) => (
           <View style={[styles.tile, { backgroundColor: COLORS[i % COLORS.length] }]}>
             <Text>{i}</Text>
           </View>
@@ -112,7 +112,7 @@ export function FlatListRoute(): ReactElement {
         horizontal
         inverted
         data={items.slice(0, 8)}
-        renderItem={({ item, index: i }) => (
+        renderItem={({ index: i }) => (
           <View style={[styles.card, { backgroundColor: COLORS[i % COLORS.length] }]}>
             <Text>{i}</Text>
           </View>

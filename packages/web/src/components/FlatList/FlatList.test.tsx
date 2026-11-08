@@ -43,6 +43,21 @@ const Row = ({ item }: ListRenderItemInfo<Item>): ReactElement => (
 
 const renderRow = (info: ListRenderItemInfo<Item>): ReactElement => <Row {...info} />
 
+const Separator = (): ReactElement => <View data-testid="sep" style={{ height: 2 }} />
+
+const LeadingSeparator = (props: { highlighted: boolean; leadingItem: Item }): ReactElement => (
+  <View
+    data-testid="sep"
+    data-highlighted={props.highlighted}
+    data-leading={props.leadingItem.id}
+  />
+)
+
+const viewableIndices = (fn: ReturnType<typeof vi.fn>): number[] | undefined =>
+  (fn.mock.calls[0]?.[0] as { viewableItems: ViewToken[] } | undefined)?.viewableItems.map(
+    (t) => t.index as number,
+  )
+
 describe('FlatList', () => {
   test('renders every item in a cell inside the ScrollView content', () => {
     const { container } = render(
@@ -72,7 +87,6 @@ describe('FlatList', () => {
   })
 
   test('separators sit after every item but the last', () => {
-    const Separator = (): ReactElement => <View data-testid="sep" style={{ height: 2 }} />
     const { container } = render(
       <FlatList data={items(3)} renderItem={renderRow} ItemSeparatorComponent={Separator} />,
     )
@@ -84,18 +98,11 @@ describe('FlatList', () => {
   })
 
   test('separators.highlight reaches this cell and the one before it', () => {
-    const Separator = (props: { highlighted: boolean; leadingItem: Item }): ReactElement => (
-      <View
-        data-testid="sep"
-        data-highlighted={props.highlighted}
-        data-leading={props.leadingItem.id}
-      />
-    )
     const separatorsOf: ListSeparators[] = []
     const { container } = render(
       <FlatList
         data={items(3)}
-        ItemSeparatorComponent={Separator}
+        ItemSeparatorComponent={LeadingSeparator}
         renderItem={(info) => {
           separatorsOf[info.index] = info.separators
           return <Row {...info} />
@@ -214,7 +221,7 @@ describe('FlatList', () => {
     expect(getComputedStyle(row).flexDirection).toBe('row')
     expect(getComputedStyle(row).gap).toBe('4px')
     expect(row.children).toHaveLength(2)
-    expect((cells[2]?.firstElementChild as HTMLElement).children).toHaveLength(1)
+    expect(cells[2]?.firstElementChild?.children).toHaveLength(1)
     expect(indices).toEqual([0, 1, 2, 3, 4])
   })
 
@@ -390,12 +397,8 @@ describe('FlatList', () => {
       expect(loose).toHaveBeenCalledTimes(1)
       expect(strict).toHaveBeenCalledTimes(1)
     })
-    const indices = (fn: ReturnType<typeof vi.fn>): number[] =>
-      (fn.mock.calls[0]?.[0] as { viewableItems: ViewToken[] }).viewableItems.map(
-        (t) => t.index as number,
-      )
-    expect(indices(loose)).toEqual([0, 1, 2])
-    expect(indices(strict)).toEqual([0, 1])
+    expect(viewableIndices(loose)).toEqual([0, 1, 2])
+    expect(viewableIndices(strict)).toEqual([0, 1])
   })
 
   test('numColumns expands a row into one view token per item', async () => {

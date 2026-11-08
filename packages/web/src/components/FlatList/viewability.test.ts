@@ -7,6 +7,14 @@ import { computeViewableIndices, ViewabilityTracker, type CellMetrics } from './
 const uniform = (index: number): CellMetrics | undefined =>
   index < 10 ? { offset: index * 100, length: 100 } : undefined
 
+// One 1000 px item: it fills any viewport.
+const big = (index: number): CellMetrics | undefined =>
+  index === 0 ? { offset: 0, length: 1000 } : undefined
+
+// The uniform list with item 2 not measured.
+const withoutTwo = (index: number): CellMetrics | undefined =>
+  index === 2 ? undefined : uniform(index)
+
 const token = (index: number, isViewable: boolean): ViewToken<string> => ({
   item: `item-${index}`,
   key: String(index),
@@ -43,8 +51,6 @@ describe('computeViewableIndices', () => {
   })
 
   test('an item that fills the viewport covers the whole view area', () => {
-    const big = (index: number): CellMetrics | undefined =>
-      index === 0 ? { offset: 0, length: 1000 } : undefined
     expect(
       computeViewableIndices(1, big, 200, 300, { viewAreaCoveragePercentThreshold: 100 }),
     ).toEqual([0])
@@ -55,10 +61,8 @@ describe('computeViewableIndices', () => {
   })
 
   test('stops after the visible run and skips unmeasured items', () => {
-    const metrics = (index: number): CellMetrics | undefined =>
-      index === 2 ? undefined : uniform(index)
     expect(
-      computeViewableIndices(10, metrics, 100, 300, { viewAreaCoveragePercentThreshold: 0 }),
+      computeViewableIndices(10, withoutTwo, 100, 300, { viewAreaCoveragePercentThreshold: 0 }),
     ).toEqual([1, 3])
   })
 

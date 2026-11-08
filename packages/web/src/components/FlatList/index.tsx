@@ -106,6 +106,16 @@ type CellProps<ItemT> = {
   onElement: (index: number, node: HTMLElement | null) => void
 }
 
+type CustomScrollerProps = ScrollViewProps & {
+  render: (props: ScrollViewProps) => ReactElement<ScrollViewProps>
+}
+
+// Calls `renderScrollComponent` in a render of its own. A call in the FlatList
+// render would hand it handlers that read refs.
+function CustomScroller({ render, ref, ...props }: CustomScrollerProps): ReactElement {
+  return cloneElement(render(props), { ref }, props.children)
+}
+
 function Cell<ItemT>(props: CellProps<ItemT>): ReactElement {
   const {
     cellKey,
@@ -223,7 +233,7 @@ export function FlatList<ItemT>(props: FlatListProps<ItemT>): ReactElement {
     numColumns = 1,
     columnWrapperStyle,
     inverted,
-    initialScrollIndex,
+    initialScrollIndex: _initialScrollIndex,
     ItemSeparatorComponent,
     ListEmptyComponent,
     ListHeaderComponent,
@@ -639,7 +649,6 @@ export function FlatList<ItemT>(props: FlatListProps<ItemT>): ReactElement {
 
   const scrollProps: ScrollViewProps = {
     ...scrollViewProps,
-    ref: scroller,
     horizontal,
     style: [inversionStyle, style],
     onScroll: handleScroll,
@@ -649,7 +658,7 @@ export function FlatList<ItemT>(props: FlatListProps<ItemT>): ReactElement {
   }
 
   if (renderScrollComponent !== undefined) {
-    return cloneElement(renderScrollComponent(scrollProps), { ref: scroller }, children)
+    return <CustomScroller {...scrollProps} ref={scroller} render={renderScrollComponent} />
   }
-  return <ScrollView {...scrollProps} />
+  return <ScrollView {...scrollProps} ref={scroller} />
 }
