@@ -15,7 +15,16 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Components',
       collapsed: false,
-      items: ['view', 'text', 'image', 'pressable'],
+      items: [
+        'view',
+        'text',
+        'image',
+        'pressable',
+        'scrollview',
+        'flatlist',
+        'textinput',
+        'statusbar',
+      ],
     },
   ],
 }
