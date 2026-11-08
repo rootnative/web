@@ -39,6 +39,25 @@ export { StyleSheet } from './apis/StyleSheet'
 export type { AbsoluteFillStyle, StyleProp } from './apis/StyleSheet'
 export { useColorScheme } from './apis/useColorScheme'
 export { useWindowDimensions } from './apis/useWindowDimensions'
+export { FlatList } from './components/FlatList'
+export type {
+  CellRendererProps,
+  FlatListInstance,
+  FlatListProps,
+  ListRenderItem,
+  ListRenderItemInfo,
+  ListSeparatorComponent,
+  ListSeparatorProps,
+  ListSeparators,
+  ScrollToIndexParams,
+  ScrollToItemParams,
+  ScrollToOffsetParams,
+  ViewabilityConfig,
+  ViewabilityConfigCallbackPair,
+  ViewabilityConfigCallbackPairs,
+  ViewableItemsChangedInfo,
+  ViewToken,
+} from './components/FlatList'
 export { Image } from './components/Image'
 export type {
   ImageErrorEvent,

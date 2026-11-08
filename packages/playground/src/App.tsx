@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import { ApisRoute } from './routes/ApisRoute'
 import { AppearanceRoute } from './routes/AppearanceRoute'
 import { DimensionsRoute } from './routes/DimensionsRoute'
+import { FlatListRoute } from './routes/FlatListRoute'
 import { HeadRoute } from './routes/HeadRoute'
 import { ImageRoute } from './routes/ImageRoute'
 import { PanResponderRoute } from './routes/PanResponderRoute'
@@ -19,6 +20,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'text', title: 'Text', Component: TextRoute },
   { path: 'image', title: 'Image', Component: ImageRoute },
   { path: 'scrollview', title: 'ScrollView', Component: ScrollViewRoute },
+  { path: 'flatlist', title: 'FlatList', Component: FlatListRoute },
   { path: 'textinput', title: 'TextInput', Component: TextInputRoute },
   { path: 'dimensions', title: 'Dimensions', Component: DimensionsRoute },
   { path: 'appearance', title: 'Appearance', Component: AppearanceRoute },
