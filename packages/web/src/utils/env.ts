@@ -11,6 +11,8 @@ const nodeEnv = (): string | undefined =>
 
 export const isTestEnv = (): boolean => nodeEnv() === 'test'
 
+export const isProductionEnv = (): boolean => nodeEnv() === 'production'
+
 export const hasDOM = (): boolean =>
   typeof window !== 'undefined' && typeof document !== 'undefined'
 

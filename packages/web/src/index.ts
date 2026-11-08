@@ -18,6 +18,20 @@ export { StyleSheet } from './apis/StyleSheet'
 export type { AbsoluteFillStyle, StyleProp } from './apis/StyleSheet'
 export { useColorScheme } from './apis/useColorScheme'
 export { useWindowDimensions } from './apis/useWindowDimensions'
+export { Image } from './components/Image'
+export type {
+  ImageErrorEvent,
+  ImageLoadEvent,
+  ImageLoadEventData,
+  ImageProgressEvent,
+  ImageProps,
+  ImageResizeMode,
+  ImageResolvedAssetSource,
+  ImageSize,
+  ImageSource,
+  ImageStatics,
+  ImageURISource,
+} from './components/Image'
 export { Pressable } from './components/Pressable'
 export type {
   PressableAndroidRippleConfig,
