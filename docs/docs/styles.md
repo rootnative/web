@@ -62,6 +62,8 @@ The start and end props map to CSS logical properties, so the browser flips them
 
 `marginHorizontal` and `paddingHorizontal` set the left and right sides, as on native.
 
+`marginLeft`, `paddingLeft`, `left`, and their right partners stay on the physical side in a right-to-left layout. On native they swap by default. Use the start and end props for anything that must follow the direction. See [`I18nManager`](/i18nmanager#left-and-right-styles).
+
 ## Transforms, shadows, and filters
 
 - **`transform`** takes the React Native array, for example `[{ translateX: 10 }, { rotate: '45deg' }]`, or a CSS string. `transformOrigin` works too.
