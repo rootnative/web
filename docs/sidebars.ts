@@ -5,6 +5,12 @@ const sidebars: SidebarsConfig = {
     { type: 'doc', id: 'index', label: 'Introduction' },
     { type: 'doc', id: 'installation', label: 'Installation' },
     { type: 'doc', id: 'status', label: 'Status' },
+    {
+      type: 'category',
+      label: 'Guides',
+      collapsed: false,
+      items: ['semantic-html', 'styles', 'server-rendering', 'seo'],
+    },
   ],
 }
 
