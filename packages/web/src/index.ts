@@ -39,6 +39,17 @@ export type {
   PressableProps,
   PressableStateCallbackType,
 } from './components/Pressable'
+export { ScrollView } from './components/ScrollView'
+export type {
+  NativeScrollEvent,
+  NativeScrollPoint,
+  NativeScrollRectangle,
+  NativeScrollSize,
+  ScrollEvent,
+  ScrollToOptions,
+  ScrollViewInstance,
+  ScrollViewProps,
+} from './components/ScrollView'
 export { Text, TextAncestorContext } from './components/Text'
 export type { PressEvent, TextProps } from './components/Text'
 export { View } from './components/View'
