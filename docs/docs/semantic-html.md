@@ -63,7 +63,7 @@ The table roles (`table`, `row`, `cell`, and the others) also stay on a `<div>` 
 
 ## Links
 
-`href` on a `View` or a `Text` renders an `<a>`. You don't need `role="link"` with it. `target`, `rel`, and `download` pass to the anchor. These four props are web only.
+`href` on a `View` or a `Text` renders an `<a>`. You don't need `role="link"` with it. On a `Text`, `target`, `rel`, and `download` pass to the anchor too. These props are web only.
 
 `role="link"` without `href` keeps the default element and adds `role="link"`.
 
@@ -101,4 +101,4 @@ The React Native accessibility props become ARIA attributes:
 
 `aria-*` props pass through as you write them. An `aria-*` prop wins over the mapped prop with the same meaning.
 
-`data-*`, `lang`, and `dir` pass through too. Any other prop that isn't a React Native prop is dropped, so it never reaches the element.
+`data-*` props pass through too. Any other prop that isn't a React Native prop is dropped, so it never reaches the element.

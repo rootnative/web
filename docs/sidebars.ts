@@ -11,6 +11,12 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: ['semantic-html', 'styles', 'server-rendering', 'seo'],
     },
+    {
+      type: 'category',
+      label: 'Components',
+      collapsed: false,
+      items: ['view', 'text', 'image', 'pressable'],
+    },
   ],
 }
 
