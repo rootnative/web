@@ -127,9 +127,9 @@ A Vite plugin that sets the alias, resolves `.web.tsx` files, and inlines `Platf
 
 ## Supported APIs
 
-**Components:** `View`, `Text`, `Image`, `Pressable`, `ScrollView`, `TextInput`
+**Components:** `View`, `Text`, `Image`, `Pressable`, `ScrollView`, `TextInput`, `StatusBar`
 
-**APIs:** `StyleSheet`, `Platform`, `Dimensions`, `useWindowDimensions`, `Appearance`, `useColorScheme`, `usePressability`
+**APIs:** `StyleSheet`, `Platform`, `Dimensions`, `useWindowDimensions`, `Appearance`, `useColorScheme`, `AccessibilityInfo`, `I18nManager`, `BackHandler`, `PixelRatio`, `processColor`, `usePressability`
 
 **Web layer:** `Head`
 
@@ -190,6 +190,13 @@ Notes on the web behavior of shipped props:
 | `TextInput` events                                                            | `nativeEvent` is the DOM event with `text`, `eventCount`, `key`, `selection`, or `contentSize` added. `nativeEvent.target` is the element, not a node handle. `onEndEditing` fires on blur.                                                                                                                            |
 | `TextInput` ref                                                               | The element, with `clear()`, `isFocused()`, `getNativeRef()`, and `setNativeProps({ text })`. `TextInput.State` has `currentlyFocusedInput`, `focusTextInput`, `blurTextInput`.                                                                                                                                        |
 | `TextInput` native-only props                                                 | `clearButtonMode`, `keyboardAppearance`, `textAlignVertical`, `underlineColorAndroid`, `passwordRules`, and the other iOS and Android props are accepted and ignored.                                                                                                                                                  |
+| `I18nManager.isRTL`                                                           | The document direction (`dir` or CSS `direction` on `<html>`), read live. `forceRTL()` sets `dir` on `<html>` at once, not after a restart. `localeIdentifier` is `navigator.language`.                                                                                                                                |
+| `AccessibilityInfo`                                                           | Reduce motion, reduce transparency, inverted colors, and contrast come from media queries, live and with change events. Screen reader, bold text, and grayscale are unknown to a browser and report `false`; their events never fire.                                                                                  |
+| `AccessibilityInfo.announceForAccessibility()`                                | Writes to one hidden `aria-live` region (`polite`, or `assertive` with `queue: false`). `announcementFinished` fires on the next frame.                                                                                                                                                                                |
+| `BackHandler`                                                                 | Handlers register and remove, but never fire: the browser has no hardware back button, and the history belongs to the router. `exitApp()` does nothing.                                                                                                                                                                |
+| `PixelRatio`                                                                  | `get()` is `devicePixelRatio`; `getFontScale()` is the root font size over 16.                                                                                                                                                                                                                                         |
+| `processColor()`                                                              | An unsigned 32-bit ARGB integer, as on iOS.                                                                                                                                                                                                                                                                            |
+| `StatusBar`                                                                   | `backgroundColor` writes the `theme-color` meta, which mobile browsers paint around the page. The last mounted `StatusBar` wins, and unmount restores. `barStyle`, `hidden`, `translucent` have no web effect. `currentHeight` is `null`.                                                                              |
 
 ## Not supported
 

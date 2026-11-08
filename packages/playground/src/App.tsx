@@ -1,6 +1,7 @@
 import { useSyncExternalStore, type ReactElement } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
+import { ApisRoute } from './routes/ApisRoute'
 import { AppearanceRoute } from './routes/AppearanceRoute'
 import { DimensionsRoute } from './routes/DimensionsRoute'
 import { HeadRoute } from './routes/HeadRoute'
@@ -20,6 +21,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'textinput', title: 'TextInput', Component: TextInputRoute },
   { path: 'dimensions', title: 'Dimensions', Component: DimensionsRoute },
   { path: 'appearance', title: 'Appearance', Component: AppearanceRoute },
+  { path: 'apis', title: 'Small APIs', Component: ApisRoute },
   { path: 'pressable', title: 'Pressable', Component: PressableRoute },
   { path: 'press', title: 'usePressability', Component: PressabilityRoute },
   { path: 'head', title: 'Head', Component: HeadRoute },

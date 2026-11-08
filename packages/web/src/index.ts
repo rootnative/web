@@ -1,3 +1,10 @@
+export { AccessibilityInfo } from './apis/AccessibilityInfo'
+export type {
+  AccessibilityAnnouncementFinishedEvent,
+  AccessibilityChangeEvent,
+  AccessibilityChangeEventName,
+  AccessibilityEventSubscription,
+} from './apis/AccessibilityInfo'
 export { Appearance } from './apis/Appearance'
 export type {
   AppearanceListener,
@@ -5,6 +12,8 @@ export type {
   ColorSchemeName,
   NativeEventSubscription,
 } from './apis/Appearance'
+export { BackHandler } from './apis/BackHandler'
+export type { BackHandlerSubscription, BackPressHandler } from './apis/BackHandler'
 export { Dimensions } from './apis/Dimensions'
 export type {
   DimensionsChangeHandler,
@@ -12,8 +21,13 @@ export type {
   EmitterSubscription,
   ScaledSize,
 } from './apis/Dimensions'
+export { I18nManager } from './apis/I18nManager'
+export type { I18nManagerConstants } from './apis/I18nManager'
+export { PixelRatio } from './apis/PixelRatio'
 export { Platform } from './apis/Platform'
 export type { PlatformOSType, PlatformSelectSpec, PlatformType } from './apis/Platform'
+export { processColor } from './apis/processColor'
+export type { ProcessedColorValue } from './apis/processColor'
 export { StyleSheet } from './apis/StyleSheet'
 export type { AbsoluteFillStyle, StyleProp } from './apis/StyleSheet'
 export { useColorScheme } from './apis/useColorScheme'
@@ -50,6 +64,13 @@ export type {
   ScrollViewInstance,
   ScrollViewProps,
 } from './components/ScrollView'
+export { StatusBar } from './components/StatusBar'
+export type {
+  StatusBarAnimation,
+  StatusBarProps,
+  StatusBarStatics,
+  StatusBarStyle,
+} from './components/StatusBar'
 export { Text, TextAncestorContext } from './components/Text'
 export type { PressEvent, TextProps } from './components/Text'
 export { TextInput } from './components/TextInput'
