@@ -3,16 +3,31 @@
   "version": "0.0.0",
   "description": "A standalone web runtime for React Native apps",
   "license": "MIT",
+  "homepage": "https://rootnative.github.io/web/",
   "repository": {
     "type": "git",
     "url": "https://github.com/rootnative/web.git",
     "directory": "packages/web"
   },
+  "bugs": {
+    "url": "https://github.com/rootnative/web/issues"
+  },
+  "keywords": [
+    "react-native",
+    "react",
+    "web",
+    "dom",
+    "server-rendering",
+    "ssr",
+    "seo",
+    "semantic-html"
+  ],
   "type": "module",
   "sideEffects": false,
   "files": [
     "dist",
-    "llms.txt"
+    "llms.txt",
+    "LICENSE"
   ],
   "exports": {
     ".": "./dist/index.js",
@@ -23,6 +38,7 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
+    "prepack": "tsdown",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -45,5 +61,8 @@
     "tsdown": "0.23.4",
     "vite": "8.3.5",
     "vitest": "5.0.5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
