@@ -47,6 +47,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The site serves the llms files, so a stale one must not go live.
+      - name: Check the llms files
+        run: pnpm check:llms
+
       # The pages show the package in code blocks only, so the package
       # doesn't need a build first.
       - name: Build docs

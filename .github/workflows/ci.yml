@@ -32,6 +32,8 @@ jobs:
 
       - run: pnpm format:check
 
+      - run: pnpm check:llms
+
       - run: pnpm typecheck
 
       - run: pnpm build

@@ -11,7 +11,8 @@
   "type": "module",
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "llms.txt"
   ],
   "exports": {
     ".": "./dist/index.js",

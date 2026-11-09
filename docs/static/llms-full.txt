@@ -1,0 +1,1348 @@
+# Root Native Web: full documentation
+
+> Every page of the docs site, in sidebar order. scripts/build-llms.mjs generates this file
+> from docs/docs. Don't edit it by hand.
+
+Docs: https://rootnative.github.io/web/
+Source: https://github.com/rootnative/web
+
+---
+
+# Root Native Web
+
+`@rootnative/web` is a standalone web runtime for React Native apps. You write `react-native`. It runs in the browser as a real web app.
+
+> **WARNING: Early alpha**
+>
+> The API can still change between releases. Each page lists what ships today and what doesn't.
+
+## Why
+
+[react-native-web](https://github.com/necolas/react-native-web) tracks React Native and stops there. This project starts from the browser and asks a different question: what does a React Native app need to be a good web app?
+
+- **Parity first.** Every `react-native` export that ships behaves as it does on iOS and Android.
+- **Web second, behind the same API.** Semantic HTML, SEO, server rendering, DOM events, logical CSS properties, and the browser features that native doesn't have.
+- **Modern only.** TypeScript, ESM, React 19. No Flow, no CommonJS, no `findDOMNode`, no `forwardRef`.
+
+## How it works
+
+Your app imports `react-native`. A bundler alias maps that name to `@rootnative/web`. The package has three entry points:
+
+| Layer  | Import                   | What's in it                                                    |
+| ------ | ------------------------ | --------------------------------------------------------------- |
+| Parity | `@rootnative/web`        | The React Native components and APIs                            |
+| Web    | `@rootnative/web/dom`    | Browser features that native doesn't have, for example `<Head>` |
+| Server | `@rootnative/web/server` | Server rendering helpers                                        |
+
+Import `@rootnative/web/dom` and `@rootnative/web/server` only in code that runs on the web. The rest of your app stays the same code that runs on iOS and Android.
+
+## Next steps
+
+- [Installation](https://rootnative.github.io/web/installation): set up a Vite app in four steps.
+- [Status](https://rootnative.github.io/web/status): what ships today, what's planned, and how it's tested.
+
+---
+
+# Installation
+
+You need React 19, React DOM 19, and a bundler that can alias a package name. This page uses Vite.
+
+## Install the package
+
+```bash
+npm install @rootnative/web
+```
+
+React and React DOM are peer dependencies. A Vite React app has them already.
+
+## Point `react-native` at the package
+
+Your app imports `react-native`. Add an alias in `vite.config.ts`, so that the name resolves to `@rootnative/web`:
+
+```ts title="vite.config.ts"
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: { 'react-native': '@rootnative/web' },
+  },
+})
+```
+
+## Add the types
+
+TypeScript needs the same mapping. Add a declaration file to a folder that your `tsconfig.json` includes, for example `src/`:
+
+```ts title="src/react-native.d.ts"
+declare module 'react-native' {
+  export * from '@rootnative/web'
+}
+```
+
+Keep this file free of top-level `import` and `export` lines. With one, the declaration stops working, and TypeScript reports `Cannot find module 'react-native'`.
+
+## Mount your app
+
+A React Native app expects a root view that fills the screen. Give the page a full-height root element that lays out its child as flex:
+
+```html title="index.html"
+<style>
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+  }
+  #root {
+    display: flex;
+    flex-direction: column;
+  }
+</style>
+<div id="root"></div>
+```
+
+Then render your app into it with React DOM:
+
+```tsx title="src/main.tsx"
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+
+import { App } from './App'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+```
+
+Now `flex: 1` on your root view fills the window, as it does on iOS and Android:
+
+```tsx title="src/App.tsx"
+import { StyleSheet, Text, View } from 'react-native'
+
+export function App() {
+  return (
+    <View style={styles.screen}>
+      <Text style={styles.title}>Hello from React Native</Text>
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 24 },
+})
+```
+
+## Browser support
+
+The package targets Chrome 95, Edge 95, Firefox 93, Safari 15.1, and iOS Safari 15.1. Where an older browser lacks a feature, the package uses a fallback.
+
+See [Status](https://rootnative.github.io/web/status) for what ships today and how it's tested.
+
+---
+
+# Status
+
+`@rootnative/web` is in early alpha. The API can change between alpha releases. This page lists what exists, so nothing on this site reads as a promise.
+
+## What ships today
+
+| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                                                                                                                                                                                                                           |
+| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
+| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                           |
+| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                       |
+
+`FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now.
+
+## Planned, not written
+
+**Don't import these yet.** They aren't in the package.
+
+- **Components:** `Button`, `ActivityIndicator`, `Switch`, `RefreshControl`, `Modal`, `TouchableOpacity`, `TouchableHighlight`, `TouchableWithoutFeedback`, `TouchableNativeFeedback`.
+- **Text press events:** `onPressIn`, `onPressOut`, and `onLongPress` on `Text`. `onPress` works today.
+- **APIs:** `Alert`, `AppState`, `Linking`, `Share`, `Vibration`, `Clipboard`.
+- **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
+- **Tooling:** a Vite plugin that sets the `react-native` alias, resolves `.web.tsx` files, and inlines `Platform.OS`. Until then, use the alias on [Installation](https://rootnative.github.io/web/installation).
+
+## Out of scope
+
+- The `react-native-web` internals and file layout.
+- Expo and Metro. A Metro plugin isn't planned for 1.0.
+- React 18, CommonJS, and Flow.
+- Props that React Native doesn't have, except a small web-only set. Each page marks a web-only prop.
+
+## How it's tested
+
+Every component and API has tests. They run in a real Chromium browser through Vitest browser mode, not in a simulated DOM.
+
+Firefox and Safari aren't in the test run yet.
+
+---
+
+# Semantic HTML
+
+The `role` prop picks the HTML element. You don't need a web-only component or a web-only prop.
+
+```tsx
+<View role="main">
+  <View role="navigation" />
+  <Text role="heading" aria-level={1}>
+    Title
+  </Text>
+  <View role="list">
+    <View role="listitem">
+      <Text>One</Text>
+    </View>
+  </View>
+  <Text href="/about" role="link">
+    About
+  </Text>
+</View>
+```
+
+```html
+<main>
+  <nav></nav>
+  <h1>Title</h1>
+  <ul>
+    <li><span>One</span></li>
+  </ul>
+  <a href="/about">About</a>
+</main>
+```
+
+Screen readers, search engines, and browser features such as reader mode get the same structure that native accessibility tools get.
+
+## Roles that pick an element
+
+| `role`             | Element                                                       |
+| ------------------ | ------------------------------------------------------------- |
+| `article`          | `<article>`                                                   |
+| `banner`           | `<header>`                                                    |
+| `button`           | `<button type="button">`, so it never submits a form          |
+| `complementary`    | `<aside>`                                                     |
+| `contentinfo`      | `<footer>`                                                    |
+| `figure`           | `<figure>`                                                    |
+| `form`             | `<form>`                                                      |
+| `heading`          | `<h1>` to `<h6>`, from `aria-level`. The default level is 2.  |
+| `link` with `href` | `<a>`                                                         |
+| `list`             | `<ul>`                                                        |
+| `listitem`         | `<li>`                                                        |
+| `main`             | `<main>`                                                      |
+| `navigation`       | `<nav>`                                                       |
+| `separator`        | `<hr>`. A separator with children is a `<div>` with the role. |
+
+Every other role keeps the default element, `<div>` for `View` and `<span>` for `Text`, with a `role` attribute.
+
+The table roles (`table`, `row`, `cell`, and the others) also stay on a `<div>` with the ARIA role. A real `<table>` would let the HTML parser move elements around, so the server HTML wouldn't match the React tree, and flex layout wouldn't apply.
+
+## Links
+
+`href` on a `View` or a `Text` renders an `<a>`. You don't need `role="link"` with it. On a `Text`, `target`, `rel`, and `download` pass to the anchor too. These props are web only.
+
+`role="link"` without `href` keeps the default element and adds `role="link"`.
+
+## `accessibilityRole`
+
+`accessibilityRole` works too. When you set both, `role` wins. The older names map to their ARIA roles:
+
+| `accessibilityRole`   | Role        |
+| --------------------- | ----------- |
+| `header`              | `heading`   |
+| `image`               | `img`       |
+| `imagebutton`         | `button`    |
+| `summary`             | `region`    |
+| `adjustable`          | `slider`    |
+| `search`              | `searchbox` |
+| `text`, `keyboardkey` | `none`      |
+
+## Accessibility props
+
+The React Native accessibility props become ARIA attributes:
+
+| Prop                                                                             | Attribute                                                                      |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `accessibilityLabel`                                                             | `aria-label`                                                                   |
+| `accessibilityLabelledBy`                                                        | `aria-labelledby`. An array joins with spaces.                                 |
+| `accessibilityHint`                                                              | `aria-description`                                                             |
+| `accessibilityLiveRegion`                                                        | `aria-live`. `none` is `off`.                                                  |
+| `accessibilityState`                                                             | `aria-busy`, `aria-checked`, `aria-disabled`, `aria-expanded`, `aria-selected` |
+| `accessibilityValue`                                                             | `aria-valuemin`, `aria-valuemax`, `aria-valuenow`, `aria-valuetext`            |
+| `accessibilityViewIsModal`                                                       | `aria-modal`                                                                   |
+| `accessibilityElementsHidden`, `importantForAccessibility="no-hide-descendants"` | `aria-hidden`                                                                  |
+| `nativeID`, `id`                                                                 | `id`                                                                           |
+| `testID`                                                                         | `data-testid`                                                                  |
+| `focusable`                                                                      | `tabIndex` 0, or -1 for `false`. `tabIndex` wins when you set both.            |
+
+`aria-*` props pass through as you write them. An `aria-*` prop wins over the mapped prop with the same meaning.
+
+`data-*` props pass through too. Any other prop that isn't a React Native prop is dropped, so it never reaches the element.
+
+---
+
+# Styles
+
+You style with the `style` prop and `StyleSheet.create`, as on native. At runtime, each declaration becomes one atomic CSS class, and every element with the same declaration shares that class.
+
+```tsx
+const styles = StyleSheet.create({
+  card: { padding: 16, borderRadius: 12, backgroundColor: '#fff' },
+})
+```
+
+Prefer `StyleSheet.create` for static styles. Its objects are frozen, so their class names compile once. An inline style object compiles again on each render.
+
+## Defaults
+
+Every `View` starts with the React Native defaults: `display: flex`, `flexDirection: 'column'`, `alignItems: 'stretch'`, `flexShrink: 0`, `position: 'relative'`, and a border box.
+
+Every `Text` starts at 14 px, black, in the system font, and keeps its spaces and line breaks.
+
+## Values
+
+- **Numbers get `px`.** `padding: 16` is `16px`, and `lineHeight: 20` is `20px`, as on native. `flex`, `flexGrow`, `flexShrink`, `opacity`, `zIndex`, `aspectRatio`, and `fontWeight` stay unitless.
+- **Strings pass through.** `'50%'` and `'auto'` work as they do on native.
+- **Colors use the React Native parser.** Named colors, hex, `rgb()`, `hsl()`, and `hwb()` all work. A color that React Native can't parse is dropped.
+
+## Flex
+
+`flex` follows the React Native rules, not the CSS ones:
+
+| Value      | CSS        | Meaning                                        |
+| ---------- | ---------- | ---------------------------------------------- |
+| `flex: 1`  | `1 1 0%`   | Grow and shrink, from a size of 0              |
+| `flex: 0`  | `0 0 auto` | Keep the size of the content                   |
+| `flex: -1` | `0 1 auto` | Keep the size of the content, shrink if needed |
+
+`gap`, `inset`, `display: 'contents'`, and `position: 'static'` pass through to CSS.
+
+## Shorthands and longhands
+
+A longhand always wins over a shorthand, whatever the key order, as on native:
+
+```tsx
+// The top padding is 16. The other three sides are 8.
+const styles = StyleSheet.create({ box: { paddingTop: 16, padding: 8 } })
+```
+
+## Right-to-left
+
+The start and end props map to CSS logical properties, so the browser flips them when the page direction is right-to-left:
+
+| Prop                                                                                             | CSS                                        |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------ |
+| `marginStart`, `marginEnd`, `paddingStart`, `paddingEnd`                                         | `margin-inline-start` and the others       |
+| `start`, `end`                                                                                   | `inset-inline-start`, `inset-inline-end`   |
+| `borderStartWidth`, `borderEndWidth`, `borderStartColor`, `borderEndColor`                       | `border-inline-start-width` and the others |
+| `borderTopStartRadius`, `borderTopEndRadius`, `borderBottomStartRadius`, `borderBottomEndRadius` | `border-start-start-radius` and the others |
+
+`marginHorizontal` and `paddingHorizontal` set the left and right sides, as on native.
+
+`marginLeft`, `paddingLeft`, `left`, and their right partners stay on the physical side in a right-to-left layout. On native they swap by default. Use the start and end props for anything that must follow the direction. See [`I18nManager`](https://rootnative.github.io/web/i18nmanager#left-and-right-styles).
+
+## Transforms, shadows, and filters
+
+- **`transform`** takes the React Native array, for example `[{ translateX: 10 }, { rotate: '45deg' }]`, or a CSS string. `transformOrigin` works too.
+- **`boxShadow`** takes the React Native object array or a CSS string.
+- **`shadowColor`, `shadowOffset`, `shadowOpacity`, `shadowRadius`** become a `box-shadow` when you don't set `boxShadow`.
+- **`textShadowColor`, `textShadowOffset`, `textShadowRadius`** become a `text-shadow`.
+- **`filter`** takes the React Native array, for example `[{ blur: 4 }]`, or a CSS string.
+
+## Fonts
+
+- `fontFamily: 'System'` is the system font stack of the browser.
+- The named weights (`'thin'`, `'light'`, `'medium'`, `'semibold'`, `'heavy'`, `'black'`, and the others) become their numbers.
+- `fontVariant` takes the React Native array.
+
+## Native-only style props
+
+`elevation`, `borderCurve`, `includeFontPadding`, and `overlayColor` have no web effect. The package accepts them and ignores them.
+
+---
+
+# Server rendering
+
+The server renders your app to HTML with React DOM. A style registry collects the CSS of that render, and you write it into `<head>`. The browser then hydrates the same app.
+
+## On the server
+
+Render the whole document with React, not only the app:
+
+```tsx title="server.tsx"
+import { renderToString } from 'react-dom/server'
+import { createStyleRegistry, StyleRegistryProvider, styleTagsHTML } from '@rootnative/web/server'
+
+import { App } from './App'
+
+export function renderPage(): string {
+  const registry = createStyleRegistry()
+  const html = renderToString(
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body>
+        <div id="root">
+          <StyleRegistryProvider registry={registry}>
+            <App />
+          </StyleRegistryProvider>
+        </div>
+        <script type="module" src="/client.js" />
+      </body>
+    </html>,
+  )
+  return `<!doctype html>${html.replace('</head>', `${styleTagsHTML(registry)}</head>`)}`
+}
+```
+
+The script path depends on your bundler. Put the root CSS from [Installation](https://rootnative.github.io/web/installation#mount-your-app) in the head too.
+
+Three rules:
+
+- **One registry per request.** A shared registry mixes the CSS of two requests.
+- **Write the style tags after the render ends.** The registry fills while React renders. A head that you send before the body renders misses the CSS of that body.
+- **Render the `<head>` with React.** React 19 puts the `<title>` and `<meta>` elements of [`Head`](https://rootnative.github.io/web/seo) into the `<head>` that it renders. If you render only the app and paste it into a template, they land at the start of `<body>`.
+
+Your server code needs the `react-native` alias too, so that `App` and its imports resolve to `@rootnative/web`.
+
+`renderStyleTags(registry)` returns the same two `<style>` elements as React elements. Use it when your framework takes head elements, not a string.
+
+## In the browser
+
+Hydrate the same app into the same element:
+
+```tsx title="client.tsx"
+import { hydrateRoot } from 'react-dom/client'
+
+import { App } from './App'
+
+hydrateRoot(document.getElementById('root')!, <App />)
+```
+
+The client needs no provider. It finds the two `<style>` elements by their id and adopts their rules, so it inserts no rule twice.
+
+## Values that differ on the server
+
+The server doesn't know the window or the user's settings. Two hooks return a fixed value on the server and during hydration, so the first client render matches the server HTML. The real value arrives right after hydration.
+
+| Hook                    | On the server and during hydration                |
+| ----------------------- | ------------------------------------------------- |
+| `useWindowDimensions()` | `{ width: 0, height: 0, scale: 1, fontScale: 1 }` |
+| `useColorScheme()`      | `'light'`                                         |
+
+In render, use these hooks, not `Dimensions.get()` or `Appearance.getColorScheme()`. The two getters return the fixed value on the server but the real value in the browser at once, so a render that reads them doesn't match the server HTML.
+
+A layout that depends on the window width renders its zero-width branch first. Use flex and percentages for the first paint, and refine after hydration.
+
+---
+
+# SEO
+
+`Head` sets the title and the meta tags of a page. React 19 moves them into `<head>`, on the server and in the browser.
+
+```tsx
+import { Head } from '@rootnative/web/dom'
+
+export function ArticleScreen() {
+  return (
+    <View role="main">
+      <Head
+        title="Page title"
+        description="What the page is about"
+        canonical="https://example.com/page"
+        openGraph={{ title: 'Page title', image: 'https://example.com/og.png' }}
+        jsonLd={{ '@context': 'https://schema.org', '@type': 'WebPage', name: 'Page title' }}
+      />
+      {/* The page */}
+    </View>
+  )
+}
+```
+
+`Head` is in the web layer. Import it only in code that runs on the web.
+
+## Props
+
+| Prop          | Renders                                                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| `title`       | `<title>`                                                                                               |
+| `description` | `<meta name="description">`                                                                             |
+| `canonical`   | `<link rel="canonical">`                                                                                |
+| `robots`      | `<meta name="robots">`, for example `"noindex"`                                                         |
+| `themeColor`  | `<meta name="theme-color">`                                                                             |
+| `openGraph`   | One `<meta property="og:…">` for each of `title`, `description`, `image`, `url`, `type`, and `siteName` |
+| `jsonLd`      | `<script type="application/ld+json">`, from one schema.org object or an array of them                   |
+| `children`    | Extra `<meta>`, `<link>`, and `<title>` elements                                                        |
+
+Use `children` for a tag that has no prop, for example a Twitter card:
+
+```tsx
+<Head title="Page title">
+  <meta name="twitter:card" content="summary_large_image" />
+</Head>
+```
+
+## Rules
+
+- **Use one `Head` per page.** React doesn't merge two of them.
+- **A `Head` leaves with its screen.** Its elements go away when it unmounts, so the next screen's `Head` starts clean.
+- **The JSON-LD script stays where `Head` renders,** in the body. Search engines read JSON-LD there too. A `<` in the data is escaped, so a string can't close the script.
+- **Set the theme color in one place.** `themeColor` and the `backgroundColor` of `StatusBar` write the same meta tag.
+- **On the server, render the `<head>` with React,** so the tags land in it. See [Server rendering](https://rootnative.github.io/web/server-rendering).
+
+---
+
+# `View`
+
+The basic container. It renders a `<div>`, or the element that its [`role`](https://rootnative.github.io/web/semantic-html) picks, with the React Native layout defaults.
+
+```tsx
+import { StyleSheet, View } from 'react-native'
+
+export function Toolbar({ children }) {
+  return (
+    <View role="navigation" style={styles.toolbar}>
+      {children}
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  toolbar: { flexDirection: 'row', gap: 8, padding: 12 },
+})
+```
+
+## Props
+
+| Prop                                                   | On the web                                                                                                                                                      |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `style`                                                | Compiles to atomic CSS. See [Styles](https://rootnative.github.io/web/styles).                                                                                                                  |
+| `role`, `accessibilityRole`                            | Picks the element. See [Semantic HTML](https://rootnative.github.io/web/semantic-html).                                                                                                         |
+| `accessibilityLabel` and the other accessibility props | Become ARIA attributes. See [Accessibility props](https://rootnative.github.io/web/semantic-html#accessibility-props).                                                                          |
+| `onLayout`                                             | Fires after mount and after each size change, from a `ResizeObserver`. `x` and `y` are relative to the parent view. A move with no size change doesn't fire it. |
+| `pointerEvents`                                        | `none`, `auto`, `box-none`, and `box-only`, as on native.                                                                                                       |
+| `focusable`, `tabIndex`                                | `focusable` sets `tabIndex` to 0, or to -1 for `false`. `tabIndex` wins when you set both.                                                                      |
+| `nativeID`, `id`, `testID`                             | `id`, `id`, and `data-testid`.                                                                                                                                  |
+| `href`                                                 | **Web only.** Renders an `<a>`.                                                                                                                                 |
+| `aria-level`                                           | **Web only.** The heading level of `role="heading"`, 1 to 6.                                                                                                    |
+| `onClick`, `onKeyDown`, and the other DOM handlers     | **Web only.** Every React DOM event handler passes to the element.                                                                                              |
+| `collapsable`, `accessible`                            | Accepted and ignored.                                                                                                                                           |
+
+Any other prop that isn't a React Native prop is dropped.
+
+## Ref
+
+The ref is the DOM element. The native methods `measure`, `measureInWindow`, `measureLayout`, and `setNativeProps` aren't there. Use `onLayout`, or call `getBoundingClientRect()` on the element.
+
+---
+
+# `Text`
+
+Renders text in a `<span>`, or the element that its [`role`](https://rootnative.github.io/web/semantic-html) picks.
+
+```tsx
+import { Text } from 'react-native'
+
+export function Byline({ author }) {
+  return (
+    <Text numberOfLines={1}>
+      By <Text style={{ fontWeight: 'bold' }}>{author}</Text>
+    </Text>
+  )
+}
+```
+
+A `Text` starts at 14 px, black, in the system font, and keeps its spaces and line breaks, as on native. A `Text` inside a `Text` takes the font, color, alignment, and decoration of its parent.
+
+## Props
+
+| Prop                                 | On the web                                                                                                             |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `style`                              | Compiles to atomic CSS. See [Styles](https://rootnative.github.io/web/styles).                                                                         |
+| `numberOfLines`                      | `1` keeps the text on one line and ends it with an ellipsis. A larger number clamps the text to that many lines.       |
+| `ellipsizeMode`                      | `tail` (the default) and `clip`. `head` and `middle` show the ellipsis at the end for now.                             |
+| `selectable`                         | The text is selectable by default, as web users expect. On native the default is `false`. `false` turns selection off. |
+| `selectionColor`                     | The background color of selected text.                                                                                 |
+| `onPress`                            | A click. It gets the DOM click event.                                                                                  |
+| `disabled`                           | Sets `aria-disabled`, and `onPress` doesn't fire.                                                                      |
+| `role`, accessibility props          | See [Semantic HTML](https://rootnative.github.io/web/semantic-html).                                                                                   |
+| `onLayout`, `pointerEvents`          | As on [`View`](https://rootnative.github.io/web/view).                                                                                                 |
+| `nativeID`, `id`, `testID`           | `id`, `id`, and `data-testid`.                                                                                         |
+| `href`                               | **Web only.** Renders an `<a>`.                                                                                        |
+| `target`, `rel`, `download`          | **Web only.** Pass to the anchor.                                                                                      |
+| `lang`                               | **Web only.** The language of the text, for screen readers and hyphenation.                                            |
+| `aria-level`                         | **Web only.** The heading level of `role="heading"`, 1 to 6.                                                           |
+| `onClick` and the other DOM handlers | **Web only.** Pass to the element. `onClick` runs before `onPress`, and `preventDefault()` in it stops `onPress`.      |
+
+`onPressIn`, `onPressOut`, and `onLongPress` aren't on `Text` yet.
+
+> **TIP: Make a pressable text reachable by keyboard**
+>
+> A `Text` with `onPress` is a `<span>`, and a keyboard can't focus it. To go to a page, give it an `href`. For an action, wrap it in a [`Pressable`](https://rootnative.github.io/web/pressable) with `role="button"`.
+
+## Ref
+
+The ref is the DOM element.
+
+---
+
+# `Image`
+
+Shows an image. It renders a box (a `<div>`) with an `<img>` inside. The style sizes the box, and `resizeMode` fits the image in it.
+
+```tsx
+import { Image } from 'react-native'
+
+export function Avatar({ url }) {
+  return (
+    <Image
+      source={{ uri: url }}
+      style={{ width: 48, height: 48, borderRadius: 24 }}
+      accessibilityLabel="Profile photo"
+    />
+  )
+}
+```
+
+With no size in the style and no `width` and `height` in the source, the image is 0 × 0, as on native. The box clips the image to its border radius.
+
+## Sources
+
+| `source`                             | On the web                                                                                                                          |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `{ uri }`                            | The `src` of the `<img>`. A `width` and `height` in the source size the box when the style doesn't.                                 |
+| An array with `scale` on each entry  | A `srcset` with `x` descriptors. The browser picks the entry for the pixel density of the screen.                                   |
+| An array with `width` on each entry  | A `srcset` with `w` descriptors. `sizes` is the style width, or `100vw` when the style has none. The browser picks by layout width. |
+| An array with mixed entries          | The first entry, as on Android.                                                                                                     |
+| `{ uri, headers }`, `method`, `body` | A `fetch` with the headers, the method, and the body. The `<img>` shows the result.                                                 |
+| A string                             | **Web only.** A URL, for example the one that your bundler gives for an imported image file.                                        |
+| A number                             | A Metro asset id from `require('./image.png')`. It has no meaning on the web, so the image warns once and loads nothing.            |
+
+To use a local image, import it and pass the URL:
+
+```tsx
+import { Image } from 'react-native'
+
+import logo from './logo.png'
+
+export function Logo() {
+  return <Image source={logo} style={{ width: 120, height: 40 }} />
+}
+```
+
+The `src` and `srcSet` props work too, as on native.
+
+## Props
+
+| Prop                                                                                    | On the web                                                                                                               |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `resizeMode`                                                                            | `cover` (the default), `contain`, `stretch`, `center`, and `repeat`. `resizeMode` and `objectFit` in the style work too. |
+| `tintColor`                                                                             | Paints the color through the shape of the image. The box then carries `role="img"` and the label.                        |
+| `blurRadius`                                                                            | A CSS blur.                                                                                                              |
+| `defaultSource`                                                                         | Shows until the source loads.                                                                                            |
+| `alt`, `accessibilityLabel`                                                             | The text alternative of the image.                                                                                       |
+| `onLoadStart`, `onLoad`, `onLoadEnd`, `onError`                                         | As on native. `onLoad` gets `nativeEvent.source` with the `uri`, `width`, and `height`.                                  |
+| `onProgress`                                                                            | Never fires. The browser doesn't report progress for an image.                                                           |
+| `crossOrigin`, `referrerPolicy`                                                         | Pass to the `<img>`.                                                                                                     |
+| `width`, `height`                                                                       | Size the box when the style doesn't.                                                                                     |
+| `loading`, `fetchPriority`, `decoding`                                                  | **Web only.** The loading hints of the `<img>`.                                                                          |
+| `onLayout`, accessibility props, `nativeID`, `testID`                                   | As on [`View`](https://rootnative.github.io/web/view).                                                                                                   |
+| `resizeMethod`, `fadeDuration`, `progressiveRenderingEnabled`, `loadingIndicatorSource` | Native only. Accepted and ignored.                                                                                       |
+
+With `resizeMode="repeat"` or a `tintColor`, the box paints the image as a CSS background or mask. The `<img>` stays in the box, hidden, so that the load events still fire.
+
+## Statics
+
+| Method                                   | On the web                                                                                            |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `Image.getSize(uri)`                     | Loads the image and gives its size. It returns a promise, or calls the success and failure callbacks. |
+| `Image.getSizeWithHeaders(uri, headers)` | The same, with a `fetch` that sends the headers.                                                      |
+| `Image.prefetch(url)`                    | Loads the image into the browser cache. Resolves `true`.                                              |
+| `Image.queryCache(urls)`                 | Resolves `{}`. The browser doesn't show its cache to a page.                                          |
+| `Image.resolveAssetSource(source)`       | `{ uri, width, height, scale }` of the source, or `null` for a number.                                |
+
+`getSize` needs a browser. On the server it rejects.
+
+## Ref
+
+The ref is the box element.
+
+---
+
+# `Pressable`
+
+Detects a press, a long press, hover, and focus. It works with a mouse, a pen, touch, and the keyboard, with the press timing of React Native.
+
+```tsx
+import { Pressable, StyleSheet, Text } from 'react-native'
+
+export function SaveButton({ onSave }) {
+  return (
+    <Pressable
+      role="button"
+      onPress={onSave}
+      style={({ pressed, hovered, focused }) => [
+        styles.button,
+        hovered && styles.hovered,
+        pressed && styles.pressed,
+        focused && styles.focusRing,
+      ]}
+    >
+      <Text>Save</Text>
+    </Pressable>
+  )
+}
+
+const styles = StyleSheet.create({
+  button: { padding: 12, borderRadius: 8, backgroundColor: '#e5e7eb' },
+  hovered: { backgroundColor: '#d1d5db' },
+  pressed: { backgroundColor: '#9ca3af' },
+  focusRing: { outlineWidth: 2, outlineStyle: 'solid', outlineColor: '#2563eb' },
+})
+```
+
+Give an action `role="button"`. It renders a `<button type="button">`, so screen readers announce a button and the browser handles the keyboard. Without a role, `Pressable` renders a focusable `<div>`.
+
+## How a press works
+
+- **Mouse, pen, or touch.** The primary button only. `onPressIn` fires on the pointer down, and `onPress` fires when you release inside the press area. The press area is the element, plus `hitSlop`, plus `pressRetentionOffset`.
+- **Keyboard.** Enter or Space, while the `Pressable` has focus. `onPressIn` fires on key down, and `onPress` on key up. Space doesn't scroll the page. With `role="button"`, the browser handles the key, and only `onPress` fires.
+- **Assistive technology, or `element.click()`.** `onPress` fires with the click event.
+- **Long press.** `onLongPress` fires after `delayLongPress`, 500 ms by default. On a touch screen, a long press with `onLongPress` doesn't open the context menu.
+- **Quick taps.** `onPressOut` waits until the press is at least 130 ms long, so a quick tap still shows the pressed style, as on native.
+
+## State
+
+`style` and `children` can be functions of the state:
+
+| Field     | Meaning                                                                                                    |
+| --------- | ---------------------------------------------------------------------------------------------------------- |
+| `pressed` | True while a press is down.                                                                                |
+| `hovered` | **Web only.** True while a mouse or a pen is over the element. Touch never sets it.                        |
+| `focused` | **Web only.** True while the element has keyboard focus, so a focus ring doesn't show after a mouse click. |
+
+As on native, only a `Pressable` whose `style` or `children` is a function renders again when the state changes.
+
+## Props
+
+| Prop                                                               | On the web                                                                                                                                                        |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `onPress`, `onPressIn`, `onPressOut`, `onLongPress`, `onPressMove` | The event's `nativeEvent` is the DOM event with `locationX`, `locationY`, `pageX`, `pageY`, `timestamp`, `touches`, and `changedTouches` added.                   |
+| `onPress`                                                          | Gets the pointer up event. A keyboard or assistive technology press gets the click event. `preventDefault()` on it cancels the click, so a link doesn't navigate. |
+| `onHoverIn`, `onHoverOut`, `delayHoverIn`, `delayHoverOut`         | A mouse or a pen. Touch doesn't hover.                                                                                                                            |
+| `onFocus`, `onBlur`                                                | Focus events of the element.                                                                                                                                      |
+| `disabled`                                                         | Sets `aria-disabled`, takes the element out of the tab order, and stops every press.                                                                              |
+| `hitSlop`                                                          | An invisible `::before` box grows the hit area. A parent with `overflow: 'hidden'` clips it.                                                                      |
+| `pressRetentionOffset`                                             | How far a pointer can leave the element and still press it. The default is 20 on three sides and 30 at the bottom, as on native.                                  |
+| `cancelable`                                                       | `false` sets `touch-action: none`, so a scroll that starts on the element can't cancel the press.                                                                 |
+| `unstable_pressDelay`                                              | Delays `onPressIn`.                                                                                                                                               |
+| `testOnly_pressed`                                                 | Forces the pressed state.                                                                                                                                         |
+| `focusable`                                                        | `false` takes the element out of the tab order.                                                                                                                   |
+| `onClick`, `onKeyDown`, and the other DOM handlers                 | **Web only.** Your handler runs first, then the press handling.                                                                                                   |
+| View props                                                         | As on [`View`](https://rootnative.github.io/web/view).                                                                                                                                            |
+| `android_ripple`, `android_disableSound`, `blockNativeResponder`   | Native only. Accepted and ignored.                                                                                                                                |
+
+## Ref
+
+The ref is the DOM element.
+
+---
+
+# `ScrollView`
+
+A box that scrolls on one axis. It renders an overflow `<div>` with your content in a `View` inside.
+
+```tsx
+import { ScrollView, Text } from 'react-native'
+
+export function Feed({ posts }) {
+  return (
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, gap: 12 }}>
+      {posts.map((post) => (
+        <Text key={post.id}>{post.title}</Text>
+      ))}
+    </ScrollView>
+  )
+}
+```
+
+A `ScrollView` scrolls its own box, not the document. On a phone, the address bar of the browser doesn't hide as you scroll it.
+
+## Scroll events
+
+| Event                                          | On the web                                                                                                                                                                              |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `onScroll`                                     | One event per frame. `nativeEvent` is the DOM event with `contentOffset`, `contentSize`, `layoutMeasurement`, `contentInset` (zeros), and `zoomScale` (1) added. There's no `velocity`. |
+| `onScrollBeginDrag`, `onScrollEndDrag`         | A scroll while a pointer is down is a drag: a finger, or a mouse on the scrollbar. The drag ends when the pointer comes up.                                                             |
+| `onMomentumScrollBegin`, `onMomentumScrollEnd` | A scroll after the release is momentum. So is a scroll with no pointer down: the wheel, the keyboard, or `scrollTo`.                                                                    |
+| `onContentSizeChange`                          | Gets the width and height of the content, after mount and after each change.                                                                                                            |
+
+The scroll ends at the browser's `scrollend` event. A browser without `scrollend` ends it 150 ms after the last scroll event.
+
+`scrollEventThrottle` isn't needed: the browser already sends one scroll event per frame.
+
+## Props
+
+| Prop                                                             | On the web                                                                                                                       |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `horizontal`                                                     | Scrolls on the x axis.                                                                                                           |
+| `contentContainerStyle`                                          | The style of the content `View`.                                                                                                 |
+| `scrollEnabled`                                                  | `false` hides the overflow, so nothing scrolls.                                                                                  |
+| `contentOffset`                                                  | Sets the scroll position on mount, and again when it changes.                                                                    |
+| `centerContent`                                                  | Centers content that is smaller than the box.                                                                                    |
+| `snapToInterval`, `snapToOffsets`, `pagingEnabled`               | Snap after the scroll settles, with a smooth scroll. The scroll is instant when the user asks for reduced motion.                |
+| `snapToAlignment`, `snapToStart`, `snapToEnd`                    | As on native. `snapToStart` and `snapToEnd` apply to `snapToOffsets`.                                                            |
+| `showsVerticalScrollIndicator`, `showsHorizontalScrollIndicator` | `false` on the scroll axis hides the scrollbar.                                                                                  |
+| `stickyHeaderIndices`                                            | Those children stick to the top. Vertical only, as on native.                                                                    |
+| `stickyHeaderHiddenOnScroll`                                     | The sticky header slides out on a scroll down and comes back on a scroll up.                                                     |
+| `invertStickyHeaders`                                            | The headers stick to the bottom.                                                                                                 |
+| `keyboardDismissMode`                                            | `on-drag` blurs the focused field when a drag starts. `interactive` has no web effect.                                           |
+| `refreshControl`                                                 | Wraps the scroller, so the control can own the pull gesture. `RefreshControl` itself isn't in the package yet, so pass your own. |
+| View props                                                       | As on [`View`](https://rootnative.github.io/web/view).                                                                                                           |
+
+These native-only props are accepted and ignored: `bounces`, `alwaysBounceHorizontal`, `alwaysBounceVertical`, `contentInset`, `contentInsetAdjustmentBehavior`, `decelerationRate`, `directionalLockEnabled`, `disableIntervalMomentum`, `indicatorStyle`, `keyboardShouldPersistTaps`, `maintainVisibleContentPosition`, `nestedScrollEnabled`, `overScrollMode`, `scrollsToTop`, the zoom props, and the other iOS and Android props.
+
+## Ref
+
+The ref is the scroll element with the React Native methods added:
+
+| Method                                                                | On the web                                                                                                          |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `scrollTo({ x, y, animated })`                                        | As on native. `animated` defaults to `true`. The DOM forms `scrollTo(x, y)` and `scrollTo({ left, top })` work too. |
+| `scrollToEnd({ animated })`                                           | Scrolls to the end of the content.                                                                                  |
+| `getScrollableNode()`, `getNativeScrollRef()`, `getScrollResponder()` | The scroll element.                                                                                                 |
+| `getInnerViewNode()`                                                  | The content element.                                                                                                |
+| `flashScrollIndicators()`                                             | Does nothing. The browser has no API for it.                                                                        |
+
+The old positional form `scrollTo(y, x)` doesn't work, because the DOM `scrollTo(x, y)` takes the same arguments in the other order.
+
+---
+
+# `FlatList`
+
+A list on top of [`ScrollView`](https://rootnative.github.io/web/scrollview), with the React Native `FlatList` API.
+
+```tsx
+import { FlatList, Text } from 'react-native'
+
+export function Contacts({ contacts }) {
+  return (
+    <FlatList
+      data={contacts}
+      keyExtractor={(contact) => contact.id}
+      renderItem={({ item }) => <Text>{item.name}</Text>}
+      onEndReached={loadMore}
+    />
+  )
+}
+```
+
+> **WARNING: No virtualizer yet**
+>
+> `FlatList` renders every item, so each one costs DOM memory and render time. Load a long list in pages with `onEndReached`.
+
+Each item sits in a cell `View`, with its separator after it, as on native. The default `keyExtractor` uses `key`, then `id`, then the index, as on native.
+
+## Props
+
+| Prop                                                               | On the web                                                                                                                                                                                                                          |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data`, `renderItem`, `ListItemComponent`, `keyExtractor`          | As on native.                                                                                                                                                                                                                       |
+| `ItemSeparatorComponent`                                           | Gets `highlighted` and `leadingItem`. `separators.highlight()`, `unhighlight()`, and `updateProps()` in `renderItem` work.                                                                                                          |
+| `ListHeaderComponent`, `ListFooterComponent`, `ListEmptyComponent` | A component or an element. `ListHeaderComponentStyle` and `ListFooterComponentStyle` style their wrappers.                                                                                                                          |
+| `numColumns`, `columnWrapperStyle`                                 | Groups the items into rows. A row's key joins the keys of its items.                                                                                                                                                                |
+| `horizontal`                                                       | A row of items.                                                                                                                                                                                                                     |
+| `inverted`                                                         | Flips the scroller and each cell with a transform, as on native, so the first item is at the bottom.                                                                                                                                |
+| `initialScrollIndex`                                               | Scrolls to that item on mount.                                                                                                                                                                                                      |
+| `onViewableItemsChanged`, `viewabilityConfig`                      | The React Native rules: an item is viewable when it's whole in the viewport, or when its visible part reaches `itemVisiblePercentThreshold` or `viewAreaCoveragePercentThreshold`. `minimumViewTime` and `waitForInteraction` work. |
+| `viewabilityConfigCallbackPairs`                                   | Works, as on native.                                                                                                                                                                                                                |
+| `onEndReached`, `onEndReachedThreshold`                            | Fires once per content length, when the scroll comes within the threshold of the end. The threshold is a share of the viewport. Without one, it's 2 px, as on native. A list shorter than its viewport fires it after mount.        |
+| `onStartReached`, `onStartReachedThreshold`                        | The same, at the start.                                                                                                                                                                                                             |
+| `CellRendererComponent`                                            | Renders inside the cell `View`, with `cellKey`, `index`, `item`, `style`, and the item and separator as children.                                                                                                                   |
+| `renderScrollComponent`                                            | Renders the scroller. It gets the scroll props, without the ref.                                                                                                                                                                    |
+| `stickyHeaderIndices`                                              | As on `ScrollView`. With every item rendered, the indices match native.                                                                                                                                                             |
+| `onRefresh`, `refreshing`                                          | Accepted, but no indicator shows until `RefreshControl` ships. Pass `refreshControl` to use your own.                                                                                                                               |
+| ScrollView props                                                   | As on [`ScrollView`](https://rootnative.github.io/web/scrollview).                                                                                                                                                                                                  |
+
+These virtualizer props are accepted and ignored: `initialNumToRender`, `maxToRenderPerBatch`, `windowSize`, `updateCellsBatchingPeriod`, `removeClippedSubviews`, `disableVirtualization`, `extraData`, and `getItemLayout`. Every cell is in the DOM, so the list measures each one there.
+
+## Ref
+
+The ref is an object with the React Native methods:
+
+| Method                                                                | On the web                                                 |
+| --------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `scrollToOffset({ offset, animated })`                                | As on native.                                              |
+| `scrollToIndex({ index, viewPosition, viewOffset, animated })`        | As on native. With `numColumns`, the index is a row index. |
+| `scrollToItem({ item, viewPosition, viewOffset, animated })`          | Finds the row of the item and scrolls to it.               |
+| `scrollToEnd({ animated })`                                           | Scrolls to the end.                                        |
+| `recordInteraction()`                                                 | Starts viewability for `waitForInteraction`.               |
+| `getScrollableNode()`, `getNativeScrollRef()`, `getScrollResponder()` | The scroll element of the `ScrollView`.                    |
+| `flashScrollIndicators()`, `setNativeProps()`                         | Do nothing.                                                |
+
+`onScrollToIndexFailed` never fires, because every cell is in the DOM.
+
+---
+
+# `TextInput`
+
+A text field. It renders an `<input type="text">`, or a `<textarea>` with `multiline`.
+
+```tsx
+import { useState } from 'react'
+import { TextInput } from 'react-native'
+
+export function EmailField() {
+  const [email, setEmail] = useState('')
+  return (
+    <TextInput
+      value={email}
+      onChangeText={setEmail}
+      placeholder="you@example.com"
+      keyboardType="email-address"
+      autoComplete="email"
+      autoCapitalize="none"
+    />
+  )
+}
+```
+
+The field has no border, no padding, and no background, as on iOS. Its text direction follows the text you type.
+
+## Multiline
+
+With `multiline`, the field grows with its text. `numberOfLines` is the minimum number of rows. A `height` in the style fixes the size.
+
+## Enter
+
+| Field       | Enter does                                                                                                                                         |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Single-line | Calls `onSubmitEditing`, then blurs the field. The browser's default stays, so a field inside a `<form>` submits the form.                         |
+| Multiline   | Adds a new line. With `submitBehavior` set to `submit` or `blurAndSubmit`, it calls `onSubmitEditing` instead. Shift+Enter always adds a new line. |
+
+`submitBehavior` and `blurOnSubmit` work as on native.
+
+## Props
+
+| Prop                                                                                        | On the web                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`, `defaultValue`, `onChangeText`, `onChange`                                         | As on native. A `value` with no handler stays fixed, with no React warning.                                                                                                                           |
+| `placeholder`, `maxLength`, `autoFocus`                                                     | As on native.                                                                                                                                                                                         |
+| `secureTextEntry`                                                                           | `type="password"`.                                                                                                                                                                                    |
+| `keyboardType`                                                                              | Becomes `inputmode`, so a phone shows the matching keyboard. The input `type` stays `text`, so the browser adds no validation.                                                                        |
+| `returnKeyType`                                                                             | Becomes `enterkeyhint`, the label of the Enter key on a phone keyboard.                                                                                                                               |
+| `inputMode`, `enterKeyHint`                                                                 | Win over `keyboardType` and `returnKeyType` when you set them.                                                                                                                                        |
+| `showSoftInputOnFocus`                                                                      | `false` is `inputmode="none"`, so a phone shows no keyboard.                                                                                                                                          |
+| `autoComplete`, `textContentType`                                                           | The HTML `autocomplete` tokens. The React Native-only values map, for example `name-given` to `given-name` and `sms-otp` to `one-time-code`. `textContentType` applies when `autoComplete` isn't set. |
+| `autoCapitalize`, `autoCorrect`, `spellCheck`                                               | The matching HTML attributes.                                                                                                                                                                         |
+| `editable`, `readOnly`                                                                      | `editable={false}` is `readonly`, not `disabled`, so the field stays focusable and its text selectable.                                                                                               |
+| `placeholderTextColor`                                                                      | The color of the placeholder.                                                                                                                                                                         |
+| `selectionColor`, `cursorColor`, `caretHidden`                                              | The background of selected text and the color of the caret. `caretHidden` makes the caret transparent.                                                                                                |
+| `selection`, `onSelectionChange`                                                            | As on native. `onSelectionChange` also fires when the caret moves.                                                                                                                                    |
+| `selectTextOnFocus`, `clearTextOnFocus`, `contextMenuHidden`                                | As on native.                                                                                                                                                                                         |
+| `textAlign`                                                                                 | As on native.                                                                                                                                                                                         |
+| `onFocus`, `onBlur`, `onEndEditing`, `onKeyPress`, `onSubmitEditing`, `onContentSizeChange` | `nativeEvent` is the DOM event, with `text`, `eventCount`, `key`, `selection`, or `contentSize` added. `nativeEvent.target` is the element. `onEndEditing` fires on blur.                             |
+| `onLayout`, accessibility props, `nativeID`, `testID`                                       | As on [`View`](https://rootnative.github.io/web/view).                                                                                                                                                                                |
+
+These native-only props are accepted and ignored: `clearButtonMode`, `keyboardAppearance`, `textAlignVertical`, `underlineColorAndroid`, `passwordRules`, `dataDetectorTypes`, and the other iOS and Android props.
+
+## Ref
+
+The ref is the `<input>` or `<textarea>` element, with `clear()`, `isFocused()`, `getNativeRef()`, and `setNativeProps({ text })` added.
+
+`TextInput.State` has `currentlyFocusedInput()`, `focusTextInput(element)`, and `blurTextInput(element)`.
+
+---
+
+# `StatusBar`
+
+The browser has no status bar. Its nearest match is the `theme-color` meta tag, which mobile browsers paint around the page. `StatusBar` writes that tag.
+
+```tsx
+import { StatusBar } from 'react-native'
+
+export function DarkScreen() {
+  return (
+    <>
+      <StatusBar backgroundColor="#111827" barStyle="light-content" />
+      {/* The screen */}
+    </>
+  )
+}
+```
+
+## Props
+
+| Prop                                                                                                     | On the web                         |
+| -------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `backgroundColor`                                                                                        | Sets the `theme-color` meta tag.   |
+| `barStyle`, `hidden`, `translucent`, `animated`, `showHideTransition`, `networkActivityIndicatorVisible` | Accepted. They have no web effect. |
+
+As on native, the last mounted `StatusBar` wins. When it unmounts, the one before it applies again. When none is left, the tag goes back to its first value.
+
+`StatusBar` writes the tag in the browser, after mount, so the server HTML doesn't have it. To have the color in the server HTML, set `themeColor` on [`Head`](https://rootnative.github.io/web/seo) instead. Use one or the other, because both write the same tag.
+
+## Statics
+
+| Member                                                                                               | On the web                                              |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `StatusBar.setBackgroundColor(color)`                                                                | Sets the base color, under every mounted `StatusBar`.   |
+| `StatusBar.setBarStyle()`, `setHidden()`, `setTranslucent()`, `setNetworkActivityIndicatorVisible()` | Accepted. No web effect.                                |
+| `StatusBar.pushStackEntry()`, `popStackEntry()`, `replaceStackEntry()`                               | As on native.                                           |
+| `StatusBar.currentHeight`                                                                            | `null`. The browser has no status bar to make room for. |
+
+---
+
+# `StyleSheet`
+
+Creates and combines styles, as on native. See [Styles](https://rootnative.github.io/web/styles) for how a style becomes CSS.
+
+```tsx
+import { StyleSheet } from 'react-native'
+
+const styles = StyleSheet.create({
+  card: { padding: 16, borderRadius: 12 },
+  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' },
+})
+```
+
+| Member                          | On the web                                                                                                  |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `StyleSheet.create(styles)`     | Returns the same objects, frozen. A frozen style compiles to CSS once, so prefer it for every static style. |
+| `StyleSheet.flatten(style)`     | Merges a style array into one object. Later entries win.                                                    |
+| `StyleSheet.compose(a, b)`      | `[a, b]` when both are set, else the one that is set.                                                       |
+| `StyleSheet.absoluteFill`       | `{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }`, frozen.                                   |
+| `StyleSheet.absoluteFillObject` | The same object. Spread it into a style to add more properties.                                             |
+| `StyleSheet.hairlineWidth`      | `1`. The browser draws one CSS pixel at device resolution, so a thinner value isn't needed.                 |
+
+---
+
+# `Platform`
+
+Tells your code which platform it runs on. On the web, `Platform.OS` is `'web'`.
+
+```tsx
+import { Platform } from 'react-native'
+
+const shadow = Platform.select({
+  web: { boxShadow: '0 1px 3px rgba(0,0,0,0.2)' },
+  default: { elevation: 2 },
+})
+```
+
+| Member                         | On the web                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `Platform.OS`                  | `'web'`.                                                                                               |
+| `Platform.select(spec)`        | The `web` value, else the `default` value. A `native` key doesn't apply, because the web isn't native. |
+| `Platform.Version`             | The user agent string of the browser. An empty string on the server.                                   |
+| `Platform.constants`           | `{ reactNativeVersion }`, the React Native release whose API this package matches: 0.88.1.             |
+| `Platform.isTV`                | `false`.                                                                                               |
+| `Platform.isTesting`           | `true` when `NODE_ENV` (or the bundler mode) is `test`.                                                |
+| `Platform.isDisableAnimations` | `true` when the user asks for reduced motion (`prefers-reduced-motion`).                               |
+
+---
+
+# `Dimensions` and `useWindowDimensions`
+
+The size of the window and the screen.
+
+```tsx
+import { useWindowDimensions } from 'react-native'
+
+export function Columns() {
+  const { width } = useWindowDimensions()
+  const columns = width >= 900 ? 3 : width >= 600 ? 2 : 1
+  // ...
+}
+```
+
+Prefer `useWindowDimensions()` in a component. It renders again when the size changes, and it matches the server HTML during hydration.
+
+## Values
+
+| Field       | `window`                                                                       | `screen`                   |
+| ----------- | ------------------------------------------------------------------------------ | -------------------------- |
+| `width`     | The width of the viewport (`innerWidth`).                                      | The width of the display.  |
+| `height`    | The height of the viewport (`innerHeight`).                                    | The height of the display. |
+| `scale`     | `devicePixelRatio`.                                                            | The same.                  |
+| `fontScale` | The root font size divided by 16, the user's font-size setting in the browser. | The same.                  |
+
+## API
+
+| Member                                      | On the web                                                                         |
+| ------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `useWindowDimensions()`                     | The `window` values. Renders again on a change.                                    |
+| `Dimensions.get('window')`, `get('screen')` | The current values.                                                                |
+| `Dimensions.addEventListener('change', fn)` | Calls `fn` with `{ window, screen }` when a value changes. Returns `{ remove() }`. |
+
+The browser reports a change on `resize`. A zoom that changes `devicePixelRatio` resizes the viewport too, so it counts.
+
+## On the server
+
+On the server, both return `{ width: 0, height: 0, scale: 1, fontScale: 1 }`. `useWindowDimensions()` also returns these zeros during hydration, then the real size. `Dimensions.get()` returns the real size in the browser at once, so don't read it in render. See [Server rendering](https://rootnative.github.io/web/server-rendering#values-that-differ-on-the-server).
+
+---
+
+# `Appearance` and `useColorScheme`
+
+The color scheme that the user prefers, light or dark.
+
+```tsx
+import { useColorScheme, View } from 'react-native'
+
+export function Screen({ children }) {
+  const scheme = useColorScheme()
+  return <View style={scheme === 'dark' ? styles.dark : styles.light}>{children}</View>
+}
+```
+
+Prefer `useColorScheme()` in a component. It renders again when the scheme changes, and it matches the server HTML during hydration.
+
+## API
+
+| Member                              | On the web                                                                                                                                                                                                   |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `useColorScheme()`                  | `'light'` or `'dark'`. Renders again on a change.                                                                                                                                                            |
+| `Appearance.getColorScheme()`       | The override when one is set, else the browser's `prefers-color-scheme`.                                                                                                                                     |
+| `Appearance.setColorScheme(scheme)` | `'light'` or `'dark'` overrides the preference for the whole app. It also sets `color-scheme` on `<html>`, so form controls and scrollbars follow it. `null` or `'unspecified'` goes back to the preference. |
+| `Appearance.addChangeListener(fn)`  | Calls `fn` with `{ colorScheme }` when the preference or the override changes. Returns `{ remove() }`.                                                                                                       |
+
+## On the server
+
+The server has no preference, so both return `'light'` there. `useColorScheme()` also returns `'light'` during hydration, then the real scheme. `Appearance.getColorScheme()` returns the real scheme in the browser at once, so don't read it in render. See [Server rendering](https://rootnative.github.io/web/server-rendering#values-that-differ-on-the-server).
+
+So a dark-mode user of a server-rendered page sees the light render until the app hydrates. To avoid a light flash, give the page a dark background with a `prefers-color-scheme` media query in its CSS.
+
+---
+
+# `AccessibilityInfo`
+
+Reads the accessibility settings of the user, announces text to screen readers, and moves focus.
+
+```tsx
+import { AccessibilityInfo } from 'react-native'
+
+AccessibilityInfo.announceForAccessibility('Message sent')
+```
+
+## Settings
+
+The browser shows some settings to a page through CSS media queries. Those are live: each `is…Enabled()` reads the current value, and each change event fires when the user changes the setting.
+
+| Method                                                                                                      | On the web                                                                                |
+| ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `isReduceMotionEnabled()`                                                                                   | `prefers-reduced-motion: reduce`. Event: `reduceMotionChanged`.                           |
+| `isReduceTransparencyEnabled()`                                                                             | `prefers-reduced-transparency: reduce`. Event: `reduceTransparencyChanged`.               |
+| `isInvertColorsEnabled()`                                                                                   | `inverted-colors: inverted`. Event: `invertColorsChanged`.                                |
+| `isHighTextContrastEnabled()`, `isDarkerSystemColorsEnabled()`                                              | `prefers-contrast: more`. Events: `highTextContrastChanged`, `darkerSystemColorsChanged`. |
+| `prefersCrossFadeTransitions()`                                                                             | `prefers-reduced-motion: reduce`.                                                         |
+| `isScreenReaderEnabled()`, `isAccessibilityServiceEnabled()`, `isBoldTextEnabled()`, `isGrayscaleEnabled()` | `false`. A browser doesn't tell a page about these. Their events never fire.              |
+| `getRecommendedTimeoutMillis(timeout)`                                                                      | Returns `timeout` unchanged.                                                              |
+
+Don't build a feature only for screen reader users on `isScreenReaderEnabled()`. On the web it's always `false`.
+
+`addEventListener(eventName, handler)` returns `{ remove() }`, as on native.
+
+## Announcements
+
+| Method                                                        | On the web                                                                                                         |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `announceForAccessibility(text)`                              | Writes the text to a hidden `aria-live="polite"` region, so a screen reader reads it when it's idle.               |
+| `announceForAccessibilityWithOptions(text, { queue: false })` | Uses `aria-live="assertive"`, so a screen reader reads it at once.                                                 |
+| `addEventListener('announcementFinished', handler)`           | Fires on the next frame, with `{ announcement, success: true }`. The browser doesn't report when the reading ends. |
+
+All announcements share one live region. The same text twice in a row is read twice.
+
+## Focus
+
+| Method                                     | On the web                                             |
+| ------------------------------------------ | ------------------------------------------------------ |
+| `setAccessibilityFocus(element)`           | Moves keyboard and screen reader focus to the element. |
+| `sendAccessibilityEvent(element, 'focus')` | The same. Other event types do nothing.                |
+
+Pass the element itself, for example the ref of a `View`. A node handle number does nothing on the web. The element must be able to take focus: give a `View` `tabIndex={-1}` so that it can, without joining the tab order.
+
+---
+
+# `I18nManager`
+
+Right-to-left layout. On the web, the direction comes from the document: the `dir` attribute or the CSS `direction` of `<html>`.
+
+```tsx
+import { I18nManager } from 'react-native'
+
+const arrow = I18nManager.isRTL ? '←' : '→'
+```
+
+| Member                                                               | On the web                                                                                                          |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `I18nManager.isRTL`                                                  | `true` when the document direction is right-to-left. It reads the current direction each time.                      |
+| `I18nManager.forceRTL(force)`                                        | Sets `dir="rtl"` on `<html>` at once. On native it waits for a restart. `false` clears the attribute.               |
+| `I18nManager.allowRTL(allow)`                                        | `false` makes `isRTL` report `false`. The browser still lays out the page from `dir`, so the layout doesn't change. |
+| `I18nManager.getConstants()`                                         | `{ isRTL, doLeftAndRightSwapInRTL, localeIdentifier }`. `localeIdentifier` is `navigator.language`.                 |
+| `I18nManager.swapLeftAndRightInRTL(swap)`, `doLeftAndRightSwapInRTL` | Stores and reports the flag. It has no effect on styles yet. See below.                                             |
+
+On the server, `isRTL` is `false`.
+
+## Left and right styles
+
+On native, with the default `doLeftAndRightSwapInRTL` of `true`, `marginLeft`, `paddingLeft`, `left`, and their right partners swap in a right-to-left layout. On the web they don't swap yet: they stay on the physical side.
+
+For styles that must follow the direction, use the start and end props: `marginStart`, `paddingEnd`, `start`, and the others. They work the same on every platform. See [Right-to-left](https://rootnative.github.io/web/styles#right-to-left).
+
+---
+
+# `BackHandler`
+
+The browser has no hardware back button, and the history of the page belongs to your router. So on the web, back handlers register and remove as on native, but never fire.
+
+| Member                                                     | On the web                                                  |
+| ---------------------------------------------------------- | ----------------------------------------------------------- |
+| `BackHandler.addEventListener('hardwareBackPress', fn)`    | Registers `fn` and returns `{ remove() }`. `fn` never runs. |
+| `BackHandler.removeEventListener('hardwareBackPress', fn)` | Removes `fn`.                                               |
+| `BackHandler.exitApp()`                                    | Does nothing. A page can't close a tab that it didn't open. |
+
+To act on the browser's back button, use the history API of your router.
+
+---
+
+# `PixelRatio`
+
+The pixel density of the screen and the font scale of the user.
+
+| Member                                       | On the web                                                                     |
+| -------------------------------------------- | ------------------------------------------------------------------------------ |
+| `PixelRatio.get()`                           | `devicePixelRatio`. A browser zoom changes it.                                 |
+| `PixelRatio.getFontScale()`                  | The root font size divided by 16, the user's font-size setting in the browser. |
+| `PixelRatio.getPixelSizeForLayoutSize(size)` | `size` times the ratio, rounded to a whole device pixel.                       |
+| `PixelRatio.roundToNearestPixel(size)`       | `size` rounded to the nearest device pixel.                                    |
+| `PixelRatio.startDetecting()`                | Does nothing. The browser reports the ratio by itself.                         |
+
+On the server, `get()` and `getFontScale()` return `1`.
+
+---
+
+# `processColor`
+
+Turns a color into the number that React Native passes to native code. Libraries call it. An app seldom needs it.
+
+```tsx
+import { processColor } from 'react-native'
+
+processColor('red') // 4294901760, which is 0xffff0000
+```
+
+| Input                                 | Result                                      |
+| ------------------------------------- | ------------------------------------------- |
+| A color that React Native can parse   | An unsigned 32-bit ARGB integer, as on iOS. |
+| A color that React Native can't parse | `null`.                                     |
+| `null` or `undefined`                 | The same value.                             |
+
+Android returns the same bits as a signed integer. On the web, the number is always unsigned.
+
+---
+
+# `PanResponder`
+
+Tracks a drag with the React Native gesture state. On the web it runs on pointer events, so it works with a mouse, a pen, and touch.
+
+```tsx
+import { useRef } from 'react'
+import { PanResponder, View } from 'react-native'
+
+export function Draggable() {
+  const pan = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: (event, gesture) => {
+        // gesture.dx and gesture.dy since the grant
+      },
+    }),
+  ).current
+
+  return <View {...pan.panHandlers} style={{ width: 80, height: 80, touchAction: 'none' }} />
+}
+```
+
+> **WARNING: Set `touchAction` on a touch screen**
+>
+> Put `touchAction: 'none'` in the style of the element, or `'pan-y'` for a horizontal drag inside a vertical scroll. Without it, the browser scrolls the page instead of giving your responder the gesture. The responder can't set it for you: the browser reads it before the gesture starts.
+
+## Handlers
+
+`panHandlers` are six pointer handlers: `onPointerDown`, `onPointerMove`, `onPointerUp`, `onPointerCancel`, and the two capture variants. Spread them on a `View`.
+
+When the responder takes the gesture, the element captures the pointer, so the gesture continues outside the element.
+
+## Negotiation
+
+One responder holds a gesture at a time, as on native. The should-set callbacks with `Capture` run from the parent to the child. The others run from the child to the parent.
+
+When a responder asks for a gesture that another one holds, the holder's `onPanResponderTerminationRequest` decides. `true` (the default) moves the gesture: the holder gets `onPanResponderTerminate`, and the new one gets `onPanResponderGrant`. `false` keeps it, and the asker gets `onPanResponderReject`.
+
+## Gesture state
+
+| Field                 | On the web                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| `dx`, `dy`            | The distance since the grant, in CSS pixels, from the center of the active pointers. |
+| `vx`, `vy`            | The speed, in pixels per millisecond.                                                |
+| `x0`, `y0`            | The page position at the grant.                                                      |
+| `moveX`, `moveY`      | The latest page position.                                                            |
+| `numberActiveTouches` | The pointers that are down on the element.                                           |
+| `stateID`             | A new number for each gesture.                                                       |
+
+A pointer that joins or leaves doesn't move the gesture. The event's `nativeEvent` is the pointer event with `touches`, `changedTouches`, `identifier`, `locationX`, `locationY`, `pageX`, `pageY`, `timestamp`, and `force` (the pen pressure) added.
+
+## Not on the web
+
+- `onShouldBlockNativeResponder` is ignored. The web has no native responder to block.
+- `getInteractionHandle()` returns `null`.
+
+---
+
+# `usePressability`
+
+The press handling behind [`Pressable`](https://rootnative.github.io/web/pressable), as a hook. Use it to build your own pressable component.
+
+```tsx
+import { useMemo } from 'react'
+import { usePressability, View } from 'react-native'
+
+export function Card({ onPress, children }) {
+  const config = useMemo(() => ({ onPress }), [onPress])
+  const handlers = usePressability(config)
+  return (
+    <View {...handlers} role="button">
+      {children}
+    </View>
+  )
+}
+```
+
+Memoize the config. A new config object on each render makes the hook configure itself again.
+
+## Handlers
+
+On the web, the hook returns pointer, keyboard, and focus handlers, not the responder handlers of native: `onPointerDown`, `onPointerUp`, `onPointerMove`, `onPointerCancel`, `onPointerEnter`, `onPointerLeave`, `onKeyDown`, `onKeyUp`, `onClick`, `onContextMenu`, `onFocus`, and `onBlur`. Spread them on a `View`. Their identity never changes.
+
+A `null` config returns `null` and sets up nothing. The hook sets up when a config arrives.
+
+## Config
+
+| Field                                                                 | On the web                                                                                                                                                                                           |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `onPress`, `onPressIn`, `onPressOut`, `onLongPress`, `onPressMove`    | As on [`Pressable`](https://rootnative.github.io/web/pressable#how-a-press-works). `onPress` gets the pointer up event, or the click event for a keyboard or assistive technology press. `preventDefault()` on it cancels the click. |
+| `onHoverIn`, `onHoverOut`, `delayHoverIn`, `delayHoverOut`            | A mouse or a pen. Touch doesn't hover.                                                                                                                                                               |
+| `onFocus`, `onBlur`                                                   | Focus events of the element.                                                                                                                                                                         |
+| `delayPressIn`, `delayPressOut`, `delayLongPress`, `minPressDuration` | As on native. `delayLongPress` defaults to 500 ms, and `minPressDuration` to 130 ms.                                                                                                                 |
+| `disabled`                                                            | Stops every press.                                                                                                                                                                                   |
+| `hitSlop`, `pressRectOffset`                                          | Grow the area where a release still presses. `hitSlop` doesn't grow the hit area here: `Pressable` does that with CSS.                                                                               |
+| `cancelable`                                                          | Accepted. `Pressable` turns `false` into `touch-action: none`. With the hook, set `touchAction` in the style yourself.                                                                               |
+| `android_disableSound`, `blockNativeResponder`                        | Native only. Accepted and ignored.                                                                                                                                                                   |
