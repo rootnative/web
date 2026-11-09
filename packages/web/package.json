@@ -1,6 +1,6 @@
 {
   "name": "@rootnative/web",
-  "version": "0.0.0",
+  "version": "0.0.0-alpha.0",
   "description": "A standalone web runtime for React Native apps",
   "license": "MIT",
   "homepage": "https://rootnative.github.io/web/",
@@ -27,7 +27,8 @@
   "files": [
     "dist",
     "llms.txt",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "exports": {
     ".": "./dist/index.js",
