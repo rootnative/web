@@ -89,6 +89,14 @@ article a {
   padding: 0.1rem 0.4rem;
 }
 
+/* Long inline code can't break, so on a narrow screen it made its column take
+   the whole width and pushed the next column out of view. */
+@media (max-width: 996px) {
+  article table code {
+    overflow-wrap: anywhere;
+  }
+}
+
 .footer {
   border-top: 1px solid var(--web-border);
 }
