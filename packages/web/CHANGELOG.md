@@ -45,5 +45,6 @@ The first alpha. It runs a React Native app in the browser with the components a
 - There's no Vite plugin yet. Set the `react-native` alias by hand, as [Installation](https://rootnative.github.io/web/installation) shows.
 - The tests run in Chromium. Firefox and Safari aren't in the test run yet.
 
-[unreleased]: https://github.com/rootnative/web/compare/web@0.0.0-alpha.0...HEAD
+[unreleased]: https://github.com/rootnative/web/compare/web@0.0.0-alpha.1...HEAD
+[0.0.0-alpha.1]: https://github.com/rootnative/web/releases/tag/web@0.0.0-alpha.1
 [0.0.0-alpha.0]: https://github.com/rootnative/web/releases/tag/web@0.0.0-alpha.0
