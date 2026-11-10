@@ -60,7 +60,7 @@ function fold({ x0, x1, top, drop, height }) {
   const below = ([x, y]) => [x, y + height]
   const panel = (i) => [folds[i], folds[i + 1], below(folds[i + 1]), below(folds[i])]
   return [
-    { tone: 'soft', points: [...folds, ...folds.map(below).reverse()] },
+    { tone: 'soft', points: [...folds, ...folds.map(below).toReversed()] },
     { tone: 'strong', points: panel(1) },
     { tone: 'strong', points: panel(3) },
   ]
