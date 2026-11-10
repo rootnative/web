@@ -1,6 +1,6 @@
 import { createServer, resolveConfig } from 'vite'
 import type { Alias, InlineConfig, Plugin, ViteDevServer } from 'vite'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { rootnative } from './index'
 
@@ -19,6 +19,17 @@ const baseConfig = (config: InlineConfig = {}): InlineConfig => ({
 
 const firstAlias = (aliases: readonly Alias[], id: string): Alias | undefined =>
   aliases.find(({ find }) => (typeof find === 'string' ? find === id : find.test(id)))
+
+const devDefines = async (
+  config: InlineConfig,
+  command: 'build' | 'serve',
+): Promise<{ app: unknown; deps: unknown }> => {
+  const resolved = await resolveConfig(baseConfig({ plugins: [rootnative()], ...config }), command)
+  return {
+    app: resolved.define?.['__DEV__'],
+    deps: resolved.optimizeDeps.rolldownOptions?.transform?.define?.['__DEV__'],
+  }
+}
 
 describe('rootnative() config', () => {
   test('aliases react-native, and only the exact name', async () => {
@@ -69,6 +80,30 @@ describe('rootnative() config', () => {
   })
 })
 
+describe('rootnative() __DEV__', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  test('is true in development, for the app and the pre-bundled dependencies', async () => {
+    vi.stubEnv('NODE_ENV', 'development')
+    expect(await devDefines({}, 'serve')).toEqual({ app: 'true', deps: 'true' })
+  })
+
+  test('is false in production', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    expect(await devDefines({}, 'build')).toEqual({ app: 'false', deps: 'false' })
+  })
+
+  test("keeps the app's own value", async () => {
+    vi.stubEnv('NODE_ENV', 'development')
+    expect(await devDefines({ define: { __DEV__: false } }, 'serve')).toEqual({
+      app: 'false',
+      deps: 'false',
+    })
+  })
+})
+
 describe('rootnative() in the dev server', () => {
   // Stands in for the installed package, so the test doesn't depend on a build of it.
   const packageStub: Plugin = {
@@ -103,6 +138,11 @@ describe('rootnative() in the dev server', () => {
 
   test('resolves the .web file first', () => {
     expect(code).toContain('/label.web.ts')
+  })
+
+  test('sets the __DEV__ global on the client', async () => {
+    const env = (await server.transformRequest('/@vite/env'))?.code ?? ''
+    expect(env).toMatch(/"__DEV__": true/)
   })
 
   test('replaces Platform.OS after the TypeScript transform', () => {

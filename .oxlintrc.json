@@ -10,6 +10,7 @@
     "typescript/consistent-type-imports": "error",
     "typescript/no-explicit-any": "error",
     "import/no-cycle": "error",
+    "no-underscore-dangle": ["error", { "allow": ["__DEV__"] }],
     "react/react-in-jsx-scope": "off",
     "unicorn/require-module-specifiers": "off"
   },

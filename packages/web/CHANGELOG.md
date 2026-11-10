@@ -7,6 +7,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 ### Added
 
 - **Vite plugin** from `@rootnative/web/vite`. `rootnative()` points `react-native` at the package, resolves `.web.*` files first, and replaces `Platform.OS` with `'web'`, so a minifier drops the code of the other platforms.
+- **`__DEV__`**, the React Native global: `true` in a development build, `false` in a production build. The Vite plugin defines it, also for pre-bundled dependencies, and the package types declare it.
 
 ## [0.0.0-alpha.0] - 2026-11-10
 

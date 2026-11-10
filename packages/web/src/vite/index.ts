@@ -1,6 +1,7 @@
 import type { Alias, AliasOptions, Plugin } from 'vite'
 
-import { ALIASES, inlinePlatformOS, webExtensions } from '../bundler'
+import { ALIASES, globalDefines, inlinePlatformOS, webExtensions } from '../bundler'
+import { isProductionEnv } from '../utils/env'
 
 // Vite's default `resolve.extensions`. A config that sets the option replaces this list, so the
 // plugin starts from the same one.
@@ -18,15 +19,18 @@ const aliasArray = (alias: AliasOptions | undefined): Alias[] => {
   return Object.entries(alias).map(([find, replacement]) => ({ find, replacement }))
 }
 
+const defineCode = (value: unknown): string =>
+  typeof value === 'string' ? value : JSON.stringify(value)
+
 /**
  * The Vite plugin. It points `react-native` at `@rootnative/web`, resolves `.web.*` files
- * first, and replaces `Platform.OS` with `'web'`.
+ * first, defines `__DEV__`, and replaces `Platform.OS` with `'web'`.
  */
 export const rootnative = (): Plugin => ({
   name: '@rootnative/web',
 
-  // Edits the config in place: a returned partial config would append both lists after the
-  // app's own entries.
+  // Edits the config in place, so the app's own values win. A returned partial config would
+  // append the lists after the app's entries and override its defines.
   config(config) {
     config.resolve ??= {}
     // Last, so an alias in the app's config wins. The first matching alias resolves an import.
@@ -38,6 +42,23 @@ export const rootnative = (): Plugin => ({
       })),
     ]
     config.resolve.extensions = webExtensions(config.resolve.extensions ?? VITE_DEFAULT_EXTENSIONS)
+
+    // Vite has set NODE_ENV before this hook runs, so `__DEV__` follows React's development mode.
+    const defines = Object.fromEntries(
+      Object.entries(globalDefines(isProductionEnv())).map(([name, code]) => [
+        name,
+        config.define?.[name] === undefined ? code : defineCode(config.define[name]),
+      ]),
+    )
+    config.define = { ...config.define, ...defines }
+    // The dep optimizer applies only its own defines, so a pre-bundled library gets them here.
+    config.optimizeDeps ??= {}
+    config.optimizeDeps.rolldownOptions ??= {}
+    config.optimizeDeps.rolldownOptions.transform ??= {}
+    config.optimizeDeps.rolldownOptions.transform.define = {
+      ...defines,
+      ...config.optimizeDeps.rolldownOptions.transform.define,
+    }
   },
 
   transform: {

@@ -141,3 +141,11 @@ export type {
   NativeSyntheticEvent,
   NativeTouchEvent,
 } from './events/types'
+
+declare global {
+  /**
+   * `true` in a development build and `false` in a production build, as in React Native. The
+   * bundler sets it: the plugin from `@rootnative/web/vite` does, or a `define` in your config.
+   */
+  const __DEV__: boolean
+}

@@ -6,6 +6,14 @@ export const ALIASES: Readonly<Record<string, string>> = {
 }
 
 /**
+ * The globals that React Native code expects from its bundler, each as the code that replaces
+ * the name. `__DEV__` is `true` in a development build and `false` in a production build.
+ */
+export const globalDefines = (production: boolean): Record<string, string> => ({
+  __DEV__: JSON.stringify(!production),
+})
+
+/**
  * Puts a `.web` variant of each extension first, as Metro does for the web platform. An
  * import of `./Button` then finds `Button.web.tsx` before `Button.tsx`.
  */
