@@ -39,9 +39,13 @@ jobs:
 
       - run: pnpm check:llms
 
+      - run: pnpm check:versions
+
       - run: pnpm typecheck
 
       - run: pnpm build
+
+      - run: pnpm check:artifact
 
       - name: Install Chromium
         run: pnpm --filter @rootnative/web exec playwright install chromium --with-deps

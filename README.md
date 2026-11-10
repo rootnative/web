@@ -106,12 +106,14 @@ packages/
   web/          @rootnative/web
   playground/   Vite app with one route per component
 docs/           the docs site
-scripts/        build-llms.mjs
+scripts/        the llms, brand, and check scripts
 ```
 
 Each component lives in one folder with its types and its tests.
 
 After you change a docs page, run `pnpm build:llms`. It writes `docs/static/llms-full.txt` and copies `docs/static/llms.txt` into the package. CI fails when they don't match the pages. After an API change, also edit `docs/static/llms.txt`, which is written by hand.
+
+CI also runs two release checks. `pnpm check:versions` checks that the CHANGELOG and the Status page name the version in `packages/web/package.json`, and `pnpm check:versions:fix` repairs the link footer and the Status line. `pnpm check:artifact` runs after the build and checks that the npm tarball has each file that `exports` names.
 
 ## License
 
