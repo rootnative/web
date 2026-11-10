@@ -33,6 +33,8 @@ const docsImgDir = join(root, 'docs', 'static', 'img')
 
 const NAME = 'Root Native Web'
 
+// The docs tokens --web-accent and --web-accent-strong in docs/src/css/custom.css hold the same
+// values. Change them together.
 const LIGHT_TONES = { soft: '#fb7185', strong: '#e11d48' }
 const DARK_TONES = { soft: '#fecdd3', strong: '#fb7185' }
 

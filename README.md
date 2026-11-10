@@ -1,8 +1,22 @@
-# Root Native Web
+<p align="center">
+  <a href="https://rootnative.github.io/web/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/brand/web-mark-dark.svg" />
+      <img src="assets/brand/web-mark.png" alt="Root Native Web logo" width="112" height="112" />
+    </picture>
+  </a>
+</p>
+
+<h1 align="center">Root Native Web</h1>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@rootnative/web"><img src="https://img.shields.io/npm/v/@rootnative/web?label=npm&logo=npm&color=E11D48" alt="npm version of @rootnative/web" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-E11D48" alt="MIT license" /></a>
+</p>
 
 `@rootnative/web` is a standalone web runtime for React Native apps. You write `react-native`. It runs in the browser as a real web app.
 
-> **Early alpha.** The API can change between releases. [Status](https://rootnative.github.io/web/status) lists what ships today.
+> **Early alpha.** The API can change between releases. [Status](https://rootnative.github.io/web/status) lists what ships today, and the [changelog](packages/web/CHANGELOG.md) lists the changes in each release.
 
 **Docs: https://rootnative.github.io/web/**
 

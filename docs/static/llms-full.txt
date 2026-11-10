@@ -149,6 +149,8 @@ See [Status](https://rootnative.github.io/web/status) for what ships today and h
 
 `@rootnative/web` is in early alpha. The API can change between alpha releases. This page lists what exists, so nothing on this site reads as a promise.
 
+The latest release is [`0.0.0-alpha.0`](https://www.npmjs.com/package/@rootnative/web) on npm. The [changelog](https://github.com/rootnative/web/blob/main/packages/web/CHANGELOG.md) lists the changes in each release.
+
 ## What ships today
 
 | Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                              |

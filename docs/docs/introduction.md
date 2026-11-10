@@ -1,7 +1,6 @@
 ---
-id: index
+id: introduction
 title: Introduction
-slug: /
 description: A standalone web runtime for React Native apps. You write react-native, and it runs in the browser as a real web app.
 ---
 

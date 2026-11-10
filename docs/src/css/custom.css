@@ -39,6 +39,12 @@
   --web-border: rgba(0, 0, 0, 0.09);
   --web-surface-muted: #fafafa;
   --web-fg-muted: #52525b;
+
+  /* The tones of the mark: LIGHT_TONES and DARK_TONES in scripts/build-brand.mjs. Change them
+     together. `--web-accent` is only 2.7:1 on white, so a focus ring or a border takes
+     `--web-accent-strong` (4.7:1) to meet WCAG 1.4.11. */
+  --web-accent: #fb7185;
+  --web-accent-strong: #e11d48;
 }
 
 /* `html[...]`, not `[...]`: Infima sets its dark background under
@@ -57,6 +63,8 @@ html[data-theme='dark'] {
   --web-border: hsla(0, 0%, 100%, 0.1);
   --web-surface-muted: #0e0e10;
   --web-fg-muted: #a1a1aa;
+  --web-accent: #fecdd3;
+  --web-accent-strong: #fb7185;
 }
 
 h1,
@@ -99,6 +107,18 @@ article a {
 
 .footer {
   border-top: 1px solid var(--web-border);
+}
+
+.tabs__item--active {
+  border-bottom-color: var(--web-accent-strong);
+}
+
+a:focus-visible,
+button:focus-visible,
+.menu__link:focus-visible {
+  outline: 2px solid var(--web-accent-strong);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 .navbar-github-link::before {
