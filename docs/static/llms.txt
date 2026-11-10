@@ -1,8 +1,8 @@
 # @rootnative/web
 
 > A standalone web runtime for React Native apps. The app imports
-> react-native, a bundler alias maps that name to @rootnative/web, and the app
-> runs in the browser as a real web app: semantic HTML, atomic CSS, server
+> react-native, the Vite plugin resolves that name to @rootnative/web, and the
+> app runs in the browser as a real web app: semantic HTML, atomic CSS, server
 > rendering, and SEO tags. It doesn't use react-native-web.
 
 Status: early alpha. The API can change between releases. Every component and
@@ -19,14 +19,20 @@ npm install @rootnative/web
 
 Peers: react ^19.0.0, react-dom ^19.0.0. ESM only.
 
-1. Alias react-native in vite.config.ts:
-   resolve: { alias: { 'react-native': '@rootnative/web' } }
-   Server code needs the same alias.
+1. Add the Vite plugin (Vite 8) to vite.config.ts:
+   import { rootnative } from '@rootnative/web/vite'
+   plugins: [react(), rootnative()]
+   It resolves react-native to @rootnative/web (the exact name only), resolves
+   .web.* files first, defines __DEV__ (true on the dev server, false in a
+   production build, from NODE_ENV), and puts 'web' in place of Platform.OS.
+   An alias or a __DEV__ define in your own config wins.
 2. Add src/react-native.d.ts (in a folder that tsconfig.json includes):
    declare module 'react-native' { export * from '@rootnative/web' }
    The file must have no top-level import or export line. With one,
    TypeScript reports "Cannot find module 'react-native'". Don't map the name
-   with tsconfig "paths": the package has no main or types field.
+   with tsconfig "paths": the package has no main or types field. The file
+   also gives the type of __DEV__. For .web.tsx files, add
+   "moduleSuffixes": [".web", ""] to tsconfig.json.
 3. Give the page a full-height flex root:
    html, body, #root { height: 100%; margin: 0 }
    #root { display: flex; flex-direction: column }
@@ -35,13 +41,24 @@ Peers: react ^19.0.0, react-dom ^19.0.0. ESM only.
 
 Browsers: Chrome 95, Edge 95, Firefox 93, Safari 15.1, iOS Safari 15.1.
 
+Without the plugin (another bundler): alias the exact name react-native to
+@rootnative/web, put a .web variant of each extension first, and define
+__DEV__. In Vite, define it in define and in
+optimizeDeps.rolldownOptions.transform.define: the dependency optimizer
+doesn't apply define. Platform.OS then stays a read at run time.
+
+Server rendering with Vite: the plugin applies to app code on the server. A
+dependency that Vite leaves to Node gets no __DEV__ and throws a
+ReferenceError. Add it to ssr.noExternal.
+
 ## Entry points
 
 - @rootnative/web: the React Native components and APIs. Import it as
-  react-native through the alias.
+  react-native through the plugin.
 - @rootnative/web/dom: web-only features. Head.
 - @rootnative/web/server: createStyleRegistry, StyleRegistryProvider,
   renderStyleTags, styleTagsHTML, StyleRegistry.
+- @rootnative/web/vite: rootnative(), the Vite plugin. Only in vite.config.ts.
 
 Import /dom and /server only in code that runs on the web.
 
@@ -60,7 +77,8 @@ NOT IMPLEMENTED, do not import:
 - Alert, AppState, Linking, Share, Vibration, Clipboard.
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
 - onPressIn, onPressOut, onLongPress on Text. onPress on Text works.
-- A Vite plugin. Set the alias by hand.
+- A Next.js plugin, and templates for a Vite app with and without server
+  rendering.
 
 Out of scope: Expo, Metro, React 18, CommonJS, Flow.
 
@@ -241,7 +259,9 @@ StatusBar
 - Platform: OS is 'web'. select() uses web, then default. A native key
   doesn't apply. Version is the user agent ('' on the server).
   constants.reactNativeVersion is 0.88.1. isTV is false. isTesting is true when
-  NODE_ENV is test. isDisableAnimations follows prefers-reduced-motion.
+  NODE_ENV is test. isDisableAnimations follows prefers-reduced-motion. The
+  Vite plugin puts 'web' in place of each Platform.OS read at build time.
+  Platform.select keeps its code.
 - StyleSheet: create, flatten, compose, absoluteFill, absoluteFillObject.
   hairlineWidth is 1.
 - Dimensions: window is innerWidth and innerHeight. screen is the display.

@@ -269,6 +269,13 @@ const HTML_LINES: readonly Line[] = [
 const VITE_LINES: readonly Line[] = [
   [
     ['import', 'keyword'],
+    [' { rootnative } '],
+    ['from', 'keyword'],
+    [' '],
+    ["'@rootnative/web/vite'", 'string'],
+  ],
+  [
+    ['import', 'keyword'],
     [' react '],
     ['from', 'keyword'],
     [' '],
@@ -277,16 +284,7 @@ const VITE_LINES: readonly Line[] = [
   [['import', 'keyword'], [' { defineConfig } '], ['from', 'keyword'], [' '], ["'vite'", 'string']],
   [],
   [['export default', 'keyword'], [' defineConfig({']],
-  [['  plugins: [react()],']],
-  [['  resolve: {']],
-  [
-    ['    alias: { '],
-    ["'react-native'", 'string'],
-    [': '],
-    ["'@rootnative/web'", 'string'],
-    [' },'],
-  ],
-  [['  },']],
+  [['  plugins: [react(), rootnative()],']],
   [['})']],
 ]
 
@@ -466,9 +464,9 @@ function Layers() {
     <section className={`${styles.section} ${styles.sectionMuted}`}>
       <div className={styles.sectionInner}>
         <span className={styles.sectionEyebrow}>How it works</span>
-        <h2 className={styles.sectionTitle}>One alias. Three entry points.</h2>
+        <h2 className={styles.sectionTitle}>One plugin. Three entry points.</h2>
         <p className={styles.sectionLead}>
-          Your app imports <code>react-native</code>. A bundler alias maps that name to{' '}
+          Your app imports <code>react-native</code>. The Vite plugin resolves that name to{' '}
           <code>@rootnative/web</code>. Import the web and the server entry only in code that runs
           on the web.
         </p>
@@ -497,7 +495,7 @@ function Setup() {
             Point <code>react-native</code> at the package.
           </h2>
           <p className={styles.sectionLead}>
-            Add one alias to <code>vite.config.ts</code> and one declaration file for TypeScript.
+            Add the plugin to <code>vite.config.ts</code> and one declaration file for TypeScript.
             The rest of your app stays the same code that runs on iOS and Android.
           </p>
           <Link className={styles.ctaPrimary} to="/installation">
@@ -507,7 +505,7 @@ function Setup() {
         <CodePanel
           filename="vite.config.ts"
           lines={VITE_LINES}
-          ariaLabel="A Vite config that aliases react-native to @rootnative/web"
+          ariaLabel="A Vite config that adds the rootnative plugin"
         />
       </div>
     </section>

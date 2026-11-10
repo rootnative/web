@@ -48,7 +48,7 @@ Three rules:
 - **Write the style tags after the render ends.** The registry fills while React renders. A head that you send before the body renders misses the CSS of that body.
 - **Render the `<head>` with React.** React 19 puts the `<title>` and `<meta>` elements of [`Head`](/seo) into the `<head>` that it renders. If you render only the app and paste it into a template, they land at the start of `<body>`.
 
-Your server code needs the `react-native` alias too, so that `App` and its imports resolve to `@rootnative/web`.
+Your server code needs the same setup, so that `App` and its imports resolve to `@rootnative/web`. With Vite's server rendering, the [Vite plugin](/vite-plugin#server-rendering) does it.
 
 `renderStyleTags(registry)` returns the same two `<style>` elements as React elements. Use it when your framework takes head elements, not a string.
 

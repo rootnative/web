@@ -18,6 +18,7 @@ The latest release is [`0.0.0-alpha.0`](https://www.npmjs.com/package/@rootnativ
 | APIs       | [`StyleSheet`](/stylesheet), [`Platform`](/platform), [`Dimensions`](/dimensions), [`useWindowDimensions`](/dimensions), [`Appearance`](/appearance), [`useColorScheme`](/appearance), [`AccessibilityInfo`](/accessibilityinfo), [`I18nManager`](/i18nmanager), [`BackHandler`](/backhandler), [`PixelRatio`](/pixelratio), [`processColor`](/processcolor), [`PanResponder`](/panresponder), [`usePressability`](/usepressability) |
 | Web layer  | [`Head`](/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                           |
 | Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](/server-rendering).                                                                                                                                                                                                                                                       |
+| Tooling    | [`rootnative()`](/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                         |
 
 `FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now.
 
@@ -29,7 +30,7 @@ The latest release is [`0.0.0-alpha.0`](https://www.npmjs.com/package/@rootnativ
 - **Text press events:** `onPressIn`, `onPressOut`, and `onLongPress` on `Text`. `onPress` works today.
 - **APIs:** `Alert`, `AppState`, `Linking`, `Share`, `Vibration`, `Clipboard`.
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
-- **Tooling:** a Vite plugin that sets the `react-native` alias, resolves `.web.tsx` files, and inlines `Platform.OS`. Until then, use the alias on [Installation](/installation).
+- **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
 
 ## Out of scope
 

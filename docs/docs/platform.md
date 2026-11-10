@@ -26,3 +26,5 @@ const shadow = Platform.select({
 | `Platform.isTV`                | `false`.                                                                                               |
 | `Platform.isTesting`           | `true` when `NODE_ENV` (or the bundler mode) is `test`.                                                |
 | `Platform.isDisableAnimations` | `true` when the user asks for reduced motion (`prefers-reduced-motion`).                               |
+
+The [Vite plugin](/vite-plugin#platformos) puts `'web'` in place of each `Platform.OS` read when it builds your app, so the minifier drops the code of the other platforms. `Platform.select` keeps its code.

@@ -26,7 +26,7 @@ Source: https://github.com/rootnative/web
 
 ## How it works
 
-Your app imports `react-native`. A bundler alias maps that name to `@rootnative/web`. The package has three entry points:
+Your app imports `react-native`. The [Vite plugin](https://rootnative.github.io/web/vite-plugin) resolves that name to `@rootnative/web`. Your app code uses three entry points:
 
 | Layer  | Import                   | What's in it                                                    |
 | ------ | ------------------------ | --------------------------------------------------------------- |
@@ -34,7 +34,7 @@ Your app imports `react-native`. A bundler alias maps that name to `@rootnative/
 | Web    | `@rootnative/web/dom`    | Browser features that native doesn't have, for example `<Head>` |
 | Server | `@rootnative/web/server` | Server rendering helpers                                        |
 
-Import `@rootnative/web/dom` and `@rootnative/web/server` only in code that runs on the web. The rest of your app stays the same code that runs on iOS and Android.
+Import `@rootnative/web/dom` and `@rootnative/web/server` only in code that runs on the web. The rest of your app stays the same code that runs on iOS and Android. A fourth entry, `@rootnative/web/vite`, is the Vite plugin, for `vite.config.ts` only.
 
 ## Next steps
 
@@ -45,7 +45,7 @@ Import `@rootnative/web/dom` and `@rootnative/web/server` only in code that runs
 
 # Installation
 
-You need React 19, React DOM 19, and a bundler that can alias a package name. This page uses Vite.
+You need React 19 and React DOM 19. This page uses Vite 8 and the package's Vite plugin. For another bundler, see [Without the plugin](https://rootnative.github.io/web/vite-plugin#without-the-plugin).
 
 ## Install the package
 
@@ -55,21 +55,21 @@ npm install @rootnative/web
 
 React and React DOM are peer dependencies. A Vite React app has them already.
 
-## Point `react-native` at the package
+## Add the Vite plugin
 
-Your app imports `react-native`. Add an alias in `vite.config.ts`, so that the name resolves to `@rootnative/web`:
+Your app imports `react-native`. The plugin resolves that name to `@rootnative/web`:
 
 ```ts title="vite.config.ts"
+import { rootnative } from '@rootnative/web/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: { 'react-native': '@rootnative/web' },
-  },
+  plugins: [react(), rootnative()],
 })
 ```
+
+It also resolves `.web.tsx` files first, defines `__DEV__`, and puts `'web'` in place of `Platform.OS`. See [Vite plugin](https://rootnative.github.io/web/vite-plugin).
 
 ## Add the types
 
@@ -82,6 +82,20 @@ declare module 'react-native' {
 ```
 
 Keep this file free of top-level `import` and `export` lines. With one, the declaration stops working, and TypeScript reports `Cannot find module 'react-native'`.
+
+The file also gives you the type of `__DEV__`.
+
+If your app has `.web.tsx` files, tell TypeScript to look for them first:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "moduleSuffixes": [".web", ""]
+  }
+}
+```
+
+Keep the empty string. Without it, TypeScript finds only the `.web` files.
 
 ## Mount your app
 
@@ -145,6 +159,86 @@ See [Status](https://rootnative.github.io/web/status) for what ships today and h
 
 ---
 
+# Vite plugin
+
+`rootnative()` from `@rootnative/web/vite` sets up Vite 8 for a React Native app. It takes no options.
+
+```ts title="vite.config.ts"
+import { rootnative } from '@rootnative/web/vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [react(), rootnative()],
+})
+```
+
+## What it does
+
+| Part                 | What it does                                                                                                                                                                            |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `react-native` alias | Resolves the import name `react-native` to `@rootnative/web`. Only the exact name: a deep import such as `react-native/Libraries/Image` doesn't resolve.                                |
+| `.web` files         | Resolves `Button.web.tsx` before `Button.tsx` for an import of `./Button`, as Metro does for the web. Each extension gets a `.web` variant in front.                                    |
+| `__DEV__`            | Defines the React Native global: `true` on the dev server, `false` in a production build. It follows `NODE_ENV`, as React's development mode does. Pre-bundled dependencies get it too. |
+| `Platform.OS`        | Puts `'web'` in place of each `Platform.OS` read, so the minifier drops the code of the other platforms.                                                                                |
+
+Your own config wins. A `react-native` alias or a `__DEV__` define in your config keeps its value. A `resolve.extensions` list of your own gets the `.web` variants in front.
+
+TypeScript doesn't read the Vite config. For `.web` files, add `moduleSuffixes` to `tsconfig.json`, as [Installation](https://rootnative.github.io/web/installation#add-the-types) shows.
+
+## `Platform.OS`
+
+The plugin changes a read of `Platform.OS` when `Platform` comes from `react-native` or `@rootnative/web`. Named, renamed, and namespace imports all count:
+
+```tsx
+import { Platform } from 'react-native'
+
+const label = Platform.OS === 'ios' ? 'iPhone' : 'Web'
+// The build sees 'web' === 'ios', so only 'Web' stays in the bundle.
+```
+
+At run time `Platform.OS` is `'web'` anyway, so only the bundle size changes. Some reads keep their code, for example when a local variable in the same file has the name `Platform`. On the dev server, pre-bundled dependencies keep their reads too. `Platform.select` keeps its code.
+
+## Server rendering
+
+With Vite's server rendering, the plugin applies to your app code on the server too.
+
+Vite leaves most dependencies to Node, and Node doesn't get the `__DEV__` define. A dependency that reads `__DEV__` then throws a `ReferenceError` on the server. Add that dependency to `ssr.noExternal`, so that Vite transforms it:
+
+```ts title="vite.config.ts"
+export default defineConfig({
+  plugins: [react(), rootnative()],
+  ssr: { noExternal: ['some-library'] },
+})
+```
+
+## Without the plugin
+
+With another bundler, or without the plugin, set up the alias, the `.web` extensions, and `__DEV__` yourself. In Vite:
+
+```ts title="vite.config.ts"
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+
+const extensions = ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json']
+const dev = JSON.stringify(process.env.NODE_ENV !== 'production')
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: [{ find: /^react-native$/, replacement: '@rootnative/web' }],
+    extensions: [...extensions.map((extension) => `.web${extension}`), ...extensions],
+  },
+  define: { __DEV__: dev },
+  // The dependency optimizer doesn't apply `define`, so pre-bundled libraries need their own.
+  optimizeDeps: { rolldownOptions: { transform: { define: { __DEV__: dev } } } },
+})
+```
+
+`Platform.OS` then stays a read at run time. It still returns `'web'`.
+
+---
+
 # Status
 
 `@rootnative/web` is in early alpha. The API can change between alpha releases. This page lists what exists, so nothing on this site reads as a promise.
@@ -159,6 +253,7 @@ The latest release is [`0.0.0-alpha.0`](https://www.npmjs.com/package/@rootnativ
 | APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
 | Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                           |
 | Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                       |
+| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                         |
 
 `FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now.
 
@@ -170,7 +265,7 @@ The latest release is [`0.0.0-alpha.0`](https://www.npmjs.com/package/@rootnativ
 - **Text press events:** `onPressIn`, `onPressOut`, and `onLongPress` on `Text`. `onPress` works today.
 - **APIs:** `Alert`, `AppState`, `Linking`, `Share`, `Vibration`, `Clipboard`.
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
-- **Tooling:** a Vite plugin that sets the `react-native` alias, resolves `.web.tsx` files, and inlines `Platform.OS`. Until then, use the alias on [Installation](https://rootnative.github.io/web/installation).
+- **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
 
 ## Out of scope
 
@@ -412,7 +507,7 @@ Three rules:
 - **Write the style tags after the render ends.** The registry fills while React renders. A head that you send before the body renders misses the CSS of that body.
 - **Render the `<head>` with React.** React 19 puts the `<title>` and `<meta>` elements of [`Head`](https://rootnative.github.io/web/seo) into the `<head>` that it renders. If you render only the app and paste it into a template, they land at the start of `<body>`.
 
-Your server code needs the `react-native` alias too, so that `App` and its imports resolve to `@rootnative/web`.
+Your server code needs the same setup, so that `App` and its imports resolve to `@rootnative/web`. With Vite's server rendering, the [Vite plugin](https://rootnative.github.io/web/vite-plugin#server-rendering) does it.
 
 `renderStyleTags(registry)` returns the same two `<style>` elements as React elements. Use it when your framework takes head elements, not a string.
 
@@ -1048,6 +1143,8 @@ const shadow = Platform.select({
 | `Platform.isTV`                | `false`.                                                                                               |
 | `Platform.isTesting`           | `true` when `NODE_ENV` (or the bundler mode) is `test`.                                                |
 | `Platform.isDisableAnimations` | `true` when the user asks for reduced motion (`prefers-reduced-motion`).                               |
+
+The [Vite plugin](https://rootnative.github.io/web/vite-plugin#platformos) puts `'web'` in place of each `Platform.OS` read when it builds your app, so the minifier drops the code of the other platforms. `Platform.select` keeps its code.
 
 ---
 

@@ -15,17 +15,15 @@ A standalone web runtime for React Native apps. You write `react-native`. It run
 npm install @rootnative/web
 ```
 
-React 19 and React DOM 19 are peer dependencies. Point `react-native` at the package in `vite.config.ts`:
+React 19 and React DOM 19 are peer dependencies. Add the Vite plugin to `vite.config.ts`. It resolves `react-native` to the package:
 
 ```ts
+import { rootnative } from '@rootnative/web/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: { 'react-native': '@rootnative/web' },
-  },
+  plugins: [react(), rootnative()],
 })
 ```
 

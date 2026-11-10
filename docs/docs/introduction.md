@@ -24,7 +24,7 @@ The API can still change between releases. Each page lists what ships today and 
 
 ## How it works
 
-Your app imports `react-native`. A bundler alias maps that name to `@rootnative/web`. The package has three entry points:
+Your app imports `react-native`. The [Vite plugin](/vite-plugin) resolves that name to `@rootnative/web`. Your app code uses three entry points:
 
 | Layer  | Import                   | What's in it                                                    |
 | ------ | ------------------------ | --------------------------------------------------------------- |
@@ -32,7 +32,7 @@ Your app imports `react-native`. A bundler alias maps that name to `@rootnative/
 | Web    | `@rootnative/web/dom`    | Browser features that native doesn't have, for example `<Head>` |
 | Server | `@rootnative/web/server` | Server rendering helpers                                        |
 
-Import `@rootnative/web/dom` and `@rootnative/web/server` only in code that runs on the web. The rest of your app stays the same code that runs on iOS and Android.
+Import `@rootnative/web/dom` and `@rootnative/web/server` only in code that runs on the web. The rest of your app stays the same code that runs on iOS and Android. A fourth entry, `@rootnative/web/vite`, is the Vite plugin, for `vite.config.ts` only.
 
 ## Next steps
 
