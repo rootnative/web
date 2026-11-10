@@ -76,7 +76,6 @@ NOT IMPLEMENTED, do not import:
   TouchableHighlight, TouchableWithoutFeedback, TouchableNativeFeedback.
 - Alert, AppState, Linking, Share, Vibration, Clipboard.
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
-- onPressIn, onPressOut, onLongPress on Text. onPress on Text works.
 - A Next.js plugin, and templates for a Vite app with and without server
   rendering.
 
@@ -152,10 +151,16 @@ Text
 - numberOfLines 1 ends the line with an ellipsis. A larger number clamps.
 - ellipsizeMode: tail and clip. head and middle show the ellipsis at the end.
 - selectable is true by default on the web (false on native).
-- onPress gets the DOM click event. onClick runs first, and preventDefault()
-  in it stops onPress. disabled sets aria-disabled and stops onPress.
-- A Text with onPress is a span that a keyboard can't focus. Use href to go to
-  a page, or wrap it in a Pressable with role="button" for an action.
+- onPress, onPressIn, onPressOut, onLongPress, and pressRetentionOffset work
+  as on Pressable. The event is a GestureResponderEvent. As on native, only
+  onPress or onLongPress makes a Text pressable. suppressHighlighting is
+  ignored, as on Android.
+- A pressable Text with no role has role="link", is in the tab order, and
+  Enter or Space presses it. With href it renders an <a>. role="button"
+  renders a <button>. disabled sets aria-disabled, and the Text isn't
+  pressable, so a pressable parent gets the press.
+- On a pressable Text, onClick and the other DOM handlers run before the press
+  handlers, and both run.
 
 Image
 - Renders a div box with an <img> inside. The style sizes the box. With no

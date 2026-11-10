@@ -1,14 +1,44 @@
-import { createRef } from 'react'
+import { act, createRef } from 'react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
+import { userEvent } from 'vitest/browser'
 
 import { LONGHAND_STYLE_ID } from '../../style/registry'
 import { cleanup, render } from '../../test/render'
+import { Pressable } from '../Pressable'
 import { View } from '../View'
 import { Text } from './index'
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.useRealTimers()
+})
 
 const first = (container: HTMLElement): HTMLElement => container.firstElementChild as HTMLElement
+
+const byTestId = (id: string): HTMLElement =>
+  document.querySelector(`[data-testid="${id}"]`) as HTMLElement
+
+const touch = (element: Element, type: string): void => {
+  const rect = element.getBoundingClientRect()
+  act(() => {
+    element.dispatchEvent(
+      new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        pointerId: 1,
+        pointerType: 'touch',
+        isPrimary: true,
+        button: 0,
+        clientX: rect.left + 2,
+        clientY: rect.top + 2,
+      }),
+    )
+  })
+}
+
+const user = async (action: () => Promise<void>): Promise<void> => {
+  await act(action)
+}
 
 describe('Text', () => {
   test('renders a span with the native reset', () => {
@@ -116,41 +146,181 @@ describe('Text', () => {
   })
 
   describe('press', () => {
-    test('onPress runs on click', () => {
+    test('onPress runs on a click with no pointer press', () => {
       const onPress = vi.fn()
       const { container } = render(<Text onPress={onPress}>Hello</Text>)
       first(container).click()
       expect(onPress).toHaveBeenCalledTimes(1)
     })
 
-    test('disabled blocks onPress and sets aria-disabled', () => {
+    test('a pointer press calls onPressIn, onPress, and onPressOut once', async () => {
+      const onPressIn = vi.fn()
       const onPress = vi.fn()
-      const { container } = render(
-        <Text onPress={onPress} disabled>
+      const onPressOut = vi.fn()
+      render(
+        <Text testID="t" onPressIn={onPressIn} onPress={onPress} onPressOut={onPressOut}>
           Hello
         </Text>,
       )
-      first(container).click()
-      expect(onPress).not.toHaveBeenCalled()
-      expect(first(container).getAttribute('aria-disabled')).toBe('true')
+      await user(() => userEvent.click(byTestId('t')))
+      await vi.waitFor(() => expect(onPressOut).toHaveBeenCalledTimes(1))
+      expect(onPressIn).toHaveBeenCalledTimes(1)
+      expect(onPress).toHaveBeenCalledTimes(1)
     })
 
-    test('onClick runs first and can cancel onPress', () => {
+    test('onLongPress runs after 500 ms, and onPress then does not', () => {
+      const onLongPress = vi.fn()
       const onPress = vi.fn()
-      const onClick = vi.fn((event: { preventDefault: () => void }) => event.preventDefault())
-      const { container } = render(
-        <Text onPress={onPress} onClick={onClick}>
+      render(
+        <Text testID="t" onLongPress={onLongPress} onPress={onPress}>
           Hello
         </Text>,
       )
-      first(container).click()
-      expect(onClick).toHaveBeenCalledTimes(1)
+      vi.useFakeTimers()
+      touch(byTestId('t'), 'pointerdown')
+      act(() => vi.advanceTimersByTime(499))
+      expect(onLongPress).not.toHaveBeenCalled()
+      act(() => vi.advanceTimersByTime(1))
+      expect(onLongPress).toHaveBeenCalledTimes(1)
+      touch(byTestId('t'), 'pointerup')
       expect(onPress).not.toHaveBeenCalled()
     })
 
-    test('onPress never reaches the DOM as an attribute', () => {
-      const { container } = render(<Text onPress={() => {}}>Hello</Text>)
-      expect(first(container).hasAttribute('onpress')).toBe(false)
+    test('onPressIn alone does not make a Text pressable', async () => {
+      const onPressIn = vi.fn()
+      render(
+        <Text testID="t" onPressIn={onPressIn}>
+          Hello
+        </Text>,
+      )
+      const element = byTestId('t')
+      await user(() => userEvent.click(element))
+      expect(onPressIn).not.toHaveBeenCalled()
+      expect(element.hasAttribute('role')).toBe(false)
+      expect(element.hasAttribute('tabindex')).toBe(false)
+    })
+
+    test('a pressable Text is a link that the keyboard can press', async () => {
+      const onPress = vi.fn()
+      render(
+        <Text testID="t" onPress={onPress}>
+          Hello
+        </Text>,
+      )
+      const element = byTestId('t')
+      expect(element.tagName).toBe('SPAN')
+      expect(element.getAttribute('role')).toBe('link')
+      expect(element.tabIndex).toBe(0)
+      act(() => element.focus())
+      await user(() => userEvent.keyboard('{Enter}'))
+      expect(onPress).toHaveBeenCalledTimes(1)
+    })
+
+    test('a role or an href keeps its own element', () => {
+      render(
+        <>
+          <Text testID="button" role="button" onPress={() => {}}>
+            Save
+          </Text>
+          <Text testID="link" href="/a" onPress={() => {}}>
+            About
+          </Text>
+        </>,
+      )
+      expect(byTestId('button').tagName).toBe('BUTTON')
+      expect(byTestId('button').hasAttribute('role')).toBe(false)
+      expect(byTestId('link').tagName).toBe('A')
+      expect(byTestId('link').hasAttribute('tabindex')).toBe(false)
+    })
+
+    test('disabled: aria-disabled, no link role, and no press', async () => {
+      const onPress = vi.fn()
+      render(
+        <Text testID="t" onPress={onPress} disabled>
+          Hello
+        </Text>,
+      )
+      const element = byTestId('t')
+      await user(() => userEvent.click(element))
+      expect(onPress).not.toHaveBeenCalled()
+      expect(element.getAttribute('aria-disabled')).toBe('true')
+      expect(element.hasAttribute('role')).toBe(false)
+      expect(element.hasAttribute('tabindex')).toBe(false)
+    })
+
+    test('a disabled Text leaves the press to its parent', async () => {
+      const parent = vi.fn()
+      const child = vi.fn()
+      render(
+        <Pressable onPress={parent}>
+          <Text testID="t" onPress={child} disabled>
+            Hello
+          </Text>
+        </Pressable>,
+      )
+      await user(() => userEvent.click(byTestId('t')))
+      expect(child).not.toHaveBeenCalled()
+      expect(parent).toHaveBeenCalledTimes(1)
+    })
+
+    test('the innermost pressable Text takes the press', async () => {
+      const outer = vi.fn()
+      const inner = vi.fn()
+      render(
+        <Text onPress={outer}>
+          Read the{' '}
+          <Text testID="inner" onPress={inner}>
+            terms
+          </Text>
+        </Text>,
+      )
+      await user(() => userEvent.click(byTestId('inner')))
+      expect(inner).toHaveBeenCalledTimes(1)
+      expect(outer).not.toHaveBeenCalled()
+    })
+
+    test('onClick and onPress both run, onClick first', async () => {
+      const calls: string[] = []
+      render(
+        <Text testID="t" onClick={() => calls.push('click')} onPress={() => calls.push('press')}>
+          Hello
+        </Text>,
+      )
+      act(() => byTestId('t').click())
+      expect(calls).toEqual(['click', 'press'])
+    })
+
+    test('onFocus and onBlur reach the app, pressable or not', () => {
+      const onFocus = vi.fn()
+      const onBlur = vi.fn()
+      render(
+        <>
+          <Text testID="pressable" onPress={() => {}} onFocus={onFocus} onBlur={onBlur}>
+            A
+          </Text>
+          <Text testID="plain" tabIndex={0} onFocus={onFocus} onBlur={onBlur}>
+            B
+          </Text>
+        </>,
+      )
+      for (const id of ['pressable', 'plain']) {
+        act(() => byTestId(id).focus())
+        act(() => byTestId(id).blur())
+      }
+      expect(onFocus).toHaveBeenCalledTimes(2)
+      expect(onBlur).toHaveBeenCalledTimes(2)
+    })
+
+    test('press props never reach the DOM as attributes', () => {
+      const { container } = render(
+        <Text onPress={() => {}} pressRetentionOffset={10} suppressHighlighting>
+          Hello
+        </Text>,
+      )
+      const element = first(container)
+      for (const name of ['onpress', 'pressretentionoffset', 'suppresshighlighting']) {
+        expect(element.hasAttribute(name)).toBe(false)
+      }
     })
   })
 

@@ -1,9 +1,12 @@
-import type { ReactNode, Ref, SyntheticEvent } from 'react'
+import type { ReactNode, Ref } from 'react'
 
+import type { RectOrSize } from '../../events/press/types'
+import type { GestureResponderEvent } from '../../events/types'
 import type { StyleProp } from '../../style/types'
 import type { AccessibilityProps, DOMEventHandlers, LayoutChangeEvent } from '../View/types'
 
-export type PressEvent = SyntheticEvent<HTMLElement>
+/** @deprecated Use `GestureResponderEvent`, the type that React Native gives `onPress`. */
+export type PressEvent = GestureResponderEvent
 
 export type TextProps = AccessibilityProps &
   DOMEventHandlers<HTMLElement> & {
@@ -20,7 +23,13 @@ export type TextProps = AccessibilityProps &
     selectable?: boolean | undefined
     selectionColor?: string | undefined
     pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only' | undefined
-    onPress?: ((event: PressEvent) => void) | undefined
+    onPress?: ((event: GestureResponderEvent) => void) | undefined
+    onPressIn?: ((event: GestureResponderEvent) => void) | undefined
+    onPressOut?: ((event: GestureResponderEvent) => void) | undefined
+    onLongPress?: ((event: GestureResponderEvent) => void) | undefined
+    pressRetentionOffset?: RectOrSize | undefined
+    // The web ignores it, as Android does. Only iOS highlights a pressed Text.
+    suppressHighlighting?: boolean | undefined
     onLayout?: ((event: LayoutChangeEvent) => void) | undefined
     // Web only. The level of a `heading` role, 1 to 6.
     'aria-level'?: number | undefined

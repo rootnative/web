@@ -4,6 +4,16 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Added
+
+- **`Text` press events:** `onPressIn`, `onPressOut`, `onLongPress`, and `pressRetentionOffset`, on the same press responder as `Pressable`. `suppressHighlighting` is ignored, as on Android.
+
+### Changed
+
+- A pressable `Text` has the role `link` and is in the tab order, as on native, so Enter and Space press it. A `Text` is pressable with `onPress` or `onLongPress`, and not `disabled`.
+- **Breaking:** `Text` presses as `Pressable` does: `onPress` fires on the pointer release and gets a `GestureResponderEvent`. `preventDefault()` in `onClick` no longer stops `onPress`: both run, `onClick` first.
+- `PressEvent` is now the same type as `GestureResponderEvent`, and it's deprecated.
+
 ## [0.0.0-alpha.1] - 2026-11-10
 
 ### Added

@@ -1,13 +1,15 @@
 import {
   createElement,
-  useCallback,
   useContext,
   useImperativeHandle,
+  useMemo,
   useRef,
-  type MouseEvent,
   type ReactElement,
 } from 'react'
 
+import { usePressability } from '../../events/press'
+import { mergeHandlers } from '../../events/press/mergeHandlers'
+import type { PressabilityConfig } from '../../events/press/types'
 import { toDOMProps } from '../../render/domProps'
 import { resolveTag } from '../../render/resolveTag'
 import { useElementLayout } from '../../render/useElementLayout'
@@ -75,14 +77,20 @@ export function Text(props: TextProps): ReactElement {
     disabled,
     ellipsizeMode,
     numberOfLines,
-    onClick,
+    onBlur,
+    onFocus,
     onLayout,
+    onLongPress,
     onPress,
+    onPressIn,
+    onPressOut,
     pointerEvents,
+    pressRetentionOffset,
     ref,
     selectable,
     selectionColor,
     style,
+    suppressHighlighting: _suppressHighlighting,
     ...rest
   } = props
 
@@ -92,7 +100,32 @@ export function Text(props: TextProps): ReactElement {
   useElementLayout(element, onLayout)
   const registry = useStyleRegistry()
 
-  const { tag, role } = resolveTag(rest, 'span', children != null)
+  // As in React Native, onPress or onLongPress makes a Text pressable. onPressIn and onPressOut
+  // alone don't.
+  const pressable = (onPress != null || onLongPress != null) && disabled !== true
+  const config = useMemo<PressabilityConfig | null>(
+    () =>
+      pressable
+        ? {
+            pressRectOffset: pressRetentionOffset,
+            onBlur,
+            onFocus,
+            onLongPress,
+            onPress,
+            onPressIn,
+            onPressOut,
+          }
+        : null,
+    [pressable, pressRetentionOffset, onBlur, onFocus, onLongPress, onPress, onPressIn, onPressOut],
+  )
+  const handlers = usePressability(config)
+
+  // As in React Native, a pressable Text with no role is a link.
+  const roleProps =
+    pressable && rest.role === undefined && rest.accessibilityRole === undefined
+      ? { ...rest, role: 'link' as const }
+      : rest
+  const { tag, role } = resolveTag(roleProps, 'span', children != null)
 
   const lineStyle =
     numberOfLines === undefined || numberOfLines < 1
@@ -121,22 +154,22 @@ export function Text(props: TextProps): ReactElement {
     if (extra !== undefined) className = `${className} ${extra}`
   }
 
-  const handleClick = useCallback(
-    (event: MouseEvent<HTMLElement>) => {
-      onClick?.(event)
-      if (disabled === true || event.defaultPrevented) return
-      onPress?.(event)
-    },
-    [disabled, onClick, onPress],
-  )
-
   const domProps = toDOMProps(rest)
   if (role !== undefined) domProps['role'] = role
   if (tag.length === 2 && tag[0] === 'h') delete domProps['aria-level']
   // A button submits its form by default. A React Native button never does.
   if (tag === 'button') domProps['type'] = 'button'
   if (disabled === true) domProps['aria-disabled'] = true
-  if (onPress !== undefined || onClick !== undefined) domProps['onClick'] = handleClick
+  if (pressable && handlers !== null) {
+    Object.assign(domProps, mergeHandlers(rest, handlers))
+    // A link has to be reachable by keyboard. The press responder presses it on Enter and Space.
+    if (domProps['tabIndex'] === undefined && tag !== 'a' && tag !== 'button') {
+      domProps['tabIndex'] = 0
+    }
+  } else {
+    if (onFocus !== undefined) domProps['onFocus'] = onFocus
+    if (onBlur !== undefined) domProps['onBlur'] = onBlur
+  }
   domProps['className'] = className
   domProps['ref'] = element
 

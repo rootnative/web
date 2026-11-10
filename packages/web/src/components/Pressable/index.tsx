@@ -1,11 +1,8 @@
 import { memo, useMemo, useState, type NamedExoticComponent, type ReactElement } from 'react'
 
 import { usePressability } from '../../events/press'
-import type {
-  PressabilityConfig,
-  PressabilityEventHandlers,
-  RectOrSize,
-} from '../../events/press/types'
+import { mergeHandlers } from '../../events/press/mergeHandlers'
+import type { PressabilityConfig, RectOrSize } from '../../events/press/types'
 import type { StyleRegistry } from '../../style/registry'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { useViewElement } from '../View'
@@ -50,36 +47,6 @@ const isFocusVisible = (element: Element): boolean => {
   } catch {
     return true
   }
-}
-
-// DOM handlers that both the app and the press responder can set. Both run, the app first.
-const sharedHandlers = [
-  'onClick',
-  'onContextMenu',
-  'onKeyDown',
-  'onKeyUp',
-  'onPointerCancel',
-  'onPointerDown',
-  'onPointerEnter',
-  'onPointerLeave',
-  'onPointerMove',
-  'onPointerUp',
-] as const
-
-type Handler = (event: unknown) => void
-
-const mergeHandlers = (app: ViewProps, own: PressabilityEventHandlers): ViewProps => {
-  const merged: Record<string, unknown> = { ...own }
-  for (const key of sharedHandlers) {
-    const first = app[key] as Handler | undefined
-    if (first === undefined) continue
-    const second = own[key] as Handler
-    merged[key] = (event: unknown) => {
-      first(event)
-      second(event)
-    }
-  }
-  return merged as ViewProps
 }
 
 export const Pressable: NamedExoticComponent<PressableProps> = memo(function Pressable(

@@ -27,7 +27,6 @@ The latest release is [`0.0.0-alpha.1`](https://www.npmjs.com/package/@rootnativ
 **Don't import these yet.** They aren't in the package.
 
 - **Components:** `Button`, `ActivityIndicator`, `Switch`, `RefreshControl`, `Modal`, `TouchableOpacity`, `TouchableHighlight`, `TouchableWithoutFeedback`, `TouchableNativeFeedback`.
-- **Text press events:** `onPressIn`, `onPressOut`, and `onLongPress` on `Text`. `onPress` works today.
 - **APIs:** `Alert`, `AppState`, `Linking`, `Share`, `Vibration`, `Clipboard`.
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
