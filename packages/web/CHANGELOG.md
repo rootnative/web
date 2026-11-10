@@ -4,10 +4,25 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+## [0.0.0-alpha.1] - 2026-11-10
+
 ### Added
 
-- **Vite plugin** from `@rootnative/web/vite`. `rootnative()` points `react-native` at the package, resolves `.web.*` files first, and replaces `Platform.OS` with `'web'`, so a minifier drops the code of the other platforms.
+- **Vite plugin** from `@rootnative/web/vite`. Add `rootnative()` to `plugins` in `vite.config.ts`. It needs Vite 8, an optional peer dependency. The plugin:
+  - resolves `react-native` to `@rootnative/web`,
+  - resolves `Button.web.tsx` before `Button.tsx`,
+  - defines `__DEV__`,
+  - puts `'web'` in place of each `Platform.OS` read, so the minifier drops the code of the other platforms.
 - **`__DEV__`**, the React Native global: `true` in a development build, `false` in a production build. The Vite plugin defines it, also for pre-bundled dependencies, and the package types declare it.
+
+### Changed
+
+- The package README and `llms.txt` set up an app with the Vite plugin.
+
+### Notes
+
+- The hand-written `react-native` alias from `0.0.0-alpha.0` still works. To use the plugin, remove the alias and add `rootnative()`. [Vite plugin](https://rootnative.github.io/web/vite-plugin) also shows a setup without the plugin.
+- In server rendering, a dependency that Vite leaves to Node gets no `__DEV__` and throws a `ReferenceError`. Add that dependency to `ssr.noExternal`.
 
 ## [0.0.0-alpha.0] - 2026-11-10
 
