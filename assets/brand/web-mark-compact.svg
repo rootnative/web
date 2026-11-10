@@ -1,0 +1,9 @@
+<!--
+  A thicker strip, for 32 px and less, where the normal panels merge.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" role="img" aria-label="Root Native Web">
+  <title>Root Native Web</title>
+  <path d="M 4 12 L 18 28 L 32 12 L 46 28 L 60 12 L 60 36 L 46 52 L 32 36 L 18 52 L 4 36 Z" fill="#fb7185" />
+  <path d="M 18 28 L 32 12 L 32 36 L 18 52 Z" fill="#e11d48" />
+  <path d="M 46 28 L 60 12 L 60 36 L 46 52 Z" fill="#e11d48" />
+</svg>
