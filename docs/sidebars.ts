@@ -21,6 +21,8 @@ const sidebars: SidebarsConfig = {
         'text',
         'image',
         'pressable',
+        'touchableopacity',
+        'touchablewithoutfeedback',
         'scrollview',
         'flatlist',
         'textinput',

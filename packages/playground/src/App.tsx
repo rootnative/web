@@ -13,6 +13,7 @@ import { PressableRoute } from './routes/PressableRoute'
 import { ScrollViewRoute } from './routes/ScrollViewRoute'
 import { TextInputRoute } from './routes/TextInputRoute'
 import { TextRoute } from './routes/TextRoute'
+import { TouchablesRoute } from './routes/TouchablesRoute'
 import { ViewRoute } from './routes/ViewRoute'
 
 const routes: ReadonlyArray<{ path: string; title: string; Component: () => ReactElement }> = [
@@ -26,6 +27,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'appearance', title: 'Appearance', Component: AppearanceRoute },
   { path: 'apis', title: 'Small APIs', Component: ApisRoute },
   { path: 'pressable', title: 'Pressable', Component: PressableRoute },
+  { path: 'touchables', title: 'Touchables', Component: TouchablesRoute },
   { path: 'press', title: 'usePressability', Component: PressabilityRoute },
   { path: 'pan', title: 'PanResponder', Component: PanResponderRoute },
   { path: 'head', title: 'Head', Component: HeadRoute },

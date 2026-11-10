@@ -249,7 +249,7 @@ The latest release is [`0.0.0-alpha.1`](https://www.npmjs.com/package/@rootnativ
 
 | Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                                                                                                                                                                                                                           |
+| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                                                                                                                         |
 | APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
 | Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                           |
 | Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                       |
@@ -261,7 +261,7 @@ The latest release is [`0.0.0-alpha.1`](https://www.npmjs.com/package/@rootnativ
 
 **Don't import these yet.** They aren't in the package.
 
-- **Components:** `Button`, `ActivityIndicator`, `Switch`, `RefreshControl`, `Modal`, `TouchableOpacity`, `TouchableHighlight`, `TouchableWithoutFeedback`, `TouchableNativeFeedback`.
+- **Components:** `Button`, `ActivityIndicator`, `Switch`, `RefreshControl`, `Modal`, `TouchableHighlight`, `TouchableNativeFeedback`.
 - **APIs:** `Alert`, `AppState`, `Linking`, `Share`, `Vibration`, `Clipboard`.
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
@@ -851,6 +851,100 @@ As on native, only a `Pressable` whose `style` or `children` is a function rende
 ## Ref
 
 The ref is the DOM element.
+
+---
+
+# `TouchableOpacity`
+
+A press target that dims while you press it. It uses the timing and the curve of React Native, with the same press handling as [`Pressable`](https://rootnative.github.io/web/pressable#how-a-press-works).
+
+```tsx
+import { StyleSheet, Text, TouchableOpacity } from 'react-native'
+
+export function SaveButton({ onSave }) {
+  return (
+    <TouchableOpacity role="button" onPress={onSave} style={styles.button}>
+      <Text>Save</Text>
+    </TouchableOpacity>
+  )
+}
+
+const styles = StyleSheet.create({
+  button: { padding: 12, borderRadius: 8, backgroundColor: '#e5e7eb' },
+})
+```
+
+As on `Pressable`, give an action `role="button"`, so it renders a `<button type="button">`. Without a role, it renders a `<div>`.
+
+## How it dims
+
+- When a press starts, the opacity goes to `activeOpacity` at once.
+- When the pointer leaves the press area, the opacity goes back over 250 ms. When it comes back, the opacity goes to `activeOpacity` over 150 ms.
+- When the press ends, the opacity goes back to the opacity of `style` over 250 ms.
+- A change of `disabled` or of the style's opacity also fades to the style's opacity over 250 ms.
+
+The fade uses the Web Animations API, so a press doesn't render the component again. The curve is React Native's `Easing.inOut(Easing.quad)`, as `cubic-bezier(0.455, 0.03, 0.515, 0.955)`.
+
+## Props
+
+| Prop                                                                    | On the web                                                                                       |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `activeOpacity`                                                         | The opacity while pressed. The default is `0.2`.                                                 |
+| `onPress`, `onPressIn`, `onPressOut`, `onLongPress`                     | As on [`Pressable`](https://rootnative.github.io/web/pressable). There's no minimum press duration, as on native.                |
+| `delayPressIn`, `delayPressOut`, `delayLongPress`                       | The press delays, in milliseconds.                                                               |
+| `onFocus`, `onBlur`                                                     | Focus events of the element. On native, `TouchableOpacity` doesn't call them.                    |
+| `disabled`                                                              | Sets `aria-disabled`, takes the element out of the tab order, and stops every press.             |
+| `focusable`                                                             | As on native, the element is in the tab order only with `onPress`. `false` takes it out.         |
+| `hitSlop`, `pressRetentionOffset`                                       | As on [`Pressable`](https://rootnative.github.io/web/pressable).                                                                 |
+| `rejectResponderTermination`                                            | `true` sets `touch-action: none`, so a scroll that starts on the element can't cancel the press. |
+| `onClick` and the other DOM handlers                                    | **Web only.** Your handler runs first, then the press handling.                                  |
+| View props                                                              | As on [`View`](https://rootnative.github.io/web/view).                                                                           |
+| `touchSoundDisabled`, `hasTVPreferredFocus`, `nextFocusDown` and others | Native only. Accepted and ignored.                                                               |
+
+## Ref
+
+The ref is the DOM element.
+
+---
+
+# `TouchableWithoutFeedback`
+
+Adds press handling to its only child. It renders no element of its own and shows no feedback. The press handling is the same as on [`Pressable`](https://rootnative.github.io/web/pressable#how-a-press-works).
+
+```tsx
+import { Text, TouchableWithoutFeedback, View } from 'react-native'
+
+export function Card({ onOpen }) {
+  return (
+    <TouchableWithoutFeedback role="button" onPress={onOpen}>
+      <View>
+        <Text>Open</Text>
+      </View>
+    </TouchableWithoutFeedback>
+  )
+}
+```
+
+The child must be one element that passes its props to the DOM, for example a `View` or a `Text`. Your own component works when it passes the props on to a `View`.
+
+## What the child gets
+
+- The press handlers. The child's own DOM handlers run first, for example its `onPointerDown`.
+- The accessibility props, `role`, `testID`, `nativeID`, `id`, and `onLayout` of the `TouchableWithoutFeedback`. `style` stays out, as on native.
+- `onFocus` and `onBlur` of the `TouchableWithoutFeedback`. Without them, the child keeps its own.
+- `focusable`: as on native, the child is in the tab order only with `onPress`, and not when `disabled`.
+
+## Props
+
+| Prop                                                | On the web                                                                                    |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `onPress`, `onPressIn`, `onPressOut`, `onLongPress` | As on [`Pressable`](https://rootnative.github.io/web/pressable). There's no minimum press duration, as on native.             |
+| `delayPressIn`, `delayPressOut`, `delayLongPress`   | The press delays, in milliseconds.                                                            |
+| `disabled`                                          | Sets `aria-disabled` on the child, takes it out of the tab order, and stops every press.      |
+| `pressRetentionOffset`                              | As on [`Pressable`](https://rootnative.github.io/web/pressable).                                                              |
+| `hitSlop`                                           | The child gets it. A `View` doesn't grow its hit area yet, so it only extends the press area. |
+| `rejectResponderTermination`                        | The web ignores it: there's no element of its own to set `touch-action` on.                   |
+| `touchSoundDisabled`                                | Native only. Accepted and ignored.                                                            |
 
 ---
 

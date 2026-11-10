@@ -64,16 +64,16 @@ Import /dom and /server only in code that runs on the web.
 
 ## What ships
 
-Components: View, Text, Image, Pressable, ScrollView, FlatList, TextInput,
-StatusBar.
+Components: View, Text, Image, Pressable, TouchableOpacity,
+TouchableWithoutFeedback, ScrollView, FlatList, TextInput, StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AccessibilityInfo, I18nManager, BackHandler, PixelRatio,
 processColor, PanResponder, usePressability.
 
 NOT IMPLEMENTED, do not import:
-- Button, ActivityIndicator, Switch, RefreshControl, Modal, TouchableOpacity,
-  TouchableHighlight, TouchableWithoutFeedback, TouchableNativeFeedback.
+- Button, ActivityIndicator, Switch, RefreshControl, Modal, TouchableHighlight,
+  TouchableNativeFeedback.
 - Alert, AppState, Linking, Share, Vibration, Clipboard.
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
 - A Next.js plugin, and templates for a Vite app with and without server
@@ -193,6 +193,28 @@ Pressable
 - cancelable={false} sets touch-action: none.
 - disabled sets aria-disabled, leaves the tab order, and stops every press.
 - android_ripple, android_disableSound, blockNativeResponder: ignored.
+
+TouchableOpacity
+- The press handling of Pressable, with no minimum press duration.
+  role="button" renders <button type="button">. Without a role, a div.
+- Dims to activeOpacity (default 0.2) at once when a press starts, and over
+  150 ms when the pointer comes back into the press area. Fades back to the
+  style's opacity over 250 ms when the press ends or the pointer leaves, and
+  when disabled or the style's opacity changes. Easing.inOut(Easing.quad),
+  through the Web Animations API, with no new render.
+- In the tab order only with onPress, as on native. onFocus and onBlur fire
+  (native doesn't call them). rejectResponderTermination sets touch-action:
+  none. hitSlop and pressRetentionOffset as on Pressable.
+- touchSoundDisabled, hasTVPreferredFocus, nextFocus*: ignored.
+
+TouchableWithoutFeedback
+- No element of its own. Its only child gets the press handlers (the child's
+  own DOM handlers run first), the accessibility props, role, testID,
+  nativeID, id, and onLayout. style stays out, as on native.
+- onFocus and onBlur replace the child's. Without them, the child keeps its
+  own. The child is in the tab order only with onPress and not disabled.
+- hitSlop goes to the child, but a View doesn't grow its hit area yet.
+  rejectResponderTermination is ignored.
 
 ScrollView
 - Scrolls its own box, not the document. On a phone, the browser's address

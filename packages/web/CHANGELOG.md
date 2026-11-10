@@ -6,6 +6,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ### Added
 
+- **`TouchableOpacity`**: dims to `activeOpacity` (default `0.2`) while pressed, with React Native's timing and curve, through the Web Animations API.
+- **`TouchableWithoutFeedback`**: gives its only child the press handlers and its accessibility props, with no element of its own.
 - **`Text` press events:** `onPressIn`, `onPressOut`, `onLongPress`, and `pressRetentionOffset`, on the same press responder as `Pressable`. `suppressHighlighting` is ignored, as on Android.
 
 ### Changed
