@@ -1,10 +1,23 @@
 import { useState, type ReactElement } from 'react'
-import { StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
+import {
+  StyleSheet,
+  Text,
+  TouchableHighlight,
+  TouchableNativeFeedback,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native'
+
+// Outside the component: the React Compiler lint reads a capitalized call in render as a component.
+const ripple = TouchableNativeFeedback.Ripple('#2563eb', false)
 
 export function TouchablesRoute(): ReactElement {
   const [opacityPresses, setOpacityPresses] = useState(0)
   const [longPresses, setLongPresses] = useState(0)
   const [plainPresses, setPlainPresses] = useState(0)
+  const [highlightPresses, setHighlightPresses] = useState(0)
+  const [nativePresses, setNativePresses] = useState(0)
 
   return (
     <>
@@ -42,6 +55,29 @@ export function TouchablesRoute(): ReactElement {
           <Text>Pressed {plainPresses} times</Text>
         </View>
       </TouchableWithoutFeedback>
+
+      <Text>TouchableHighlight: a dark underlay, and the child at 0.85 while pressed.</Text>
+      <TouchableHighlight
+        role="button"
+        underlayColor="#1e3a8a"
+        style={styles.highlight}
+        onPress={() => setHighlightPresses((n) => n + 1)}
+      >
+        <View style={styles.highlightInner}>
+          <Text>Pressed {highlightPresses} times</Text>
+        </View>
+      </TouchableHighlight>
+
+      <Text>TouchableNativeFeedback: no ripple on the web, as on iOS.</Text>
+      <TouchableNativeFeedback
+        role="button"
+        background={ripple}
+        onPress={() => setNativePresses((n) => n + 1)}
+      >
+        <View style={styles.card}>
+          <Text>Pressed {nativePresses} times</Text>
+        </View>
+      </TouchableNativeFeedback>
     </>
   )
 }
@@ -64,5 +100,7 @@ const styles = StyleSheet.create({
     borderColor: '#d1d5db',
   },
   faded: { opacity: 0.8 },
+  highlight: { alignSelf: 'flex-start', borderRadius: 8 },
+  highlightInner: { padding: 16, borderRadius: 8, backgroundColor: '#dbeafe' },
   disabled: { opacity: 0.5 },
 })

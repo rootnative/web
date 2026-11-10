@@ -249,7 +249,7 @@ The latest release is [`0.0.0-alpha.1`](https://www.npmjs.com/package/@rootnativ
 
 | Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                                                                                                                         |
+| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                     |
 | APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
 | Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                           |
 | Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                       |
@@ -261,7 +261,7 @@ The latest release is [`0.0.0-alpha.1`](https://www.npmjs.com/package/@rootnativ
 
 **Don't import these yet.** They aren't in the package.
 
-- **Components:** `Button`, `ActivityIndicator`, `Switch`, `RefreshControl`, `Modal`, `TouchableHighlight`, `TouchableNativeFeedback`.
+- **Components:** `Button`, `ActivityIndicator`, `Switch`, `RefreshControl`, `Modal`.
 - **APIs:** `Alert`, `AppState`, `Linking`, `Share`, `Vibration`, `Clipboard`.
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
@@ -851,6 +851,107 @@ As on native, only a `Pressable` whose `style` or `children` is a function rende
 ## Ref
 
 The ref is the DOM element.
+
+---
+
+# `TouchableHighlight`
+
+A press target that shows an underlay while you press it. The underlay is a background color, and the child gets a lower opacity on top of it, so the child looks darker. The press handling is the same as on [`Pressable`](https://rootnative.github.io/web/pressable#how-a-press-works).
+
+```tsx
+import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
+
+export function Row({ onOpen }) {
+  return (
+    <TouchableHighlight role="button" underlayColor="#e5e7eb" onPress={onOpen}>
+      <View style={styles.row}>
+        <Text>Open</Text>
+      </View>
+    </TouchableHighlight>
+  )
+}
+
+const styles = StyleSheet.create({
+  row: { padding: 16, backgroundColor: 'white' },
+})
+```
+
+The child must be one element that takes a `style`, for example a `View`. Give the child an opaque background color. The underlay then shows through the child as its opacity drops. Without a child background, the underlay shows at full strength, as on native.
+
+## How the underlay works
+
+- When a press starts, the element gets `underlayColor` as its background, and the child gets `activeOpacity`.
+- When the press ends, the underlay goes away. After `onPress`, it stays for `delayPressOut` milliseconds, so a short tap still shows it.
+- With no press handler (`onPress`, `onPressIn`, `onPressOut`, or `onLongPress`), there's no underlay.
+- The underlay changes render the component again, as on native.
+
+## Props
+
+| Prop                                                                    | On the web                                                                                       |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `underlayColor`                                                         | The background while pressed. The default is black.                                              |
+| `activeOpacity`                                                         | The opacity of the child while pressed. The default is `0.85`.                                   |
+| `onShowUnderlay`, `onHideUnderlay`                                      | Called when the underlay shows and when it goes away.                                            |
+| `testOnly_pressed`                                                      | Shows the underlay all the time.                                                                 |
+| `onPress`, `onPressIn`, `onPressOut`, `onLongPress`                     | As on [`Pressable`](https://rootnative.github.io/web/pressable). There's no minimum press duration, as on native.                |
+| `delayPressIn`, `delayPressOut`, `delayLongPress`                       | The press delays, in milliseconds.                                                               |
+| `onFocus`, `onBlur`                                                     | Focus events of the element. On native, `TouchableHighlight` doesn't call them.                  |
+| `disabled`                                                              | Sets `aria-disabled`, takes the element out of the tab order, and stops every press.             |
+| `focusable`                                                             | As on native, the element is in the tab order only with `onPress`. `false` takes it out.         |
+| `hitSlop`, `pressRetentionOffset`                                       | As on [`Pressable`](https://rootnative.github.io/web/pressable).                                                                 |
+| `rejectResponderTermination`                                            | `true` sets `touch-action: none`, so a scroll that starts on the element can't cancel the press. |
+| `onClick` and the other DOM handlers                                    | **Web only.** Your handler runs first, then the press handling.                                  |
+| View props                                                              | As on [`View`](https://rootnative.github.io/web/view).                                                                           |
+| `touchSoundDisabled`, `hasTVPreferredFocus`, `nextFocusDown` and others | Native only. Accepted and ignored.                                                               |
+
+## Ref
+
+The ref is the DOM element.
+
+---
+
+# `TouchableNativeFeedback`
+
+On Android, this touchable draws the system ripple. On iOS, React Native shows no feedback, and the press works as on [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback). The web does the same as iOS.
+
+```tsx
+import { Text, TouchableNativeFeedback, View } from 'react-native'
+
+const ripple = TouchableNativeFeedback.Ripple('#2563eb', false)
+
+export function Item({ onOpen }) {
+  return (
+    <TouchableNativeFeedback role="button" background={ripple} onPress={onOpen}>
+      <View>
+        <Text>Open</Text>
+      </View>
+    </TouchableNativeFeedback>
+  )
+}
+```
+
+The child gets the press handlers and the accessibility props, as with [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback#what-the-child-gets).
+
+## Props
+
+| Prop                                              | On the web                                                     |
+| ------------------------------------------------- | -------------------------------------------------------------- |
+| `background`, `useForeground`                     | Android only. Accepted and ignored, as on iOS.                 |
+| The props of `TouchableWithoutFeedback`           | As on [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback). |
+| `hasTVPreferredFocus`, `nextFocusDown` and others | TV only. Accepted and ignored.                                 |
+
+## Static methods
+
+| Method                                          | On the web                                                                                 |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `SelectableBackground(rippleRadius?)`           | Returns the same object as on native, for `background`.                                    |
+| `SelectableBackgroundBorderless(rippleRadius?)` | Returns the same object as on native, for `background`.                                    |
+| `Ripple(color, borderless, rippleRadius?)`      | Returns the same object as on native, with the color from [`processColor`](https://rootnative.github.io/web/processcolor). |
+| `canUseNativeForeground()`                      | `false`, as on iOS.                                                                        |
+
+> **TIP: The React Compiler lint and `Ripple`**
+>
+> The React Compiler lint reads a capitalized call in a component, such as `TouchableNativeFeedback.Ripple(...)`, as a component, and reports `capitalized-calls`. Make the call once outside the component, as in the example.
 
 ---
 

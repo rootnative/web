@@ -120,6 +120,10 @@ export type {
   TextInputState,
   TextInputSubmitEditingEvent,
 } from './components/TextInput'
+export { TouchableHighlight } from './components/TouchableHighlight'
+export type { TouchableHighlightProps } from './components/TouchableHighlight'
+export { TouchableNativeFeedback } from './components/TouchableNativeFeedback'
+export type { TouchableNativeFeedbackProps } from './components/TouchableNativeFeedback'
 export { TouchableOpacity } from './components/TouchableOpacity'
 export type { TouchableOpacityProps } from './components/TouchableOpacity'
 export { TouchableWithoutFeedback } from './components/TouchableWithoutFeedback'

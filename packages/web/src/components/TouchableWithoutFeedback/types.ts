@@ -24,6 +24,16 @@ export type TouchablePressProps = {
   touchSoundDisabled?: boolean | undefined
 }
 
+// TV only. The web ignores them.
+export type TouchableTVProps = {
+  hasTVPreferredFocus?: boolean | undefined
+  nextFocusDown?: number | undefined
+  nextFocusForward?: number | undefined
+  nextFocusLeft?: number | undefined
+  nextFocusRight?: number | undefined
+  nextFocusUp?: number | undefined
+}
+
 export type TouchableWithoutFeedbackProps = AccessibilityProps &
   TouchablePressProps & {
     children?: ReactNode | undefined

@@ -21,6 +21,8 @@ const sidebars: SidebarsConfig = {
         'text',
         'image',
         'pressable',
+        'touchablehighlight',
+        'touchablenativefeedback',
         'touchableopacity',
         'touchablewithoutfeedback',
         'scrollview',

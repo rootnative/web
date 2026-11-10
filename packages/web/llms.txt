@@ -64,16 +64,16 @@ Import /dom and /server only in code that runs on the web.
 
 ## What ships
 
-Components: View, Text, Image, Pressable, TouchableOpacity,
-TouchableWithoutFeedback, ScrollView, FlatList, TextInput, StatusBar.
+Components: View, Text, Image, Pressable, TouchableHighlight,
+TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback,
+ScrollView, FlatList, TextInput, StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AccessibilityInfo, I18nManager, BackHandler, PixelRatio,
 processColor, PanResponder, usePressability.
 
 NOT IMPLEMENTED, do not import:
-- Button, ActivityIndicator, Switch, RefreshControl, Modal, TouchableHighlight,
-  TouchableNativeFeedback.
+- Button, ActivityIndicator, Switch, RefreshControl, Modal.
 - Alert, AppState, Linking, Share, Vibration, Clipboard.
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
 - A Next.js plugin, and templates for a Vite app with and without server
@@ -193,6 +193,26 @@ Pressable
 - cancelable={false} sets touch-action: none.
 - disabled sets aria-disabled, leaves the tab order, and stops every press.
 - android_ripple, android_disableSound, blockNativeResponder: ignored.
+
+TouchableHighlight
+- The press handling of Pressable, with no minimum press duration. A div
+  around one child that takes a style. role="button" renders a button.
+- While pressed: underlayColor (default black) as the background, and
+  activeOpacity (default 0.85) on the child. After onPress, the underlay
+  stays for delayPressOut ms, so a short tap shows it. No press handler, no
+  underlay. testOnly_pressed shows it. onShowUnderlay, onHideUnderlay.
+- Give the child an opaque background color, or the underlay shows at full
+  strength.
+- In the tab order only with onPress. onFocus and onBlur fire.
+  rejectResponderTermination sets touch-action: none.
+
+TouchableNativeFeedback
+- Works as TouchableWithoutFeedback, with no ripple, as on iOS. background
+  and useForeground are ignored.
+- SelectableBackground(), SelectableBackgroundBorderless(), and Ripple(color,
+  borderless, rippleRadius) return the objects of React Native.
+  canUseNativeForeground() is false. Call Ripple outside a component: the
+  React Compiler lint reads a capitalized call as a component.
 
 TouchableOpacity
 - The press handling of Pressable, with no minimum press duration.
