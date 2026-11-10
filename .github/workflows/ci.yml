@@ -33,21 +33,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm lint
-
-      - run: pnpm format:check
-
-      - run: pnpm check:llms
-
-      - run: pnpm check:versions
-
-      - run: pnpm typecheck
-
-      - run: pnpm build
-
-      - run: pnpm check:artifact
-
       - name: Install Chromium
         run: pnpm --filter @rootnative/web exec playwright install chromium --with-deps
 
-      - run: pnpm test
+      # The gate list is the preflight script in package.json, so CI and release-manual.yml run
+      # the same gates.
+      - name: Preflight
+        run: pnpm preflight

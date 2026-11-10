@@ -1,0 +1,237 @@
+name: Release (manual)
+
+# This filename is part of the release credentials. Don't rename it. npm binds a trusted publisher
+# to the exact `owner/repo` and workflow filename. After a rename, the run fails at the publish
+# step with a 404 on `PUT /@rootnative%2fweb`, after every gate passed.
+#
+# Before the first run, register this file as a trusted publisher of @rootnative/web on
+# npmjs.com: repository `rootnative/web`, workflow `release-manual.yml`, stage-only.
+#
+# To release:
+# 1. Write the `## [<version>] - <date>` section in packages/web/CHANGELOG.md, with the entries
+#    from Unreleased. Commit it to main.
+# 2. Dispatch this workflow from main with that version.
+# 3. Approve the staged version with 2FA on npmjs.com (Staged Packages), or with
+#    `npm stage approve`.
+#
+# The workflow sets the version, fixes the version references, rebuilds the llms files, and runs
+# every gate on the result. Then it commits `release: web@<version>`, tags it, pushes both, stages
+# the publish, creates the GitHub Release, and deploys the docs.
+#
+# When a run fails after the push, keep the release commit. If the version isn't on npm, delete
+# the tag (`git push --delete origin web@<version>`) and dispatch again with the same version.
+on:
+  workflow_dispatch:
+    inputs:
+      custom_version:
+        description: 'Exact version, for example "0.0.0-alpha.1", with no "v" in front.'
+        required: true
+        type: string
+      tag:
+        description: 'npm dist-tag.'
+        required: true
+        default: latest
+        type: choice
+        options:
+          - latest
+          - alpha
+          - beta
+          - rc
+      dry_run:
+        description: 'Set the version and run every gate, but push, tag, and publish nothing.'
+        required: false
+        default: false
+        type: boolean
+
+# `contents: write` pushes the release commit and the tag, and creates the GitHub Release.
+# `id-token: write` gets the OIDC token that npm takes for trusted publishing. `actions: write`
+# starts the docs deploy.
+permissions:
+  contents: write
+  id-token: write
+  actions: write
+
+# No `cancel-in-progress`: a cancelled run can leave a version on npm with no tag in git, and npm
+# never takes a version twice.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release @rootnative/web
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # The release commit goes to main, so the tree has to be main. A run from another branch
+      # would push that branch onto main.
+      - name: Require main
+        if: ${{ github.ref != 'refs/heads/main' }}
+        run: |
+          echo "::error::Dispatch this workflow from main. It pushes the release commit to main."
+          exit 1
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # check-release.mjs needs the tags to see that this version wasn't cut before.
+          fetch-depth: 0
+
+      # Newer than the v6.0.10 pin of the other repos: v6.1.0 is the first
+      # release that can install pnpm 12.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          # Trusted publishing needs it too: it names the registry that takes the OIDC token.
+          registry-url: https://registry.npmjs.org
+
+      # An exact version, as in the other repos. A new npm can change the release path with no
+      # change in this repo, so bump it on purpose, in a commit of its own.
+      - name: Install npm (npm stage publish needs 11.15.0 or later)
+        run: npm install -g npm@11.19.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The inputs reach the shell through `env`, never through `${{ }}` in `run`, so a crafted
+      # version string can't run a command.
+      - name: Set the version
+        id: version
+        working-directory: packages/web
+        env:
+          VERSION: ${{ inputs.custom_version }}
+        run: |
+          if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'; then
+            echo "::error::custom_version must be bare semver, like 0.0.0-alpha.1, with no 'v'."
+            exit 1
+          fi
+          # --allow-same-version is the recovery path: a run that pushed the release commit and
+          # then failed to publish leaves the version already set.
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check the release
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          DIST_TAG: ${{ inputs.tag }}
+        run: node scripts/check-release.mjs --version "$VERSION" --dist-tag "$DIST_TAG"
+
+      # Fails at once when the CHANGELOG has no section for the version. Runs before build:llms,
+      # because llms-full.txt copies the Status page.
+      - name: Fix the version references
+        run: pnpm check:versions:fix
+
+      - name: Rebuild the llms files
+        run: pnpm build:llms
+
+      - name: Install Chromium
+        run: pnpm --filter @rootnative/web exec playwright install chromium --with-deps
+
+      # The same gates as CI, on the tree that this run commits and publishes. No input skips
+      # them.
+      - name: Preflight
+        run: pnpm preflight
+
+      - name: Commit and tag
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Each file that the steps above can change.
+          git add packages/web/package.json packages/web/CHANGELOG.md packages/web/llms.txt \
+            docs/docs/status.md docs/static/llms-full.txt
+          # A change outside that list would stay out of the commit, and CI on main would fail.
+          if ! git diff --quiet; then
+            echo "::error::The release changed files outside the commit list:"
+            git status --short
+            exit 1
+          fi
+          # On the recovery path the version is already committed, so only the tag is new.
+          git diff --cached --quiet || git commit -m "release: web@$VERSION"
+          git tag "web@$VERSION"
+
+      # Push before the publish: a push can fail (main moved during the run, for example), and a
+      # publish can't be undone. `--atomic` pushes the commit and the tag together, or neither.
+      - name: Push the release commit and the tag
+        if: ${{ !inputs.dry_run }}
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: git push --atomic origin HEAD:refs/heads/main "refs/tags/web@$VERSION"
+
+      # OIDC only. There's no NODE_AUTH_TOKEN, and don't add one: a token quietly wins over trusted
+      # publishing. The trusted publisher is stage-only, so a plain `npm publish` fails. `npm stage
+      # publish` uploads the tarball with provenance and holds it until a maintainer approves it
+      # with 2FA. The dist-tag is set here, and approval can't change it.
+      - name: Stage the publish on npm
+        if: ${{ !inputs.dry_run }}
+        working-directory: packages/web
+        env:
+          DIST_TAG: ${{ inputs.tag }}
+        run: npm stage publish --provenance --access public --tag "$DIST_TAG"
+
+      # npm answers a publish without rights with a 404, so its message names a missing package,
+      # not the credentials.
+      - name: Explain a publish failure
+        if: ${{ failure() && !inputs.dry_run }}
+        run: |
+          echo "::error::A 404 on PUT /@rootnative%2fweb almost always means authentication, not a missing package."
+          echo "Check, in this order:"
+          echo "  1. Is .github/workflows/release-manual.yml a trusted publisher of @rootnative/web on npmjs.com? npm binds the exact filename."
+          echo "  2. Does the job still have 'id-token: write'?"
+          echo "  3. Does the step run 'npm stage publish'? A stage-only publisher rejects 'npm publish'."
+          echo "If the push already happened, keep the release commit, delete the tag, and dispatch again with the same version."
+
+      - name: Create the GitHub Release
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          prerelease=""
+          case "$VERSION" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "web@$VERSION" --title "$VERSION" --generate-notes $prerelease
+
+      # A push with GITHUB_TOKEN starts no workflow, so the docs would wait for the next human push.
+      # A dispatch is the one event that this token can start.
+      - name: Deploy the docs
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy-web.yml --ref main
+
+      - name: Summary
+        if: ${{ always() }}
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          DIST_TAG: ${{ inputs.tag }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          {
+            if [ "$JOB_STATUS" != "success" ]; then
+              echo "### Release \`${VERSION:-?}\` failed"
+              echo ""
+              echo "If the push happened, keep the release commit. If the version isn't on npm, delete the tag and dispatch again with the same version."
+            elif [ "$DRY_RUN" = "true" ]; then
+              echo "### Dry run: nothing was pushed or published"
+              echo ""
+              echo "Every gate passed on the bumped tree. A real run pushes this commit:"
+              echo ""
+              echo '```'
+              git show --stat --format='%s' HEAD
+              echo '```'
+            else
+              echo "### \`$VERSION\` is staged, not live yet"
+              echo ""
+              echo "- npm: \`@rootnative/web@$VERSION\` is staged for the dist-tag \`$DIST_TAG\`. Approve it with 2FA on npmjs.com (Staged Packages), or with \`npm stage approve\`. Nothing installs until then."
+              echo "- Commit: \`release: web@$VERSION\` on main"
+              echo "- Tag: \`web@$VERSION\`"
+              echo "- Docs: deploy started"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
