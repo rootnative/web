@@ -4,6 +4,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Added
+
+- **Vite plugin** from `@rootnative/web/vite`. `rootnative()` points `react-native` at the package, resolves `.web.*` files first, and replaces `Platform.OS` with `'web'`, so a minifier drops the code of the other platforms.
+
 ## [0.0.0-alpha.0] - 2026-11-10
 
 The first alpha. It runs a React Native app in the browser with the components and APIs below. [Status](https://rootnative.github.io/web/status) lists what's planned and what's out of scope.

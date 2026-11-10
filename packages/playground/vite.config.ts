@@ -1,13 +1,15 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
+import { rootnative } from '../web/src/vite'
+
 const webSource = (path: string): string =>
   decodeURIComponent(new URL(`../web/src/${path}`, import.meta.url).pathname)
 
 // The playground imports `react-native`, as an app does. The alias points at the library
-// source so edits show up with HMR.
+// source so edits show up with HMR. It wins over the alias of the plugin.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), rootnative()],
   resolve: {
     alias: {
       'react-native': webSource('index.ts'),
