@@ -1,5 +1,6 @@
 // Checks the npm tarball as an app uses it. Run it after `pnpm build`:
 // - each import in the tarball's JavaScript names a dependency or a peer dependency,
+// - the tarball's JavaScript still reads `process.env.NODE_ENV`,
 // - the app in ./consumer passes `tsc` with the types of the tarball and no `skipLibCheck`,
 // - the app builds with the Vite plugin, and the built page works in Chromium.
 // The app follows the Installation page of the docs, so a failure here is also a docs problem.
@@ -68,6 +69,11 @@ function checkImports() {
   const scripts = listScripts(join(installDir, 'dist'))
   if (scripts.length === 0) {
     throw new Error('The tarball has no dist/*.js. Run pnpm build first.')
+  }
+  if (!scripts.some((script) => readFileSync(script, 'utf8').includes('process.env.NODE_ENV'))) {
+    problems.push(
+      "The tarball's JavaScript doesn't read process.env.NODE_ENV. The library build replaced it with a fixed value, so an app can't choose development or production.",
+    )
   }
   for (const script of scripts) {
     const source = readFileSync(script, 'utf8')

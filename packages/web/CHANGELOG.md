@@ -21,6 +21,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 - **Breaking:** `Text` presses as `Pressable` does: `onPress` fires on the pointer release and gets a `GestureResponderEvent`. `preventDefault()` in `onClick` no longer stops `onPress`: both run, `onClick` first.
 - `PressEvent` is now the same type as `GestureResponderEvent`, and it's deprecated.
 
+### Fixed
+
+- The Vite plugin set `__DEV__` to `true` in a production build. The package had `development` as a fixed mode, so it now reads `NODE_ENV` when it runs. A server render in production no longer logs the development warnings.
+
 ## [0.0.0-alpha.1] - 2026-11-10
 
 ### Added
