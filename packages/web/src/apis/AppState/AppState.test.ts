@@ -42,15 +42,28 @@ describe('AppState', () => {
     expect(handler.mock.calls).toEqual([['background'], ['active']])
   })
 
-  test('change fires only when the state changes', () => {
+  test('two held visibility events report the trip to the background, as iOS sends them', () => {
     const handler = vi.fn()
     AppState.addEventListener('change', handler)
 
+    // The page is visible again before the "hidden" event runs.
     changeVisibility('visible')
-    changeVisibility('hidden')
-    changeVisibility('hidden')
+    changeVisibility('visible')
 
-    expect(handler.mock.calls).toEqual([['background']])
+    expect(handler.mock.calls).toEqual([['background'], ['active']])
+  })
+
+  test('a repeat of the same window focus event fires once', () => {
+    const onFocus = vi.fn()
+    AppState.addEventListener('focus', onFocus)
+
+    window.dispatchEvent(new FocusEvent('focus'))
+    window.dispatchEvent(new FocusEvent('focus'))
+    expect(onFocus).toHaveBeenCalledTimes(1)
+
+    window.dispatchEvent(new FocusEvent('blur'))
+    window.dispatchEvent(new FocusEvent('focus'))
+    expect(onFocus).toHaveBeenCalledTimes(2)
   })
 
   test('pagehide is the background until pageshow, also while the page is visible', () => {

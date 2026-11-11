@@ -25,6 +25,9 @@ const handlers: Record<AppStateEvent, Set<Handler>> = {
 // the page shows again from the back-forward cache.
 let pageHidden = false
 let last: AppStateStatus | null = null
+let visible = true
+let caughtUp = false
+let lastFocusEvent: string | null = null
 let listening = false
 
 const read = (): AppStateStatus => {
@@ -32,11 +35,33 @@ const read = (): AppStateStatus => {
   return pageHidden || document.visibilityState !== 'visible' ? 'background' : 'active'
 }
 
-const notify = (): void => {
-  const next = read()
+const emit = (next: AppStateStatus): void => {
   if (next === last) return
   last = next
   for (const handler of handlers.change) handler(next)
+}
+
+const notify = (): void => emit(read())
+
+// iOS can hold both visibility events of a trip to the background until the page runs again.
+// Then each one arrives with the page visible already. An event with no change means that a
+// change was missed: the missed state goes out first, so "came back" code still runs. The
+// second event of the pair is then skipped.
+const onVisibilityChange = (): void => {
+  const next = document.visibilityState === 'visible'
+  if (next !== visible) {
+    caughtUp = false
+    visible = next
+    notify()
+    return
+  }
+  if (caughtUp) {
+    caughtUp = false
+    return
+  }
+  caughtUp = true
+  emit(next || pageHidden ? 'background' : 'active')
+  notify()
 }
 
 const onPageHide = (): void => {
@@ -50,8 +75,10 @@ const onPageShow = (): void => {
 }
 
 // Focus events of elements don't bubble, but a synthetic one can. Only the window counts.
+// iOS sends `focus` two times when the app comes back, so a repeat of the last event is dropped.
 const onWindowFocus = (event: Event): void => {
-  if (event.target !== window) return
+  if (event.target !== window || event.type === lastFocusEvent) return
+  lastFocusEvent = event.type
   for (const handler of handlers[event.type === 'focus' ? 'focus' : 'blur']) handler()
 }
 
@@ -59,7 +86,8 @@ const listen = (): void => {
   if (listening || !hasDOM()) return
   listening = true
   last = read()
-  document.addEventListener('visibilitychange', notify)
+  visible = document.visibilityState === 'visible'
+  document.addEventListener('visibilitychange', onVisibilityChange)
   window.addEventListener('pagehide', onPageHide)
   window.addEventListener('pageshow', onPageShow)
   window.addEventListener('focus', onWindowFocus)
@@ -102,9 +130,11 @@ export const resetAppState = (): void => {
   for (const set of Object.values(handlers)) set.clear()
   pageHidden = false
   last = null
+  lastFocusEvent = null
+  caughtUp = false
   if (!listening) return
   listening = false
-  document.removeEventListener('visibilitychange', notify)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
   window.removeEventListener('pagehide', onPageHide)
   window.removeEventListener('pageshow', onPageShow)
   window.removeEventListener('focus', onWindowFocus)
