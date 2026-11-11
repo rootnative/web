@@ -1,4 +1,8 @@
 {
   "files": [],
-  "references": [{ "path": "packages/web" }, { "path": "packages/playground" }]
+  "references": [
+    { "path": "packages/web" },
+    { "path": "packages/web/parity" },
+    { "path": "packages/playground" }
+  ]
 }
