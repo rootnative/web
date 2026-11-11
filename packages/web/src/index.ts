@@ -39,6 +39,10 @@ export { StyleSheet } from './apis/StyleSheet'
 export type { AbsoluteFillStyle, StyleProp } from './apis/StyleSheet'
 export { useColorScheme } from './apis/useColorScheme'
 export { useWindowDimensions } from './apis/useWindowDimensions'
+export { ActivityIndicator } from './components/ActivityIndicator'
+export type { ActivityIndicatorProps } from './components/ActivityIndicator'
+export { Button } from './components/Button'
+export type { ButtonProps } from './components/Button'
 export { FlatList } from './components/FlatList'
 export type {
   CellRendererProps,

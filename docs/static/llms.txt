@@ -65,15 +65,15 @@ Import /dom and /server only in code that runs on the web.
 ## What ships
 
 Components: View, Text, Image, Pressable, TouchableHighlight,
-TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback,
-ScrollView, FlatList, TextInput, StatusBar.
+TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, Button,
+ScrollView, FlatList, TextInput, ActivityIndicator, StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AccessibilityInfo, I18nManager, BackHandler, PixelRatio,
 processColor, PanResponder, usePressability.
 
 NOT IMPLEMENTED, do not import:
-- Button, ActivityIndicator, Switch, RefreshControl, Modal.
+- Switch, RefreshControl, Modal.
 - Alert, AppState, Linking, Share, Vibration, Clipboard.
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
 - A Next.js plugin, and templates for a Vite app with and without server
@@ -236,6 +236,20 @@ TouchableWithoutFeedback
 - hitSlop goes to the child, but a View doesn't grow its hit area yet.
   rejectResponderTermination is ignored.
 
+Button
+- <button type="button"> with the title in a Text, on TouchableOpacity: it
+  dims to 0.2 while pressed. title must be a string, or Button throws.
+- The look of the Android button: background #2196F3, white text, weight 500,
+  radius 2, 8 px around the title. color sets the background. The title keeps
+  its case (Android makes it uppercase). No elevation.
+- disabled (or aria-disabled, or accessibilityState.disabled): background
+  #dfdfdf, text #a1a1a1, aria-disabled, out of the tab order, no press.
+- Takes only the props of React Native's Button: no style, no children. For
+  another look, use Pressable with role="button".
+- accessibilityLanguage sets lang. accessibilityActions,
+  onAccessibilityAction, touchSoundDisabled, hasTVPreferredFocus, nextFocus*:
+  ignored. Ref: the button element.
+
 ScrollView
 - Scrolls its own box, not the document. On a phone, the browser's address
   bar doesn't hide as it scrolls.
@@ -293,6 +307,16 @@ TextInput
 - Ref: the element plus clear(), isFocused(), getNativeRef(),
   setNativeProps({ text }). TextInput.State has currentlyFocusedInput(),
   focusTextInput(element), blurTextInput(element).
+
+ActivityIndicator
+- A spinner: an SVG that turns once each 0.75 s, in an element with
+  role="progressbar". size: small (20 px, the default), large (36 px), or a
+  number. color: the default is #999999.
+- animating={false} stops and hides it, and it keeps its space.
+  hidesWhenStopped={false} keeps a stopped indicator visible.
+- Two elements, as on native: style and onLayout go to a container that
+  centers the indicator. The ref and the other props go to the indicator.
+- It turns also with prefers-reduced-motion.
 
 StatusBar
 - backgroundColor writes <meta name="theme-color"> in the browser, after

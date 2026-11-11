@@ -1,8 +1,10 @@
 import { useSyncExternalStore, type ReactElement } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
+import { ActivityIndicatorRoute } from './routes/ActivityIndicatorRoute'
 import { ApisRoute } from './routes/ApisRoute'
 import { AppearanceRoute } from './routes/AppearanceRoute'
+import { ButtonRoute } from './routes/ButtonRoute'
 import { DimensionsRoute } from './routes/DimensionsRoute'
 import { FlatListRoute } from './routes/FlatListRoute'
 import { HeadRoute } from './routes/HeadRoute'
@@ -23,10 +25,12 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'scrollview', title: 'ScrollView', Component: ScrollViewRoute },
   { path: 'flatlist', title: 'FlatList', Component: FlatListRoute },
   { path: 'textinput', title: 'TextInput', Component: TextInputRoute },
+  { path: 'activityindicator', title: 'ActivityIndicator', Component: ActivityIndicatorRoute },
   { path: 'dimensions', title: 'Dimensions', Component: DimensionsRoute },
   { path: 'appearance', title: 'Appearance', Component: AppearanceRoute },
   { path: 'apis', title: 'Small APIs', Component: ApisRoute },
   { path: 'pressable', title: 'Pressable', Component: PressableRoute },
+  { path: 'button', title: 'Button', Component: ButtonRoute },
   { path: 'touchables', title: 'Touchables', Component: TouchablesRoute },
   { path: 'press', title: 'usePressability', Component: PressabilityRoute },
   { path: 'pan', title: 'PanResponder', Component: PanResponderRoute },

@@ -247,13 +247,13 @@ The latest release is [`0.0.0-alpha.1`](https://www.npmjs.com/package/@rootnativ
 
 ## What ships today
 
-| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                     |
-| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
-| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                           |
-| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                       |
-| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                         |
+| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`StatusBar`](https://rootnative.github.io/web/statusbar) |
+| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability)                             |
+| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                   |
+| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                     |
 
 `FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now.
 
@@ -261,7 +261,7 @@ The latest release is [`0.0.0-alpha.1`](https://www.npmjs.com/package/@rootnativ
 
 **Don't import these yet.** They aren't in the package.
 
-- **Components:** `Button`, `ActivityIndicator`, `Switch`, `RefreshControl`, `Modal`.
+- **Components:** `Switch`, `RefreshControl`, `Modal`.
 - **APIs:** `Alert`, `AppState`, `Linking`, `Share`, `Vibration`, `Clipboard`.
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
@@ -1049,6 +1049,60 @@ The child must be one element that passes its props to the DOM, for example a `V
 
 ---
 
+# `Button`
+
+A button with a title and a press handler. It renders a `<button type="button">`, so the keyboard and a screen reader see a real button.
+
+```tsx
+import { Button } from 'react-native'
+
+export function SaveButton({ onSave }) {
+  return <Button title="Save" onPress={onSave} />
+}
+```
+
+`Button` takes no `style` and no children, as in React Native. For a different look, use [`Pressable`](https://rootnative.github.io/web/pressable) or [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity) with `role="button"`.
+
+## How it looks
+
+React Native draws a different button on each platform. The web uses the look of Android:
+
+- A background of `#2196F3`, with a corner radius of 2.
+- The title in white, with a weight of 500, centered, with 8 px around it.
+- When disabled: a background of `#dfdfdf` and a title of `#a1a1a1`.
+
+Two things differ from Android:
+
+- The title keeps its case. Android makes it uppercase.
+- The button has no shadow, because the web ignores `elevation`.
+
+The button dims while you press it, as [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity#how-it-dims) does.
+
+Inside a `View`, the button takes the full width, as on native. To make it as wide as its title, put it in a `View` with `alignItems: 'flex-start'`.
+
+## Props
+
+| Prop                                                                    | On the web                                                                                                   |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `title`                                                                 | The text of the button. It must be a string, or `Button` throws, as in React Native.                         |
+| `onPress`                                                               | As on [`Pressable`](https://rootnative.github.io/web/pressable). Enter and Space press a focused button.                                     |
+| `color`                                                                 | The background color, as on Android. On iOS, it's the color of the title.                                    |
+| `disabled`                                                              | Sets `aria-disabled`, takes the button out of the tab order, stops the press, and changes the colors.        |
+| `accessibilityState`, `aria-disabled`                                   | A `disabled` value in one of them also disables the button. The `disabled` prop wins.                        |
+| `accessibilityLabel`, `aria-label`, `accessibilityHint`                 | As on [`View`](https://rootnative.github.io/web/view).                                                                                       |
+| `aria-busy`, `aria-checked`, `aria-expanded`, `aria-selected`           | Go to the button.                                                                                            |
+| `accessibilityLanguage`                                                 | Sets the `lang` attribute.                                                                                   |
+| `importantForAccessibility`                                             | `no` and `no-hide-descendants` set `aria-hidden`, which hides the button and its title from a screen reader. |
+| `testID`                                                                | Sets `data-testid`.                                                                                          |
+| `accessible`, `accessibilityActions`, `onAccessibilityAction`           | Native only. Accepted and ignored.                                                                           |
+| `touchSoundDisabled`, `hasTVPreferredFocus`, `nextFocusDown` and others | Native only. Accepted and ignored.                                                                           |
+
+## Ref
+
+The ref is the `<button>` element.
+
+---
+
 # `ScrollView`
 
 A box that scrolls on one axis. It renders an overflow `<div>` with your content in a `View` inside.
@@ -1252,6 +1306,55 @@ These native-only props are accepted and ignored: `clearButtonMode`, `keyboardAp
 The ref is the `<input>` or `<textarea>` element, with `clear()`, `isFocused()`, `getNativeRef()`, and `setNativeProps({ text })` added.
 
 `TextInput.State` has `currentlyFocusedInput()`, `focusTextInput(element)`, and `blurTextInput(element)`.
+
+---
+
+# `ActivityIndicator`
+
+A spinner that shows that something loads.
+
+```tsx
+import { ActivityIndicator, StyleSheet, View } from 'react-native'
+
+export function Loading() {
+  return (
+    <View style={styles.screen}>
+      <ActivityIndicator size="large" accessibilityLabel="Loading" />
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, justifyContent: 'center' },
+})
+```
+
+The spinner is an SVG that turns once each 0.75 seconds. Its element has `role="progressbar"`, so a screen reader announces it. Give it an `accessibilityLabel` that says what loads.
+
+The spinner also turns when the system asks for reduced motion, because it's the only sign that the page is busy.
+
+## Two elements
+
+As on native, `ActivityIndicator` renders a container with the indicator inside.
+
+- `style` and `onLayout` go to the container. The container centers the indicator, so `style={{ flex: 1 }}` puts the spinner in the middle of the space.
+- The ref and every other prop, such as `testID` and `accessibilityLabel`, go to the indicator.
+
+## Props
+
+| Prop               | On the web                                                                                                  |
+| ------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `animating`        | `false` stops the indicator and hides it. It keeps its space. The default is `true`.                        |
+| `color`            | The color of the spinner. The default is `#999999`, the default of iOS.                                     |
+| `hidesWhenStopped` | `false` keeps a stopped indicator visible. The default is `true`. On native, only iOS has this prop.        |
+| `size`             | `small` is 20 px and `large` is 36 px. A number is the size in pixels, which native allows only on Android. |
+| `style`            | The style of the container.                                                                                 |
+| `onLayout`         | The layout of the container.                                                                                |
+| View props         | As on [`View`](https://rootnative.github.io/web/view). They go to the indicator.                                                            |
+
+## Ref
+
+The ref is the element of the indicator, not the container.
 
 ---
 
