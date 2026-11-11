@@ -4,6 +4,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+## [0.0.0-alpha.2] - 2026-11-11
+
 ### Added
 
 - **`ActivityIndicator`**: a spinner with `animating`, `color` (default `#999999`), `hidesWhenStopped`, and `size` (`small`, `large`, or a number). It has the role `progressbar`.
@@ -23,7 +25,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ### Fixed
 
-- The Vite plugin set `__DEV__` to `true` in a production build. The package had `development` as a fixed mode, so it now reads `NODE_ENV` when it runs. A server render in production no longer logs the development warnings.
+- **`__DEV__` in a production build.** The Vite plugin of `0.0.0-alpha.1` set `__DEV__` to `true` in each build, also in production. It's now `false` in a production build.
+- **Development warnings on a production server.** A server render with `NODE_ENV=production` logged the development warnings. It no longer does.
 
 ## [0.0.0-alpha.1] - 2026-11-10
 
