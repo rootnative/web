@@ -69,12 +69,12 @@ TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, Button,
 ScrollView, FlatList, TextInput, Switch, ActivityIndicator, StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
-useColorScheme, AppState, AccessibilityInfo, I18nManager, BackHandler,
-PixelRatio, processColor, PanResponder, usePressability.
+useColorScheme, AppState, Linking, AccessibilityInfo, I18nManager,
+BackHandler, PixelRatio, processColor, PanResponder, usePressability.
 
 NOT IMPLEMENTED, do not import:
 - RefreshControl, Modal.
-- Alert, Linking, Share, Vibration, Clipboard.
+- Alert, Share, Vibration, Clipboard.
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
 - A Next.js plugin, and templates for a Vite app with and without server
   rendering.
@@ -365,6 +365,16 @@ StatusBar
   'change' (visibilitychange, and 'background' on pagehide), 'blur' and
   'focus' (the browser window, as on Android), 'memoryWarning' (never fires).
   Returns { remove() }. An unknown event throws.
+- Linking: openURL opens a URL of this site in this tab, a URL of another
+  site in a new tab (no opener; rejects when the browser blocks it, so call
+  it from a press handler), and mailto:, tel:, sms:, and other schemes from
+  this tab. javascript: and data: reject. A URL that isn't a string or is
+  empty throws at once. canOpenURL is true for each URL that openURL tries.
+  getInitialURL is the URL that the page loaded with (null on the server).
+  The 'url' event NEVER fires on the web: the router owns the URL. emit,
+  addListener, removeAllListeners, listenerCount work. openSettings rejects.
+  sendIntent rejects with 'Unsupported'. For a link that the user clicks,
+  prefer href on Text or View.
 - AccessibilityInfo: reduce motion, reduce transparency, invert colors, and
   high contrast read live media queries, with change events.
   isScreenReaderEnabled, isAccessibilityServiceEnabled, isBoldTextEnabled, and

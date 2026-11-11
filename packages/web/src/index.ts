@@ -25,6 +25,7 @@ export type {
 } from './apis/Dimensions'
 export { I18nManager } from './apis/I18nManager'
 export type { I18nManagerConstants } from './apis/I18nManager'
+export { Linking } from './apis/Linking'
 export { PanResponder } from './apis/PanResponder'
 export type {
   GestureResponderHandlers,

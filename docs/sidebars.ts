@@ -44,6 +44,7 @@ const sidebars: SidebarsConfig = {
         'dimensions',
         'appearance',
         'appstate',
+        'linking',
         'accessibilityinfo',
         'i18nmanager',
         'backhandler',

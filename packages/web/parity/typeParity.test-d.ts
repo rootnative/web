@@ -34,7 +34,6 @@ type ExportGaps =
   | 'Keyboard'
   | 'KeyboardAvoidingView'
   | 'LayoutAnimation'
-  | 'Linking'
   | 'Modal'
   | 'RefreshControl'
   | 'SafeAreaView'
@@ -244,4 +243,5 @@ export type TypeParity = [
   >,
   None<PropDiff<Native.StatusBarProps, Web.StatusBarProps, never>>,
   None<PropDiff<typeof Native.AppState, typeof Web.AppState, never>>,
+  None<PropDiff<typeof Native.Linking, typeof Web.Linking, never>>,
 ]

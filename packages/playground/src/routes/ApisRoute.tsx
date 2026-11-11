@@ -3,6 +3,7 @@ import {
   AccessibilityInfo,
   AppState,
   I18nManager,
+  Linking,
   PixelRatio,
   Pressable,
   processColor,
@@ -20,6 +21,8 @@ export function ApisRoute(): ReactElement {
   const [barColor, setBarColor] = useState<string | undefined>(undefined)
   const [appState, setAppState] = useState(AppState.currentState)
   const [appEvents, setAppEvents] = useState<Array<{ id: number; text: string }>>([])
+  const [initialURL, setInitialURL] = useState<string | null>(null)
+  const [linkResult, setLinkResult] = useState('')
 
   useEffect(() => {
     void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion)
@@ -46,6 +49,17 @@ export function ApisRoute(): ReactElement {
       for (const subscription of subscriptions) subscription.remove()
     }
   }, [])
+
+  useEffect(() => {
+    void Linking.getInitialURL().then(setInitialURL)
+  }, [])
+
+  const openURL = (url: string): void => {
+    Linking.openURL(url).then(
+      () => setLinkResult(`openURL('${url}') resolved`),
+      (error: Error) => setLinkResult(error.message),
+    )
+  }
 
   const toggleRTL = (): void => {
     I18nManager.forceRTL(!I18nManager.isRTL)
@@ -88,6 +102,24 @@ export function ApisRoute(): ReactElement {
             {entry.text}
           </Text>
         ))}
+      </Section>
+
+      <Section title="Linking">
+        <Text>
+          A URL of this site opens in this tab, another site in a new tab, and mailto: goes to the
+          system. javascript: rejects.
+        </Text>
+        <Row label="getInitialURL()" value={String(initialURL)} />
+        <View style={styles.row}>
+          <Button label="#view (this tab)" onPress={() => openURL('#view')} />
+          <Button
+            label="reactnative.dev (new tab)"
+            onPress={() => openURL('https://reactnative.dev/docs/linking')}
+          />
+          <Button label="mailto:" onPress={() => openURL('mailto:hello@example.com')} />
+          <Button label="javascript:" onPress={() => openURL('javascript:alert(1)')} />
+        </View>
+        {linkResult === '' ? null : <Text style={styles.mono}>{linkResult}</Text>}
       </Section>
 
       <Section title="PixelRatio">

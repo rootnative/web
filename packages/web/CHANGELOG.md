@@ -7,6 +7,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 ### Added
 
 - **`AppState`**: `active` while the page is visible, `background` while it's hidden or unloads. `change` fires on `visibilitychange` and `pagehide`, and `blur` and `focus` fire when the browser window loses or gets the focus, as on Android. There's no `inactive` state.
+- **`Linking`**: `openURL` opens a URL of your site in this tab, a URL of another site in a new tab, and `mailto:`, `tel:`, and other schemes through the system. It rejects `javascript:` and `data:`, and a new tab that the browser blocks. `getInitialURL` returns the URL that the page loaded with. The browser never fires the `url` event, because your router owns the URL. `openSettings` and `sendIntent` reject.
 - **`EventSubscription`**, the type of the object that `addEventListener` returns.
 
 ## [0.0.0-alpha.2] - 2026-11-11
