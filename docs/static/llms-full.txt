@@ -250,7 +250,7 @@ The latest release is [`0.0.0-alpha.2`](https://www.npmjs.com/package/@rootnativ
 | Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`StatusBar`](https://rootnative.github.io/web/statusbar) |
-| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability)                                                  |
+| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability)                         |
 | Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                        |
 | Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -262,7 +262,7 @@ The latest release is [`0.0.0-alpha.2`](https://www.npmjs.com/package/@rootnativ
 **Don't import these yet.** They aren't in the package.
 
 - **Components:** `RefreshControl`, `Modal`.
-- **APIs:** `Alert`, `AppState`, `Linking`, `Share`, `Vibration`, `Clipboard`.
+- **APIs:** `Alert`, `Linking`, `Share`, `Vibration`, `Clipboard`.
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
 
@@ -1590,6 +1590,48 @@ Prefer `useColorScheme()` in a component. It renders again when the scheme chang
 The server has no preference, so both return `'light'` there. `useColorScheme()` also returns `'light'` during hydration, then the real scheme. `Appearance.getColorScheme()` returns the real scheme in the browser at once, so don't read it in render. See [Server rendering](https://rootnative.github.io/web/server-rendering#values-that-differ-on-the-server).
 
 So a dark-mode user of a server-rendered page sees the light render until the app hydrates. To avoid a light flash, give the page a dark background with a `prefers-color-scheme` media query in its CSS.
+
+---
+
+# `AppState`
+
+Tells you if the user can see the app, and calls you when that changes. On the web, the app is `active` while its page is visible. It's in the `background` while the page is hidden: another tab, a minimized window, a locked phone, or a page that unloads.
+
+```tsx
+import { useEffect } from 'react'
+import { AppState } from 'react-native'
+
+export function useRefreshOnReturn(refresh: () => void) {
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') refresh()
+    })
+    return () => subscription.remove()
+  }, [refresh])
+}
+```
+
+## API
+
+| Member                                           | On the web                                                                                                                             |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `AppState.currentState`                          | `'active'` while the page is visible, else `'background'`. It's always current, also with no listener.                                 |
+| `AppState.isAvailable`                           | `true`.                                                                                                                                |
+| `AppState.addEventListener('change', fn)`        | Calls `fn` with the new state when the page is hidden or shown, and with `'background'` when the page unloads. Returns `{ remove() }`. |
+| `AppState.addEventListener('blur', fn)`          | Calls `fn` when the browser window loses the focus, as on Android. The page can still be visible.                                      |
+| `AppState.addEventListener('focus', fn)`         | Calls `fn` when the browser window gets the focus back.                                                                                |
+| `AppState.addEventListener('memoryWarning', fn)` | Registers `fn`. It never runs: the browser has no memory warning.                                                                      |
+
+An unknown event name throws, as on native.
+
+## Differences from native
+
+- There's no `'inactive'` state, as on Android. A focus change of the window, for example a click on the address bar, fires `blur` and `focus`, and the state stays `'active'`.
+- Save the user's work when the state goes to `'background'`. A browser can close a hidden tab with no other event.
+
+## On the server
+
+`currentState` is `'active'` on the server, and no event fires there. In a tab that opens in the background, the browser value is `'background'`, so don't read `currentState` in render.
 
 ---
 

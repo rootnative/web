@@ -69,12 +69,12 @@ TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, Button,
 ScrollView, FlatList, TextInput, Switch, ActivityIndicator, StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
-useColorScheme, AccessibilityInfo, I18nManager, BackHandler, PixelRatio,
-processColor, PanResponder, usePressability.
+useColorScheme, AppState, AccessibilityInfo, I18nManager, BackHandler,
+PixelRatio, processColor, PanResponder, usePressability.
 
 NOT IMPLEMENTED, do not import:
 - RefreshControl, Modal.
-- Alert, AppState, Linking, Share, Vibration, Clipboard.
+- Alert, Linking, Share, Vibration, Clipboard.
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
 - A Next.js plugin, and templates for a Vite app with and without server
   rendering.
@@ -360,6 +360,11 @@ StatusBar
   prefers-color-scheme. setColorScheme('light' | 'dark') overrides it for the
   app and sets color-scheme on <html>. null or 'unspecified' clears it.
   addChangeListener(fn) returns { remove() }.
+- AppState: currentState is 'active' while the page is visible, else
+  'background' ('active' on the server). No 'inactive'. addEventListener:
+  'change' (visibilitychange, and 'background' on pagehide), 'blur' and
+  'focus' (the browser window, as on Android), 'memoryWarning' (never fires).
+  Returns { remove() }. An unknown event throws.
 - AccessibilityInfo: reduce motion, reduce transparency, invert colors, and
   high contrast read live media queries, with change events.
   isScreenReaderEnabled, isAccessibilityServiceEnabled, isBoldTextEnabled, and

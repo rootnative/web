@@ -32,3 +32,5 @@ export type MouseEvent = NativeSyntheticEvent<
 export type FocusEvent = ReactFocusEvent<HTMLElement>
 
 export type BlurEvent = ReactFocusEvent<HTMLElement>
+
+export type EventSubscription = { remove: () => void }

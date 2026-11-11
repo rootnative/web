@@ -12,6 +12,8 @@ export type {
   ColorSchemeName,
   NativeEventSubscription,
 } from './apis/Appearance'
+export { AppState } from './apis/AppState'
+export type { AppStateEvent, AppStateStatus } from './apis/AppState'
 export { BackHandler } from './apis/BackHandler'
 export type { BackHandlerSubscription, BackPressHandler } from './apis/BackHandler'
 export { Dimensions } from './apis/Dimensions'
@@ -149,6 +151,7 @@ export { usePressability } from './events/press'
 export type { Insets, PressabilityConfig, PressabilityEventHandlers } from './events/press'
 export type {
   BlurEvent,
+  EventSubscription,
   FocusEvent,
   GestureResponderEvent,
   MouseEvent,

@@ -43,6 +43,7 @@ const sidebars: SidebarsConfig = {
         'platform',
         'dimensions',
         'appearance',
+        'appstate',
         'accessibilityinfo',
         'i18nmanager',
         'backhandler',

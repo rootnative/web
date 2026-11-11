@@ -3,7 +3,7 @@
 // `__DEV__`. Here the package comes in through its declaration files, and `skipLibCheck` covers it.
 //
 // Each list below records what `react-native` has and this package doesn't. The check fails when:
-// - React Native has an export or a prop that isn't here and isn't in the list,
+// - React Native has an export, a prop, or an API member that isn't here and isn't in the list,
 // - the list has a name that this package now has, so the entry is stale,
 // - the list has a name that React Native doesn't have: the `extends` constraint rejects it.
 //
@@ -28,7 +28,6 @@ type ExportGaps =
   // Not built yet.
   | 'Alert'
   | 'Animated'
-  | 'AppState'
   | 'Clipboard'
   | 'Easing'
   | 'ImageBackground'
@@ -244,4 +243,5 @@ export type TypeParity = [
     >
   >,
   None<PropDiff<Native.StatusBarProps, Web.StatusBarProps, never>>,
+  None<PropDiff<typeof Native.AppState, typeof Web.AppState, never>>,
 ]

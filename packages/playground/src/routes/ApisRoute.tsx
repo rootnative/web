@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactElement, type ReactNode } from 'react'
 import {
   AccessibilityInfo,
+  AppState,
   I18nManager,
   PixelRatio,
   Pressable,
@@ -17,11 +18,33 @@ export function ApisRoute(): ReactElement {
   const [rtl, setRtl] = useState(I18nManager.isRTL)
   const [reduceMotion, setReduceMotion] = useState(false)
   const [barColor, setBarColor] = useState<string | undefined>(undefined)
+  const [appState, setAppState] = useState(AppState.currentState)
+  const [appEvents, setAppEvents] = useState<Array<{ id: number; text: string }>>([])
 
   useEffect(() => {
     void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion)
     const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion)
     return () => subscription.remove()
+  }, [])
+
+  useEffect(() => {
+    const log = (entry: string): void => {
+      setAppState(AppState.currentState)
+      setAppEvents((list) =>
+        [
+          { id: performance.now(), text: `${new Date().toLocaleTimeString()} ${entry}` },
+          ...list,
+        ].slice(0, 6),
+      )
+    }
+    const subscriptions = [
+      AppState.addEventListener('change', (state) => log(`change: ${state}`)),
+      AppState.addEventListener('blur', () => log('blur')),
+      AppState.addEventListener('focus', () => log('focus')),
+    ]
+    return () => {
+      for (const subscription of subscriptions) subscription.remove()
+    }
   }, [])
 
   const toggleRTL = (): void => {
@@ -52,6 +75,19 @@ export function ApisRoute(): ReactElement {
           label="announceForAccessibility"
           onPress={() => AccessibilityInfo.announceForAccessibility('Hello from the live region')}
         />
+      </Section>
+
+      <Section title="AppState">
+        <Text>
+          Switch to another tab and back, or click outside the window. A tab switch fires change; a
+          click outside the window fires blur and focus, and the state stays active.
+        </Text>
+        <Row label="currentState" value={appState} />
+        {appEvents.map((entry) => (
+          <Text key={entry.id} style={styles.mono}>
+            {entry.text}
+          </Text>
+        ))}
       </Section>
 
       <Section title="PixelRatio">

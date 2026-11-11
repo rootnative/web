@@ -4,6 +4,11 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Added
+
+- **`AppState`**: `active` while the page is visible, `background` while it's hidden or unloads. `change` fires on `visibilitychange` and `pagehide`, and `blur` and `focus` fire when the browser window loses or gets the focus, as on Android. There's no `inactive` state.
+- **`EventSubscription`**, the type of the object that `addEventListener` returns.
+
 ## [0.0.0-alpha.2] - 2026-11-11
 
 ### Added
