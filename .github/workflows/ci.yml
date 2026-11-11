@@ -33,10 +33,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Install Chromium
-        run: pnpm --filter @rootnative/web exec playwright install chromium --with-deps
+      - name: Install the browsers
+        run: pnpm --filter @rootnative/web exec playwright install chromium firefox webkit --with-deps
 
       # The gate list is the preflight script in package.json, so CI and release-manual.yml run
       # the same gates.
       - name: Preflight
+        env:
+          TEST_BROWSERS: chromium,firefox,webkit
         run: pnpm preflight

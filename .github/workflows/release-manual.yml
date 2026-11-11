@@ -129,12 +129,14 @@ jobs:
       - name: Rebuild the llms files
         run: pnpm build:llms
 
-      - name: Install Chromium
-        run: pnpm --filter @rootnative/web exec playwright install chromium --with-deps
+      - name: Install the browsers
+        run: pnpm --filter @rootnative/web exec playwright install chromium firefox webkit --with-deps
 
       # The same gates as CI, on the tree that this run commits and publishes. No input skips
       # them.
       - name: Preflight
+        env:
+          TEST_BROWSERS: chromium,firefox,webkit
         run: pnpm preflight
 
       - name: Commit and tag
