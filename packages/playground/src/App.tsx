@@ -12,6 +12,7 @@ import { ImageRoute } from './routes/ImageRoute'
 import { PanResponderRoute } from './routes/PanResponderRoute'
 import { PressabilityRoute } from './routes/PressabilityRoute'
 import { PressableRoute } from './routes/PressableRoute'
+import { RefreshControlRoute } from './routes/RefreshControlRoute'
 import { ScrollViewRoute } from './routes/ScrollViewRoute'
 import { SwitchRoute } from './routes/SwitchRoute'
 import { TextInputRoute } from './routes/TextInputRoute'
@@ -25,6 +26,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'image', title: 'Image', Component: ImageRoute },
   { path: 'scrollview', title: 'ScrollView', Component: ScrollViewRoute },
   { path: 'flatlist', title: 'FlatList', Component: FlatListRoute },
+  { path: 'refreshcontrol', title: 'RefreshControl', Component: RefreshControlRoute },
   { path: 'textinput', title: 'TextInput', Component: TextInputRoute },
   { path: 'switch', title: 'Switch', Component: SwitchRoute },
   { path: 'activityindicator', title: 'ActivityIndicator', Component: ActivityIndicatorRoute },

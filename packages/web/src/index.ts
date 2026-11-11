@@ -90,6 +90,8 @@ export type {
   PressableProps,
   PressableStateCallbackType,
 } from './components/Pressable'
+export { RefreshControl } from './components/RefreshControl'
+export type { RefreshControlProps } from './components/RefreshControl'
 export { ScrollView } from './components/ScrollView'
 export type {
   NativeScrollEvent,

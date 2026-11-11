@@ -249,7 +249,7 @@ The latest release is [`0.0.0-alpha.2`](https://www.npmjs.com/package/@rootnativ
 
 | Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                                                         |
+| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                    |
 | APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Linking`](https://rootnative.github.io/web/linking), [`Share`](https://rootnative.github.io/web/share), [`Vibration`](https://rootnative.github.io/web/vibration), [`Clipboard`](https://rootnative.github.io/web/clipboard), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
 | Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                |
@@ -261,7 +261,7 @@ The latest release is [`0.0.0-alpha.2`](https://www.npmjs.com/package/@rootnativ
 
 **Don't import these yet.** They aren't in the package.
 
-- **Components:** `RefreshControl`, `Modal`.
+- **Components:** `Modal`.
 - **APIs:** `Alert`.
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
@@ -1136,22 +1136,22 @@ The scroll ends at the browser's `scrollend` event. A browser without `scrollend
 
 ## Props
 
-| Prop                                                             | On the web                                                                                                                       |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `horizontal`                                                     | Scrolls on the x axis.                                                                                                           |
-| `contentContainerStyle`                                          | The style of the content `View`.                                                                                                 |
-| `scrollEnabled`                                                  | `false` hides the overflow, so nothing scrolls.                                                                                  |
-| `contentOffset`                                                  | Sets the scroll position on mount, and again when it changes.                                                                    |
-| `centerContent`                                                  | Centers content that is smaller than the box.                                                                                    |
-| `snapToInterval`, `snapToOffsets`, `pagingEnabled`               | Snap after the scroll settles, with a smooth scroll. The scroll is instant when the user asks for reduced motion.                |
-| `snapToAlignment`, `snapToStart`, `snapToEnd`                    | As on native. `snapToStart` and `snapToEnd` apply to `snapToOffsets`.                                                            |
-| `showsVerticalScrollIndicator`, `showsHorizontalScrollIndicator` | `false` on the scroll axis hides the scrollbar.                                                                                  |
-| `stickyHeaderIndices`                                            | Those children stick to the top. Vertical only, as on native.                                                                    |
-| `stickyHeaderHiddenOnScroll`                                     | The sticky header slides out on a scroll down and comes back on a scroll up.                                                     |
-| `invertStickyHeaders`                                            | The headers stick to the bottom.                                                                                                 |
-| `keyboardDismissMode`                                            | `on-drag` blurs the focused field when a drag starts. `interactive` has no web effect.                                           |
-| `refreshControl`                                                 | Wraps the scroller, so the control can own the pull gesture. `RefreshControl` itself isn't in the package yet, so pass your own. |
-| View props                                                       | As on [`View`](https://rootnative.github.io/web/view).                                                                                                           |
+| Prop                                                             | On the web                                                                                                                                            |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `horizontal`                                                     | Scrolls on the x axis.                                                                                                                                |
+| `contentContainerStyle`                                          | The style of the content `View`.                                                                                                                      |
+| `scrollEnabled`                                                  | `false` hides the overflow, so nothing scrolls.                                                                                                       |
+| `contentOffset`                                                  | Sets the scroll position on mount, and again when it changes.                                                                                         |
+| `centerContent`                                                  | Centers content that is smaller than the box.                                                                                                         |
+| `snapToInterval`, `snapToOffsets`, `pagingEnabled`               | Snap after the scroll settles, with a smooth scroll. The scroll is instant when the user asks for reduced motion.                                     |
+| `snapToAlignment`, `snapToStart`, `snapToEnd`                    | As on native. `snapToStart` and `snapToEnd` apply to `snapToOffsets`.                                                                                 |
+| `showsVerticalScrollIndicator`, `showsHorizontalScrollIndicator` | `false` on the scroll axis hides the scrollbar.                                                                                                       |
+| `stickyHeaderIndices`                                            | Those children stick to the top. Vertical only, as on native.                                                                                         |
+| `stickyHeaderHiddenOnScroll`                                     | The sticky header slides out on a scroll down and comes back on a scroll up.                                                                          |
+| `invertStickyHeaders`                                            | The headers stick to the bottom.                                                                                                                      |
+| `keyboardDismissMode`                                            | `on-drag` blurs the focused field when a drag starts. `interactive` has no web effect.                                                                |
+| `refreshControl`                                                 | Wraps the scroller and owns the pull. It gets the style props that place the box, and the scroller fills it. See [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol). |
+| View props                                                       | As on [`View`](https://rootnative.github.io/web/view).                                                                                                                                |
 
 These native-only props are accepted and ignored: `bounces`, `alwaysBounceHorizontal`, `alwaysBounceVertical`, `contentInset`, `contentInsetAdjustmentBehavior`, `decelerationRate`, `directionalLockEnabled`, `disableIntervalMomentum`, `indicatorStyle`, `keyboardShouldPersistTaps`, `maintainVisibleContentPosition`, `nestedScrollEnabled`, `overScrollMode`, `scrollsToTop`, the zoom props, and the other iOS and Android props.
 
@@ -1214,7 +1214,7 @@ Each item sits in a cell `View`, with its separator after it, as on native. The 
 | `CellRendererComponent`                                            | Renders inside the cell `View`, with `cellKey`, `index`, `item`, `style`, and the item and separator as children.                                                                                                                   |
 | `renderScrollComponent`                                            | Renders the scroller. It gets the scroll props, without the ref.                                                                                                                                                                    |
 | `stickyHeaderIndices`                                              | As on `ScrollView`. With every item rendered, the indices match native.                                                                                                                                                             |
-| `onRefresh`, `refreshing`                                          | Accepted, but no indicator shows until `RefreshControl` ships. Pass `refreshControl` to use your own.                                                                                                                               |
+| `onRefresh`, `refreshing`                                          | Accepted, but no indicator shows yet. Pass `refreshControl={<RefreshControl … />}` instead.                                                                                                                                         |
 | ScrollView props                                                   | As on [`ScrollView`](https://rootnative.github.io/web/scrollview).                                                                                                                                                                                                  |
 
 These virtualizer props are accepted and ignored: `initialNumToRender`, `maxToRenderPerBatch`, `windowSize`, `updateCellsBatchingPeriod`, `removeClippedSubviews`, `disableVirtualization`, `extraData`, and `getItemLayout`. Every cell is in the DOM, so the list measures each one there.
@@ -1234,6 +1234,62 @@ The ref is an object with the React Native methods:
 | `flashScrollIndicators()`, `setNativeProps()`                         | Do nothing.                                                |
 
 `onScrollToIndexFailed` never fires, because every cell is in the DOM.
+
+---
+
+# `RefreshControl`
+
+Pull to refresh. Pass it to a `ScrollView` as `refreshControl`. When the user pulls down at the top of the list and lets go, `onRefresh` runs. Set `refreshing` while the data loads.
+
+```tsx
+import { useState } from 'react'
+import { RefreshControl, ScrollView, Text } from 'react-native'
+
+export function Feed({ load }: { load: () => Promise<void> }) {
+  const [refreshing, setRefreshing] = useState(false)
+  const onRefresh = () => {
+    setRefreshing(true)
+    load().finally(() => setRefreshing(false))
+  }
+  return (
+    <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+      <Text>…</Text>
+    </ScrollView>
+  )
+}
+```
+
+It works as on Android: the control wraps the scroll box, and an indicator on a white disc comes down from the top.
+
+## The pull
+
+- The pull works with touch only. A mouse, a pen, or a keyboard has no pull, so give these users a refresh button too.
+- A pull starts when the list is at the top and the finger first moves down. The page doesn't scroll or bounce during the pull.
+- The indicator moves half as far as the finger. A release after 128 px of finger travel calls `onRefresh`. A shorter pull goes back.
+- `onRefresh` should set `refreshing` to `true` at once. When it doesn't, the indicator goes back after the release, as on native.
+- There's no pull while `refreshing` is `true`.
+
+## Props
+
+| Prop                      | On the web                                                                              |
+| ------------------------- | --------------------------------------------------------------------------------------- |
+| `refreshing`              | Shows the indicator at rest and turns the arc. Sets `aria-busy` on the wrapper.         |
+| `onRefresh`               | Called after a pull past the target.                                                    |
+| `progressViewOffset`      | Moves the indicator down, for example under a header.                                   |
+| `colors`                  | The first color is the arc. Android cycles the colors, and the web uses only the first. |
+| `progressBackgroundColor` | The disc. The default is white.                                                         |
+| `size`                    | `'default'` is a 40 px disc, `'large'` 56 px.                                           |
+| `enabled`                 | `false` turns the pull off. The indicator still shows while `refreshing`.               |
+| `tintColor`               | The arc when `colors` is empty. The default is black, as on Android.                    |
+| `title`                   | The accessible name of the indicator. The web shows no text.                            |
+| `titleColor`              | No effect.                                                                              |
+| View props                | Go to the wrapper, as on [`View`](https://rootnative.github.io/web/view).                                               |
+
+The arc turns also when the system asks for reduced motion, because it's the only sign that the list is busy.
+
+## Layout
+
+`ScrollView` gives the control the style props that place the box: the margins, `flex`, the sizes, the position props, `transform`, and the gaps. The scroll box fills the control and keeps the rest of the style, for example the background and the padding. React Native does the same on Android.
 
 ---
 

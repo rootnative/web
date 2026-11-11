@@ -28,6 +28,7 @@ const sidebars: SidebarsConfig = {
         'button',
         'scrollview',
         'flatlist',
+        'refreshcontrol',
         'textinput',
         'switch',
         'activityindicator',

@@ -66,7 +66,8 @@ Import /dom and /server only in code that runs on the web.
 
 Components: View, Text, Image, Pressable, TouchableHighlight,
 TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, Button,
-ScrollView, FlatList, TextInput, Switch, ActivityIndicator, StatusBar.
+ScrollView, FlatList, RefreshControl, TextInput, Switch, ActivityIndicator,
+StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AppState, Linking, Share, Vibration, Clipboard,
@@ -74,7 +75,7 @@ AccessibilityInfo, I18nManager, BackHandler, PixelRatio, processColor,
 PanResponder, usePressability.
 
 NOT IMPLEMENTED, do not import:
-- RefreshControl, Modal.
+- Modal.
 - Alert.
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
 - A Next.js plugin, and templates for a Vite app with and without server
@@ -262,8 +263,9 @@ ScrollView
 - scrollEnabled={false} hides the overflow.
 - snapToInterval, snapToOffsets, pagingEnabled snap after the scroll settles.
 - stickyHeaderIndices: vertical only. keyboardDismissMode: on-drag works.
-- refreshControl wraps the scroller. RefreshControl isn't in the package, so
-  pass your own component.
+- refreshControl wraps the scroller and gets the style props that place the
+  box (margins, flex, sizes, position, transform, gaps), as on Android. The
+  scroller fills it and keeps the rest of the style.
 - Ref: the scroll element plus scrollTo({ x, y, animated }) (animated defaults
   to true), scrollToEnd({ animated }), getScrollableNode(),
   getInnerViewNode(). flashScrollIndicators() does nothing.
@@ -271,6 +273,19 @@ ScrollView
   scrollTo(x, y) takes the arguments in the other order.
 - Native-only props (bounces, decelerationRate, contentInset, the zoom props,
   ...) are ignored.
+
+RefreshControl
+- Pass it to ScrollView as refreshControl. Pull to refresh with TOUCH ONLY:
+  mouse, pen, and keyboard have no pull, so add a refresh button too.
+- A pull starts at the top of the list when the finger first moves down. The
+  indicator moves half the finger distance. A release after 128 px of finger
+  calls onRefresh. onRefresh must set refreshing to true at once, or the
+  indicator goes back. No pull while refreshing or with enabled={false}.
+- Android's look: an arc on a white disc (40 px, size="large" 56 px), at rest
+  64 px under progressViewOffset minus the disc. colors[0], else tintColor,
+  else black, is the arc. progressBackgroundColor is the disc.
+- title is the accessible name; no visible text. titleColor: no effect.
+- View props and the ref go to the wrapper, which has aria-busy.
 
 FlatList
 - NO VIRTUALIZER. It renders every item. Load a long list in pages with
@@ -286,7 +301,8 @@ FlatList
   stickyHeaderIndices, and the ScrollView props.
 - onEndReached fires once per content length. The default threshold is 2 px.
   A list shorter than its viewport fires it after mount.
-- onRefresh and refreshing show no indicator. Pass refreshControl instead.
+- onRefresh and refreshing show no indicator yet. Pass
+  refreshControl={<RefreshControl ... />} instead.
 - Ref: scrollToOffset, scrollToIndex (a row index with numColumns),
   scrollToItem, scrollToEnd, recordInteraction, getScrollableNode.
   onScrollToIndexFailed never fires.

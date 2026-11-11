@@ -34,7 +34,6 @@ type ExportGaps =
   | 'KeyboardAvoidingView'
   | 'LayoutAnimation'
   | 'Modal'
-  | 'RefreshControl'
   | 'SafeAreaView'
   | 'SectionList'
   | 'VirtualizedList'
@@ -212,6 +211,7 @@ export type TypeParity = [
     PropDiff<Native.FlatListProps<unknown>, Web.FlatListProps<unknown>, ScrollViewGaps | 'children'>
   >,
   None<PropDiff<Native.SwitchProps, Web.SwitchProps, ViewGaps | 'children'>>,
+  None<PropDiff<Native.RefreshControlProps, Web.RefreshControlProps, ViewGaps>>,
   None<PropDiff<Native.ButtonProps, Web.ButtonProps, never>>,
   None<PropDiff<Native.ActivityIndicatorProps, Web.ActivityIndicatorProps, ViewGaps>>,
   None<

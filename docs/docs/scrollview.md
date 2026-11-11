@@ -39,22 +39,22 @@ The scroll ends at the browser's `scrollend` event. A browser without `scrollend
 
 ## Props
 
-| Prop                                                             | On the web                                                                                                                       |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `horizontal`                                                     | Scrolls on the x axis.                                                                                                           |
-| `contentContainerStyle`                                          | The style of the content `View`.                                                                                                 |
-| `scrollEnabled`                                                  | `false` hides the overflow, so nothing scrolls.                                                                                  |
-| `contentOffset`                                                  | Sets the scroll position on mount, and again when it changes.                                                                    |
-| `centerContent`                                                  | Centers content that is smaller than the box.                                                                                    |
-| `snapToInterval`, `snapToOffsets`, `pagingEnabled`               | Snap after the scroll settles, with a smooth scroll. The scroll is instant when the user asks for reduced motion.                |
-| `snapToAlignment`, `snapToStart`, `snapToEnd`                    | As on native. `snapToStart` and `snapToEnd` apply to `snapToOffsets`.                                                            |
-| `showsVerticalScrollIndicator`, `showsHorizontalScrollIndicator` | `false` on the scroll axis hides the scrollbar.                                                                                  |
-| `stickyHeaderIndices`                                            | Those children stick to the top. Vertical only, as on native.                                                                    |
-| `stickyHeaderHiddenOnScroll`                                     | The sticky header slides out on a scroll down and comes back on a scroll up.                                                     |
-| `invertStickyHeaders`                                            | The headers stick to the bottom.                                                                                                 |
-| `keyboardDismissMode`                                            | `on-drag` blurs the focused field when a drag starts. `interactive` has no web effect.                                           |
-| `refreshControl`                                                 | Wraps the scroller, so the control can own the pull gesture. `RefreshControl` itself isn't in the package yet, so pass your own. |
-| View props                                                       | As on [`View`](/view).                                                                                                           |
+| Prop                                                             | On the web                                                                                                                                            |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `horizontal`                                                     | Scrolls on the x axis.                                                                                                                                |
+| `contentContainerStyle`                                          | The style of the content `View`.                                                                                                                      |
+| `scrollEnabled`                                                  | `false` hides the overflow, so nothing scrolls.                                                                                                       |
+| `contentOffset`                                                  | Sets the scroll position on mount, and again when it changes.                                                                                         |
+| `centerContent`                                                  | Centers content that is smaller than the box.                                                                                                         |
+| `snapToInterval`, `snapToOffsets`, `pagingEnabled`               | Snap after the scroll settles, with a smooth scroll. The scroll is instant when the user asks for reduced motion.                                     |
+| `snapToAlignment`, `snapToStart`, `snapToEnd`                    | As on native. `snapToStart` and `snapToEnd` apply to `snapToOffsets`.                                                                                 |
+| `showsVerticalScrollIndicator`, `showsHorizontalScrollIndicator` | `false` on the scroll axis hides the scrollbar.                                                                                                       |
+| `stickyHeaderIndices`                                            | Those children stick to the top. Vertical only, as on native.                                                                                         |
+| `stickyHeaderHiddenOnScroll`                                     | The sticky header slides out on a scroll down and comes back on a scroll up.                                                                          |
+| `invertStickyHeaders`                                            | The headers stick to the bottom.                                                                                                                      |
+| `keyboardDismissMode`                                            | `on-drag` blurs the focused field when a drag starts. `interactive` has no web effect.                                                                |
+| `refreshControl`                                                 | Wraps the scroller and owns the pull. It gets the style props that place the box, and the scroller fills it. See [`RefreshControl`](/refreshcontrol). |
+| View props                                                       | As on [`View`](/view).                                                                                                                                |
 
 These native-only props are accepted and ignored: `bounces`, `alwaysBounceHorizontal`, `alwaysBounceVertical`, `contentInset`, `contentInsetAdjustmentBehavior`, `decelerationRate`, `directionalLockEnabled`, `disableIntervalMomentum`, `indicatorStyle`, `keyboardShouldPersistTaps`, `maintainVisibleContentPosition`, `nestedScrollEnabled`, `overScrollMode`, `scrollsToTop`, the zoom props, and the other iOS and Android props.
 

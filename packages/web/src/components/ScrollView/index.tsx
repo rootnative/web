@@ -14,7 +14,9 @@ import {
 } from 'react'
 
 import { Platform } from '../../apis/Platform'
+import { StyleSheet } from '../../apis/StyleSheet'
 import type { StyleRegistry } from '../../style/registry'
+import { splitLayoutProps } from '../../style/splitLayoutProps'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { hasDOM } from '../../utils/env'
 import { useViewElement, View } from '../View'
@@ -54,6 +56,9 @@ const horizontalScrollerStyle = Object.freeze({
 })
 
 const disabledScrollerStyle = Object.freeze({ overflowX: 'hidden', overflowY: 'hidden' })
+
+// The base of the box that wraps the scroller, as React Native's on Android.
+const refreshAreaStyle = Object.freeze({ flexGrow: 1, flexShrink: 1 })
 
 const horizontalContentStyle = Object.freeze({ flexDirection: 'row' })
 
@@ -411,6 +416,11 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
 
   const hideScrollbar = horizontal ? !showsHorizontalScrollIndicator : !showsVerticalScrollIndicator
 
+  // As on Android: the refresh control wraps the scroller, so it takes the props that place the
+  // box, and the scroller fills it.
+  const split =
+    refreshControl === undefined ? undefined : splitLayoutProps(StyleSheet.flatten(style))
+
   const scrollerElement = useViewElement(
     {
       ...rest,
@@ -419,7 +429,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
         scrollerStyle,
         horizontal && horizontalScrollerStyle,
         !scrollEnabled && disabledScrollerStyle,
-        style,
+        split === undefined ? style : split.inner,
       ],
       onScroll: handleScroll,
       onScrollEnd: handleScrollEnd,
@@ -479,7 +489,11 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     return Object.assign(instance, methods)
   }, [horizontal])
 
-  return refreshControl === undefined
+  return refreshControl === undefined || split === undefined
     ? scrollerElement
-    : cloneElement(refreshControl, undefined, scrollerElement)
+    : cloneElement(
+        refreshControl as ReactElement<{ style?: unknown }>,
+        { style: [refreshAreaStyle, split.outer] },
+        scrollerElement,
+      )
 }
