@@ -6,8 +6,8 @@
 > rendering, and SEO tags. It doesn't use react-native-web.
 
 Status: early alpha. The API can change between releases. Every component and
-API has tests that run in a real Chromium browser. Firefox and Safari aren't in
-the test run yet.
+API has tests that run in real browsers: Chromium, Firefox, and WebKit, the
+engine of Safari.
 
 Docs: https://rootnative.github.io/web/
 Full: https://rootnative.github.io/web/llms-full.txt

@@ -275,9 +275,7 @@ The latest release is [`0.0.0-alpha.1`](https://www.npmjs.com/package/@rootnativ
 
 ## How it's tested
 
-Every component and API has tests. They run in a real Chromium browser through Vitest browser mode, not in a simulated DOM.
-
-Firefox and Safari aren't in the test run yet.
+Every component and API has tests. They run in real browsers through Vitest browser mode, not in a simulated DOM: Chromium, Firefox, and WebKit, the engine of Safari.
 
 ---
 
