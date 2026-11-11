@@ -28,7 +28,6 @@ type ExportGaps =
   // Not built yet.
   | 'Alert'
   | 'Animated'
-  | 'Clipboard'
   | 'Easing'
   | 'ImageBackground'
   | 'Keyboard'
@@ -38,8 +37,6 @@ type ExportGaps =
   | 'RefreshControl'
   | 'SafeAreaView'
   | 'SectionList'
-  | 'Share'
-  | 'Vibration'
   | 'VirtualizedList'
   | 'VirtualizedSectionList'
   | 'findNodeHandle'
@@ -244,4 +241,8 @@ export type TypeParity = [
   None<PropDiff<Native.StatusBarProps, Web.StatusBarProps, never>>,
   None<PropDiff<typeof Native.AppState, typeof Web.AppState, never>>,
   None<PropDiff<typeof Native.Linking, typeof Web.Linking, never>>,
+  // A class on native, a plain object here.
+  None<PropDiff<typeof Native.Share, typeof Web.Share, 'prototype'>>,
+  None<PropDiff<typeof Native.Vibration, typeof Web.Vibration, never>>,
+  None<PropDiff<typeof Native.Clipboard, typeof Web.Clipboard, never>>,
 ]

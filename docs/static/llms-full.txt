@@ -247,13 +247,13 @@ The latest release is [`0.0.0-alpha.2`](https://www.npmjs.com/package/@rootnativ
 
 ## What ships today
 
-| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`StatusBar`](https://rootnative.github.io/web/statusbar) |
-| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Linking`](https://rootnative.github.io/web/linking), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability)  |
-| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                        |
-| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                                                         |
+| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Linking`](https://rootnative.github.io/web/linking), [`Share`](https://rootnative.github.io/web/share), [`Vibration`](https://rootnative.github.io/web/vibration), [`Clipboard`](https://rootnative.github.io/web/clipboard), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
+| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                |
+| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 `FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now.
 
@@ -262,7 +262,7 @@ The latest release is [`0.0.0-alpha.2`](https://www.npmjs.com/package/@rootnativ
 **Don't import these yet.** They aren't in the package.
 
 - **Components:** `RefreshControl`, `Modal`.
-- **APIs:** `Alert`, `Share`, `Vibration`, `Clipboard`.
+- **APIs:** `Alert`.
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
 
@@ -1679,6 +1679,99 @@ Browsers block a new tab that a page opens with no click or key press. Call `ope
 On native, `url` fires when a link opens the app while it runs. On the web, the URL of the page changes through your router: a link, back, or forward. So the browser never fires `url`, and your router handles the change, as with [`BackHandler`](https://rootnative.github.io/web/backhandler).
 
 On the web, a deep link opens the page, so `getInitialURL()` returns it.
+
+---
+
+# `Share`
+
+Opens the share sheet of the browser, so the user can send a link or a text to another app.
+
+```tsx
+import { Button, Share } from 'react-native'
+
+export function ShareTrip({ url }: { url: string }) {
+  const onPress = () => {
+    Share.share({ title: 'Our trip', message: 'See the plan', url }).catch(() => {
+      // This browser has no share sheet. Offer a copy of the link instead.
+    })
+  }
+  return <Button title="Share" onPress={onPress} />
+}
+```
+
+## API
+
+| Member                                        | On the web                                                                                                                                                                                                      |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Share.share(content, options)`               | Opens the share sheet with `content.title`, `content.message` as the text, and `content.url`. Resolves `{ action: 'sharedAction', activityType: null }`, or `'dismissedAction'` when the user closes the sheet. |
+| `Share.sharedAction`, `Share.dismissedAction` | The two action names.                                                                                                                                                                                           |
+
+`content` needs a `message` or a `url`. Bad arguments throw at once, as on native. The `options` (`dialogTitle`, `subject`, `excludedActivityTypes`, `tintColor`, `anchor`) have no effect on the web.
+
+## When it rejects
+
+- The browser has no share sheet, for example Firefox on a desktop, or the page is on plain `http` and not on `localhost`. The error is `Unsupported platform`, React Native's error for a platform with no share sheet.
+- The call didn't come from a click or a key press. Call `Share.share` from a press handler.
+
+## Differences from native
+
+- The web shares the `url` too. React Native on Android shares only the `message`.
+- `activityType` is always `null`. The browser doesn't tell which app the user picked.
+
+---
+
+# `Vibration`
+
+Vibrates the device, with Android's rules.
+
+```tsx
+import { Vibration } from 'react-native'
+
+Vibration.vibrate() // 400 ms
+Vibration.vibrate([0, 200, 100, 200]) // wait 0, vibrate 200, wait 100, vibrate 200
+```
+
+## API
+
+| Member                               | On the web                                                                                                                                                                                                                                      |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Vibration.vibrate(pattern, repeat)` | A number vibrates for that many milliseconds, 400 by default. An array alternates waits and vibrations, and starts with a wait, as on Android. With `repeat`, an array plays again until `cancel()`. A new call replaces the current vibration. |
+| `Vibration.cancel()`                 | Stops the vibration and the repeat.                                                                                                                                                                                                             |
+
+A pattern that isn't a number or an array throws, as on native.
+
+## Where it vibrates
+
+Chrome on Android and the other browsers with the Vibration API vibrate, after the user taps the page once. Safari on iOS and on a Mac has no Vibration API, and most desktops have no motor. There, `vibrate` does nothing, as on a device with no motor.
+
+The durations apply on the web, as on Android. On iOS, React Native ignores them and each vibration is about 400 ms.
+
+---
+
+# `Clipboard`
+
+Reads and writes text on the clipboard.
+
+`Clipboard` is deprecated in React Native, which will remove it in a future release. It works on the web for now, and the first call logs a warning in development.
+
+```tsx
+import { Button, Clipboard } from 'react-native'
+
+export function CopyLink({ url }: { url: string }) {
+  return <Button title="Copy link" onPress={() => Clipboard.setString(url)} />
+}
+```
+
+## API
+
+| Member                      | On the web                                                                                                                                                                                                                                           |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Clipboard.setString(text)` | Writes `text` with the async Clipboard API. On a page with no Clipboard API, for example plain `http` on a phone on your dev server, it copies through a hidden text field. When the browser refuses, a warning shows in the console in development. |
+| `Clipboard.getString()`     | Reads the text with the async Clipboard API. The browser can ask the user first. Rejects when the browser refuses: the user says no, or the page isn't on `https` or `localhost`.                                                                    |
+
+Call both from a press handler. Browsers give access to the clipboard only after a click or a key press, and Safari only during it.
+
+`getString()` rejects on a refusal and doesn't resolve an empty string, so a refusal doesn't look like an empty clipboard.
 
 ---
 

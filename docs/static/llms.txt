@@ -69,12 +69,13 @@ TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, Button,
 ScrollView, FlatList, TextInput, Switch, ActivityIndicator, StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
-useColorScheme, AppState, Linking, AccessibilityInfo, I18nManager,
-BackHandler, PixelRatio, processColor, PanResponder, usePressability.
+useColorScheme, AppState, Linking, Share, Vibration, Clipboard,
+AccessibilityInfo, I18nManager, BackHandler, PixelRatio, processColor,
+PanResponder, usePressability.
 
 NOT IMPLEMENTED, do not import:
 - RefreshControl, Modal.
-- Alert, Share, Vibration, Clipboard.
+- Alert.
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
 - A Next.js plugin, and templates for a Vite app with and without server
   rendering.
@@ -375,6 +376,21 @@ StatusBar
   addListener, removeAllListeners, listenerCount work. openSettings rejects.
   sendIntent rejects with 'Unsupported'. For a link that the user clicks,
   prefer href on Text or View.
+- Share: share({ title, message, url }) calls navigator.share with title,
+  text (the message), and url. Resolves { action: 'sharedAction' |
+  'dismissedAction', activityType: null }; a closed sheet is dismissedAction.
+  REJECTS with 'Unsupported platform' where the browser has no share sheet
+  (for example Firefox on a desktop, or a page on plain http). Call it from a press handler. options
+  have no effect.
+- Vibration: navigator.vibrate with Android's rules. A number is
+  milliseconds (default 400). An array is [wait, vibrate, wait, ...]. repeat
+  plays an array again until cancel(). Does nothing where the browser has no
+  Vibration API (Safari, iOS, most desktops).
+- Clipboard (deprecated in React Native): setString writes with
+  navigator.clipboard.writeText, or a hidden textarea and
+  execCommand('copy') on a page with no Clipboard API. A refused write only
+  warns in development. getString reads with readText and REJECTS when the
+  browser refuses. Call both from a press handler.
 - AccessibilityInfo: reduce motion, reduce transparency, invert colors, and
   high contrast read live media queries, with change events.
   isScreenReaderEnabled, isAccessibilityServiceEnabled, isBoldTextEnabled, and

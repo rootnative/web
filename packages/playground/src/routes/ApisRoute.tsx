@@ -2,14 +2,17 @@ import { useEffect, useState, type ReactElement, type ReactNode } from 'react'
 import {
   AccessibilityInfo,
   AppState,
+  Clipboard,
   I18nManager,
   Linking,
   PixelRatio,
   Pressable,
   processColor,
+  Share,
   StatusBar,
   StyleSheet,
   Text,
+  Vibration,
   View,
 } from 'react-native'
 
@@ -23,6 +26,8 @@ export function ApisRoute(): ReactElement {
   const [appEvents, setAppEvents] = useState<Array<{ id: number; text: string }>>([])
   const [initialURL, setInitialURL] = useState<string | null>(null)
   const [linkResult, setLinkResult] = useState('')
+  const [shareResult, setShareResult] = useState('')
+  const [clipboardResult, setClipboardResult] = useState('')
 
   useEffect(() => {
     void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion)
@@ -59,6 +64,23 @@ export function ApisRoute(): ReactElement {
       () => setLinkResult(`openURL('${url}') resolved`),
       (error: Error) => setLinkResult(error.message),
     )
+  }
+
+  const share = (): void => {
+    Share.share({ title: 'Playground', message: 'The Small APIs page', url: window.location.href })
+      .then((result) => setShareResult(result.action))
+      .catch((error: Error) => setShareResult(error.message))
+  }
+
+  const copy = (): void => {
+    Clipboard.setString('Hello from the playground')
+    setClipboardResult("setString('Hello from the playground')")
+  }
+
+  const paste = (): void => {
+    Clipboard.getString()
+      .then((text) => setClipboardResult(`getString(): ${text}`))
+      .catch((error: Error) => setClipboardResult(error.message))
   }
 
   const toggleRTL = (): void => {
@@ -120,6 +142,38 @@ export function ApisRoute(): ReactElement {
           <Button label="javascript:" onPress={() => openURL('javascript:alert(1)')} />
         </View>
         {linkResult === '' ? null : <Text style={styles.mono}>{linkResult}</Text>}
+      </Section>
+
+      <Section title="Share">
+        <Text>
+          Opens the share sheet of the browser. A browser with none, for example Firefox on a
+          desktop, rejects with Unsupported platform.
+        </Text>
+        <Button label="Share this page" onPress={share} />
+        {shareResult === '' ? null : <Text style={styles.mono}>{shareResult}</Text>}
+      </Section>
+
+      <Section title="Vibration">
+        <Text>
+          Vibrates in Chrome on Android, after a tap. Safari and most desktops do nothing.
+        </Text>
+        <View style={styles.row}>
+          <Button label="vibrate()" onPress={() => Vibration.vibrate()} />
+          <Button
+            label="vibrate([0, 200, 200], true)"
+            onPress={() => Vibration.vibrate([0, 200, 200], true)}
+          />
+          <Button label="cancel()" onPress={() => Vibration.cancel()} />
+        </View>
+      </Section>
+
+      <Section title="Clipboard">
+        <Text>Deprecated in React Native. The first call logs a warning in development.</Text>
+        <View style={styles.row}>
+          <Button label="setString" onPress={copy} />
+          <Button label="getString" onPress={paste} />
+        </View>
+        {clipboardResult === '' ? null : <Text style={styles.mono}>{clipboardResult}</Text>}
       </Section>
 
       <Section title="PixelRatio">

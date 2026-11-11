@@ -8,6 +8,9 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 - **`AppState`**: `active` while the page is visible, `background` while it's hidden or unloads. `change` fires on `visibilitychange` and `pagehide`, and `blur` and `focus` fire when the browser window loses or gets the focus, as on Android. There's no `inactive` state.
 - **`Linking`**: `openURL` opens a URL of your site in this tab, a URL of another site in a new tab, and `mailto:`, `tel:`, and other schemes through the system. It rejects `javascript:` and `data:`, and a new tab that the browser blocks. `getInitialURL` returns the URL that the page loaded with. The browser never fires the `url` event, because your router owns the URL. `openSettings` and `sendIntent` reject.
+- **`Share`**: opens the browser's share sheet with the title, the message, and the URL. A closed sheet resolves `dismissedAction`. A browser with no share sheet rejects with `Unsupported platform`.
+- **`Vibration`**: vibrates with Android's rules: a number is milliseconds, and an array starts with a wait. `repeat` plays an array until `cancel()`. A browser with no Vibration API, such as Safari, does nothing.
+- **`Clipboard`**: `setString` and `getString` through the async Clipboard API. `setString` falls back to a hidden text field on a page with no Clipboard API, and `getString` rejects when the browser refuses. It's deprecated in React Native, so the first call logs a warning.
 - **`EventSubscription`**, the type of the object that `addEventListener` returns.
 
 ## [0.0.0-alpha.2] - 2026-11-11
