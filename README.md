@@ -114,7 +114,7 @@ Each component lives in one folder with its types and its tests.
 
 After you change a docs page, run `pnpm build:llms`. It writes `docs/static/llms-full.txt` and copies `docs/static/llms.txt` into the package. CI fails when they don't match the pages. After an API change, also edit `docs/static/llms.txt`, which is written by hand.
 
-CI runs `pnpm preflight`, which includes two release checks. `pnpm check:versions` checks that the CHANGELOG and the Status page name the version in `packages/web/package.json`, and `pnpm check:versions:fix` repairs the link footer and the Status line. `pnpm check:artifact` runs after the build and checks that the npm tarball has each file that `exports` names.
+CI runs `pnpm preflight`, which includes three release checks. `pnpm check:versions` checks that the CHANGELOG and the Status page name the version in `packages/web/package.json`, and `pnpm check:versions:fix` repairs the link footer and the Status line. `pnpm check:artifact` runs after the build and checks that the npm tarball has each file that `exports` names. `pnpm check:consumer` puts that tarball into the small app in `e2e/consumer`, checks its types, builds it with the Vite plugin, and opens the page in Chromium.
 
 ## License
 

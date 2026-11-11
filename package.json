@@ -21,7 +21,8 @@
     "check:versions": "node scripts/check-versions.mjs",
     "check:versions:fix": "node scripts/check-versions.mjs --fix",
     "check:artifact": "node scripts/check-artifact.mjs",
-    "preflight": "pnpm lint && pnpm format:check && pnpm check:llms && pnpm check:versions && pnpm typecheck && pnpm build && pnpm check:artifact && pnpm test",
+    "check:consumer": "node e2e/check-consumer.mjs",
+    "preflight": "pnpm lint && pnpm format:check && pnpm check:llms && pnpm check:versions && pnpm typecheck && pnpm build && pnpm check:artifact && pnpm check:consumer && pnpm test",
     "build:brand": "node scripts/build-brand.mjs"
   },
   "devDependencies": {
