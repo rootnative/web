@@ -247,13 +247,13 @@ The latest release is [`0.0.0-alpha.1`](https://www.npmjs.com/package/@rootnativ
 
 ## What ships today
 
-| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`StatusBar`](https://rootnative.github.io/web/statusbar) |
-| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability)                             |
-| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                   |
-| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                     |
+| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`StatusBar`](https://rootnative.github.io/web/statusbar) |
+| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability)                                                  |
+| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                        |
+| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 `FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now.
 
@@ -261,7 +261,7 @@ The latest release is [`0.0.0-alpha.1`](https://www.npmjs.com/package/@rootnativ
 
 **Don't import these yet.** They aren't in the package.
 
-- **Components:** `Switch`, `RefreshControl`, `Modal`.
+- **Components:** `RefreshControl`, `Modal`.
 - **APIs:** `Alert`, `AppState`, `Linking`, `Share`, `Vibration`, `Clipboard`.
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
@@ -1306,6 +1306,80 @@ These native-only props are accepted and ignored: `clearButtonMode`, `keyboardAp
 The ref is the `<input>` or `<textarea>` element, with `clear()`, `isFocused()`, `getNativeRef()`, and `setNativeProps({ text })` added.
 
 `TextInput.State` has `currentlyFocusedInput()`, `focusTextInput(element)`, and `blurTextInput(element)`.
+
+---
+
+# `Switch`
+
+A control that is on or off. It renders a real `<input type="checkbox" role="switch">`, so the browser gives the press, the keyboard, the focus, and the label.
+
+```tsx
+import { useState } from 'react'
+import { Switch } from 'react-native'
+
+export function WifiSwitch() {
+  const [on, setOn] = useState(false)
+  return <Switch value={on} onValueChange={setOn} accessibilityLabel="Wi-Fi" />
+}
+```
+
+## The switch shows `value`
+
+As on native, `Switch` is a controlled component. It shows `value`, and only `true` is on.
+
+A press calls `onChange`, then `onValueChange` with the new value. Your handler must change `value`. If it doesn't, the switch goes back to the position of `value`.
+
+## How it looks
+
+React Native draws a different switch on each platform. The web uses the look of Android:
+
+- The switch is 40 px wide and 20 px high.
+- Off: a track of `#939393` and a thumb of `#FAFAFA`.
+- On: a track of `#A3D3CF` and a thumb of `#009688`.
+- When disabled, the switch has an opacity of 0.5.
+
+The thumb moves over 150 ms. It moves at once when the system asks for reduced motion.
+
+In a right-to-left layout, the on position is at the left.
+
+## Elements
+
+`Switch` renders a root element with three parts inside: the input, the track, and the thumb. The input is transparent and covers the switch.
+
+- `style`, `onLayout`, and `pointerEvents` go to the root. The root has `alignSelf: 'flex-start'`, as on iOS. A `width` and a `height` in `style` change the size of the switch, and the thumb is as wide as the height.
+- The ref and every other prop, such as `id`, `testID`, and `accessibilityLabel`, go to the input.
+
+Because the input has the `id`, a `<label>` works:
+
+```tsx
+<label htmlFor="wifi">Wi-Fi</label>
+<Switch id="wifi" value={on} onValueChange={setOn} />
+```
+
+## Keyboard and focus
+
+The switch is in the tab order. Space changes it. With keyboard focus, the switch shows the focus ring of the browser.
+
+## Props
+
+| Prop                                                                | On the web                                                                                           |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `value`                                                             | `true` is on. Every other value is off.                                                              |
+| `onValueChange`                                                     | Gets the new value, after `onChange`.                                                                |
+| `onChange`                                                          | Gets the change event. `nativeEvent.value` is the new value, and `nativeEvent.target` is the input.  |
+| `trackColor`                                                        | `{ false, true }`: the color of the track when the switch is off and on.                             |
+| `thumbColor`                                                        | The color of the thumb in both states.                                                               |
+| `disabled`                                                          | Disables the input, so it leaves the tab order and doesn't change. The switch has an opacity of 0.5. |
+| `accessibilityState`                                                | A `disabled` value in it also disables the switch. The `disabled` prop wins.                         |
+| `role`, `accessibilityRole`                                         | The role of the input. The default is `switch`.                                                      |
+| `onFocus`, `onBlur`, `onClick` and the other DOM handlers           | **Web only.** They go to the input.                                                                  |
+| `style`, `onLayout`, `pointerEvents`                                | Go to the root element.                                                                              |
+| View props                                                          | As on [`View`](https://rootnative.github.io/web/view). They go to the input.                                                         |
+| `ios_backgroundColor`, `onTintColor`, `tintColor`, `thumbTintColor` | iOS only. Accepted and ignored, as on Android.                                                       |
+
+## Ref
+
+The ref is the `<input>` element. It covers the switch, so its box is the box of the switch, and `focus()` works.
 
 ---
 

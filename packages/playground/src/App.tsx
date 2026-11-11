@@ -13,6 +13,7 @@ import { PanResponderRoute } from './routes/PanResponderRoute'
 import { PressabilityRoute } from './routes/PressabilityRoute'
 import { PressableRoute } from './routes/PressableRoute'
 import { ScrollViewRoute } from './routes/ScrollViewRoute'
+import { SwitchRoute } from './routes/SwitchRoute'
 import { TextInputRoute } from './routes/TextInputRoute'
 import { TextRoute } from './routes/TextRoute'
 import { TouchablesRoute } from './routes/TouchablesRoute'
@@ -25,6 +26,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'scrollview', title: 'ScrollView', Component: ScrollViewRoute },
   { path: 'flatlist', title: 'FlatList', Component: FlatListRoute },
   { path: 'textinput', title: 'TextInput', Component: TextInputRoute },
+  { path: 'switch', title: 'Switch', Component: SwitchRoute },
   { path: 'activityindicator', title: 'ActivityIndicator', Component: ActivityIndicatorRoute },
   { path: 'dimensions', title: 'Dimensions', Component: DimensionsRoute },
   { path: 'appearance', title: 'Appearance', Component: AppearanceRoute },

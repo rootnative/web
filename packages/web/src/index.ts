@@ -101,6 +101,8 @@ export type {
   StatusBarStatics,
   StatusBarStyle,
 } from './components/StatusBar'
+export { Switch } from './components/Switch'
+export type { SwitchChangeEvent, SwitchChangeEventData, SwitchProps } from './components/Switch'
 export { Text, TextAncestorContext } from './components/Text'
 export type { PressEvent, TextProps } from './components/Text'
 export { TextInput } from './components/TextInput'

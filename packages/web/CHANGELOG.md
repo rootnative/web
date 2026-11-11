@@ -8,6 +8,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 - **`ActivityIndicator`**: a spinner with `animating`, `color` (default `#999999`), `hidesWhenStopped`, and `size` (`small`, `large`, or a number). It has the role `progressbar`.
 - **`Button`**: a `<button type="button">` with the `title`, on `TouchableOpacity`. It has the look of the Android button, `color` sets the background, and the title keeps its case.
+- **`Switch`**: a checkbox input with the role `switch` under a drawn track and thumb, with `value`, `onValueChange`, `onChange`, `trackColor`, `thumbColor`, and `disabled`. It has the look of the Android switch.
 - **`TouchableHighlight`**: shows `underlayColor` (default black) behind its child and gives the child `activeOpacity` (default `0.85`) while pressed, with `onShowUnderlay` and `onHideUnderlay`.
 - **`TouchableNativeFeedback`**: works as on iOS, with no ripple. `SelectableBackground`, `SelectableBackgroundBorderless`, and `Ripple` return the objects of React Native, and `canUseNativeForeground()` is `false`.
 - **`TouchableOpacity`**: dims to `activeOpacity` (default `0.2`) while pressed, with React Native's timing and curve, through the Web Animations API.

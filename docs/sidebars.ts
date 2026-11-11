@@ -29,6 +29,7 @@ const sidebars: SidebarsConfig = {
         'scrollview',
         'flatlist',
         'textinput',
+        'switch',
         'activityindicator',
         'statusbar',
       ],

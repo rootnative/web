@@ -66,14 +66,14 @@ Import /dom and /server only in code that runs on the web.
 
 Components: View, Text, Image, Pressable, TouchableHighlight,
 TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, Button,
-ScrollView, FlatList, TextInput, ActivityIndicator, StatusBar.
+ScrollView, FlatList, TextInput, Switch, ActivityIndicator, StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AccessibilityInfo, I18nManager, BackHandler, PixelRatio,
 processColor, PanResponder, usePressability.
 
 NOT IMPLEMENTED, do not import:
-- Switch, RefreshControl, Modal.
+- RefreshControl, Modal.
 - Alert, AppState, Linking, Share, Vibration, Clipboard.
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
 - A Next.js plugin, and templates for a Vite app with and without server
@@ -307,6 +307,23 @@ TextInput
 - Ref: the element plus clear(), isFocused(), getNativeRef(),
   setNativeProps({ text }). TextInput.State has currentlyFocusedInput(),
   focusTextInput(element), blurTextInput(element).
+
+Switch
+- <input type="checkbox" role="switch">, transparent, over a drawn track and
+  thumb. The browser gives the press, Space, the focus, and <label for>.
+- Controlled, as on native: it shows value (only true is on). A press calls
+  onChange (nativeEvent.value, nativeEvent.target), then onValueChange(value).
+  When value doesn't change, the switch goes back.
+- The look of the Android switch: 40 by 20 px, track #939393 off and #A3D3CF
+  on, thumb #FAFAFA off and #009688 on. trackColor={{ false, true }} and
+  thumbColor replace them. The thumb moves over 150 ms, not with
+  prefers-reduced-motion. Right-to-left puts the on position at the left.
+- disabled (or accessibilityState.disabled): the input is disabled, and the
+  switch has an opacity of 0.5.
+- style, onLayout, and pointerEvents go to the root element, which has
+  alignSelf: flex-start. A width and height in style change the size. The
+  ref, id, testID, and the accessibility props go to the input.
+- ios_backgroundColor, onTintColor, tintColor, thumbTintColor: ignored.
 
 ActivityIndicator
 - A spinner: an SVG that turns once each 0.75 s, in an element with
