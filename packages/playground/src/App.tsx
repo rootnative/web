@@ -1,5 +1,5 @@
 import { useSyncExternalStore, type ReactElement } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 
 import { ActivityIndicatorRoute } from './routes/ActivityIndicatorRoute'
 import { ApisRoute } from './routes/ApisRoute'
@@ -51,10 +51,12 @@ const getHash = (): string => window.location.hash.slice(1)
 export function App(): ReactElement {
   const hash = useSyncExternalStore(subscribe, getHash, () => '')
   const active = routes.find((r) => r.path === hash) ?? routes[0]
+  // On a phone, the menu goes over the page, so a route gets the full width.
+  const narrow = useWindowDimensions().width < 700
 
   return (
-    <View style={styles.app}>
-      <View role="navigation" style={styles.nav}>
+    <View style={[styles.app, narrow && styles.appNarrow]}>
+      <View role="navigation" style={[styles.nav, narrow && styles.navNarrow]}>
         <Text role="heading" aria-level={1} style={styles.brand}>
           rootnative
         </Text>
@@ -70,7 +72,7 @@ export function App(): ReactElement {
           </Text>
         ))}
       </View>
-      <View role="main" style={styles.main}>
+      <View role="main" style={[styles.main, narrow && styles.mainNarrow]}>
         {active === undefined ? null : <active.Component />}
       </View>
     </View>
@@ -79,9 +81,20 @@ export function App(): ReactElement {
 
 const styles = StyleSheet.create({
   app: { flex: 1, flexDirection: 'row', minHeight: '100%' },
+  appNarrow: { flexDirection: 'column' },
   nav: { width: 200, padding: 16, gap: 8, backgroundColor: '#f3f4f6' },
+  navNarrow: {
+    width: 'auto',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'baseline',
+    padding: 8,
+    columnGap: 12,
+    rowGap: 0,
+  },
   brand: { fontSize: 20, fontWeight: '700', marginBottom: 8 },
   link: { color: '#2563eb', paddingVertical: 4 },
   activeLink: { fontWeight: '600', color: '#111827' },
-  main: { flex: 1, padding: 24, gap: 16 },
+  main: { flex: 1, minWidth: 0, padding: 24, gap: 16 },
+  mainNarrow: { padding: 12 },
 })
