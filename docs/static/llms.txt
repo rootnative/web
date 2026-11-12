@@ -70,12 +70,11 @@ ScrollView, FlatList, RefreshControl, TextInput, Switch, ActivityIndicator,
 Modal, StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
-useColorScheme, AppState, Linking, Share, Vibration, Clipboard,
+useColorScheme, AppState, Linking, Alert, Share, Vibration, Clipboard,
 AccessibilityInfo, I18nManager, BackHandler, PixelRatio, processColor,
 PanResponder, usePressability.
 
 NOT IMPLEMENTED, do not import:
-- Alert.
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
 - A Next.js plugin, and templates for a Vite app with and without server
   rendering.
@@ -425,6 +424,17 @@ StatusBar
   addListener, removeAllListeners, listenerCount work. openSettings rejects.
   sendIntent rejects with 'Unsupported'. For a link that the user clicks,
   prefer href on Text or View.
+- Alert.alert(title, message?, buttons?, options?): a <dialog
+  role="alertdialog"> with showModal(), outside the React tree, with the look
+  of Android's alert (teal text buttons; dark gray card in the dark scheme,
+  from Appearance or userInterfaceStyle). All buttons show, in order; with
+  three, the first sits at the start. No buttons or [] give OK. A press closes
+  the alert, then calls onPress(). style 'destructive' is red text. Focus:
+  isPreferred, else the cancel button, else the first.
+- Alert: Escape (and Chrome's Android back gesture) presses the style
+  'cancel' button. Without one, Escape and a click outside close the alert
+  only with cancelable: true, then onDismiss runs. A new alert goes on top.
+  Alert.prompt does nothing yet (dev warning). On the server, nothing.
 - Share: share({ title, message, url }) calls navigator.share with title,
   text (the message), and url. Resolves { action: 'sharedAction' |
   'dismissedAction', activityType: null }; a closed sheet is dismissedAction.

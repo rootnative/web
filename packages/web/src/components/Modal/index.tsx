@@ -21,6 +21,7 @@ import { StyleSheet } from '../../apis/StyleSheet'
 import { claimPress } from '../../events/press/Pressability'
 import { toDOMProps } from '../../render/domProps'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
+import { lockScroll, unlockScroll } from '../../utils/scrollLock'
 import { View } from '../View'
 import type { ModalProps } from './types'
 
@@ -110,20 +111,6 @@ const createHost = (): Host & { showChildren: () => void; hideChildren: () => vo
       for (let index = list.length - 1; index >= 0; index--) list[index]?.hide()
     },
   }
-}
-
-// The page under a modal doesn't scroll, as on native.
-let scrollLocks = 0
-let pageOverflow = ''
-const lockScroll = (): void => {
-  const root = document.documentElement
-  if (scrollLocks++ === 0) {
-    pageOverflow = root.style.overflow
-    root.style.overflow = 'hidden'
-  }
-}
-const unlockScroll = (): void => {
-  if (--scrollLocks === 0) document.documentElement.style.overflow = pageOverflow
 }
 
 const subscribeNothing = (): (() => void) => () => {}

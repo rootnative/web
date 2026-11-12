@@ -15,6 +15,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 - **`FlatList`** pull to refresh: `onRefresh` and `refreshing` wrap the scroller in a `RefreshControl`, with `progressViewOffset`, as on native. With `onRefresh`, `refreshing` must be a boolean, or the list throws.
 - **`Modal`**: a `<dialog>` that opens with `showModal()`, so it's above the page, and the page under it is inert and doesn't scroll. Escape calls `onRequestClose`, the focus moves in and back to the opener, and a nested modal goes on top. `animationType` slides or fades the modal in and out in 200 ms, as on Android, and the modal stays until its exit animation ends. `transparent`, `backdropColor`, `onShow`, and `onDismiss` work. It renders nothing on the server and shows after hydration.
 - **`EventSubscription`**, the type of the object that `addEventListener` returns.
+- **`Alert`**: `Alert.alert` shows a `<dialog role="alertdialog">` with the look of Android's alert, outside the React tree. Escape presses the `cancel` button, a `cancelable` alert also closes on Escape or a click outside and calls `onDismiss`, `destructive` text is red, and the dark scheme follows `Appearance` or `userInterfaceStyle`. `Alert.prompt` does nothing yet.
 
 ### Changed
 

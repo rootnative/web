@@ -47,6 +47,7 @@ const sidebars: SidebarsConfig = {
         'appearance',
         'appstate',
         'linking',
+        'alert',
         'share',
         'vibration',
         'clipboard',

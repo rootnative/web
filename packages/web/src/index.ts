@@ -5,6 +5,8 @@ export type {
   AccessibilityChangeEventName,
   AccessibilityEventSubscription,
 } from './apis/AccessibilityInfo'
+export { Alert } from './apis/Alert'
+export type { AlertButton, AlertButtonStyle, AlertOptions, AlertType } from './apis/Alert'
 export { Appearance } from './apis/Appearance'
 export type {
   AppearanceListener,

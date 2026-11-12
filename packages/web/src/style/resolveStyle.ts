@@ -86,7 +86,7 @@ const resizeModeToObjectFit: Record<string, string> = {
 }
 
 // The font React Native calls "System".
-const systemFontStack =
+export const systemFontStack: string =
   'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
 
 const textAlignVerticalToVerticalAlign: Record<string, string> = {

@@ -247,13 +247,13 @@ The latest release is [`0.0.0-alpha.2`](https://www.npmjs.com/package/@rootnativ
 
 ## What ships today
 
-| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`Modal`](https://rootnative.github.io/web/modal), [`StatusBar`](https://rootnative.github.io/web/statusbar)                 |
-| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Linking`](https://rootnative.github.io/web/linking), [`Share`](https://rootnative.github.io/web/share), [`Vibration`](https://rootnative.github.io/web/vibration), [`Clipboard`](https://rootnative.github.io/web/clipboard), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
-| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                |
-| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`Modal`](https://rootnative.github.io/web/modal), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                    |
+| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Linking`](https://rootnative.github.io/web/linking), [`Alert`](https://rootnative.github.io/web/alert), [`Share`](https://rootnative.github.io/web/share), [`Vibration`](https://rootnative.github.io/web/vibration), [`Clipboard`](https://rootnative.github.io/web/clipboard), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
+| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 `FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now.
 
@@ -261,7 +261,6 @@ The latest release is [`0.0.0-alpha.2`](https://www.npmjs.com/package/@rootnativ
 
 **Don't import these yet.** They aren't in the package.
 
-- **APIs:** `Alert`.
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
 
@@ -1818,6 +1817,71 @@ Browsers block a new tab that a page opens with no click or key press. Call `ope
 On native, `url` fires when a link opens the app while it runs. On the web, the URL of the page changes through your router: a link, back, or forward. So the browser never fires `url`, and your router handles the change, as with [`BackHandler`](https://rootnative.github.io/web/backhandler).
 
 On the web, a deep link opens the page, so `getInitialURL()` returns it.
+
+---
+
+# `Alert`
+
+Shows an alert with a title, a message, and buttons. It isn't part of your React tree, so you can call it from any handler.
+
+```tsx
+import { Alert, Button } from 'react-native'
+
+export function DeleteNote({ onDelete }: { onDelete: () => void }) {
+  return (
+    <Button
+      title="Delete"
+      onPress={() =>
+        Alert.alert('Delete the note?', "You can't undo this.", [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Delete', style: 'destructive', onPress: onDelete },
+        ])
+      }
+    />
+  )
+}
+```
+
+The alert is a `<dialog role="alertdialog">` that opens with `showModal()`. Screen readers read the title as its name and the message as its description. The page under the alert is inert and doesn't scroll.
+
+## Buttons
+
+- The buttons show in your order, at the end of the alert. With three, the first sits at the start, as the neutral button does on Android.
+- Without buttons, or with an empty list, the alert has an OK button. A last button without text says OK.
+- A press closes the alert, then calls the button's `onPress`. So `onPress` can open the next alert.
+- `style: 'destructive'` makes the text red, as on iOS.
+- The focus goes to the button with `isPreferred`, else the `cancel` button, else the first button. Enter presses it. When the alert closes, the focus goes back.
+- Android shows at most three buttons. The web shows them all, as iOS does.
+
+## Close with no button
+
+- Escape presses the button with `style: 'cancel'`, as a hardware keyboard does on iOS. So does the back gesture of Chrome on Android.
+- Without a cancel button, Escape and a click outside the alert close it only with `cancelable: true`, as on Android. Then `onDismiss` runs.
+- Otherwise the alert stays open until you press a button.
+
+## Look
+
+The look of Android's alert: a white card with a shadow over a dim layer, a 20 px title, a 16 px message, and text buttons in teal. In the dark scheme, the card is dark gray. The scheme follows [`Appearance`](https://rootnative.github.io/web/appearance). `userInterfaceStyle: 'light'` or `'dark'` sets it for one alert.
+
+A new alert goes on top of the alert before it. Each one closes on its own.
+
+## Options
+
+| Option               | On the web                                                                                            |
+| -------------------- | ----------------------------------------------------------------------------------------------------- |
+| `cancelable`         | Escape, the back gesture, and a click outside close the alert. The default is `false`, as on Android. |
+| `onDismiss`          | Called when a cancelable alert closes with no button.                                                 |
+| `userInterfaceStyle` | `'light'` or `'dark'` for this alert. The default follows `Appearance`.                               |
+
+## `Alert.prompt`
+
+On native, `Alert.prompt` is iOS only, and Android does nothing. On the web it does nothing yet, and it logs a warning in development.
+
+## Older browsers and the server
+
+Firefox before 98 and Safari before 15.4 have no `showModal()`. There the alert is a box on top with no dim layer, and Escape still works. The page under it isn't inert.
+
+On the server, `Alert.alert` does nothing.
 
 ---
 

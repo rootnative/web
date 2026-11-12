@@ -2,6 +2,7 @@ import { useSyncExternalStore, type ReactElement } from 'react'
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 
 import { ActivityIndicatorRoute } from './routes/ActivityIndicatorRoute'
+import { AlertRoute } from './routes/AlertRoute'
 import { ApisRoute } from './routes/ApisRoute'
 import { AppearanceRoute } from './routes/AppearanceRoute'
 import { ButtonRoute } from './routes/ButtonRoute'
@@ -32,6 +33,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'switch', title: 'Switch', Component: SwitchRoute },
   { path: 'activityindicator', title: 'ActivityIndicator', Component: ActivityIndicatorRoute },
   { path: 'modal', title: 'Modal', Component: ModalRoute },
+  { path: 'alert', title: 'Alert', Component: AlertRoute },
   { path: 'dimensions', title: 'Dimensions', Component: DimensionsRoute },
   { path: 'appearance', title: 'Appearance', Component: AppearanceRoute },
   { path: 'apis', title: 'Small APIs', Component: ApisRoute },

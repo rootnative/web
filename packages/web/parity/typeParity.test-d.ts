@@ -26,7 +26,6 @@ type PropDiff<NativeProps, OurProps, Gaps extends keyof NativeProps> = Diff<
 
 type ExportGaps =
   // Not built yet.
-  | 'Alert'
   | 'Animated'
   | 'Easing'
   | 'ImageBackground'
@@ -245,4 +244,6 @@ export type TypeParity = [
   None<PropDiff<typeof Native.Share, typeof Web.Share, 'prototype'>>,
   None<PropDiff<typeof Native.Vibration, typeof Web.Vibration, never>>,
   None<PropDiff<typeof Native.Clipboard, typeof Web.Clipboard, never>>,
+  // A class on native, a plain object here.
+  None<PropDiff<typeof Native.Alert, typeof Web.Alert, 'prototype'>>,
 ]
