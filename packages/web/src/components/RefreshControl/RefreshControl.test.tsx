@@ -107,7 +107,14 @@ describe('RefreshControl', () => {
 })
 
 // Firefox and Safari on a desktop can't build touch events, so these run where the engine can.
-const canTouch = typeof Touch === 'function' && typeof TouchEvent === 'function'
+// Desktop WebKit has a `Touch` function, but `new Touch()` throws, so only a real build tells.
+const canTouch = ((): boolean => {
+  try {
+    return new Touch({ identifier: 0, target: document.body }) instanceof Touch
+  } catch {
+    return false
+  }
+})()
 
 describe.skipIf(!canTouch)('RefreshControl pull', () => {
   let container: HTMLElement
