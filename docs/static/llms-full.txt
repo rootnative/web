@@ -813,6 +813,7 @@ Give an action `role="button"`. It renders a `<button type="button">`, so screen
 - **Assistive technology, or `element.click()`.** `onPress` fires with the click event.
 - **Long press.** `onLongPress` fires after `delayLongPress`, 500 ms by default. On a touch screen, a long press with `onLongPress` doesn't open the context menu.
 - **Quick taps.** `onPressOut` waits until the press is at least 130 ms long, so a quick tap still shows the pressed style, as on native.
+- **The click after a tap.** A browser sends a click after each tap. When the press put new content under the finger, for example a modal, that click stops, so it presses nothing else. A click on the pressed element goes through, so a link still navigates.
 
 ## State
 

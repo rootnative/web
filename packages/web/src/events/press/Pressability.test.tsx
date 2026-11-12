@@ -1,4 +1,4 @@
-import { useEffect, type ReactElement, type ReactNode } from 'react'
+import { act, useEffect, useState, type ReactElement, type ReactNode } from 'react'
 import { afterEach, describe, expect, onTestFinished, test, vi } from 'vitest'
 import { userEvent } from 'vitest/browser'
 
@@ -87,6 +87,29 @@ const logConfig = (log: string[]): PressabilityConfig => ({
   onPressOut: () => log.push('out'),
   onPress: () => log.push('press'),
 })
+
+// A press that puts a second pressable under the finger, as a modal that opens does. The keys
+// keep two elements, so the second isn't the pressed element.
+function Swap(props: { onSecond: () => void }): ReactElement {
+  const [second, setSecond] = useState(false)
+  return second ? (
+    <Target key="second" testID="second" config={{ onPress: props.onSecond }} />
+  ) : (
+    <Target key="first" testID="first" config={{ onPress: () => setSecond(true) }} />
+  )
+}
+
+// The click that a browser sends after a tap or a mouse press.
+const pointerClick = (element: Element): MouseEvent => {
+  const event = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 })
+  element.dispatchEvent(event)
+  return event
+}
+
+const tapFirst = (pointerType: 'mouse' | 'touch' = 'touch'): void => {
+  pointer(byTestId('first'), 'pointerdown', 10, 10, pointerType)
+  act(() => pointer(byTestId('first'), 'pointerup', 10, 10, pointerType))
+}
 
 describe('usePressability', () => {
   test('returns null without a config, then the same handlers on every render', () => {
@@ -339,6 +362,56 @@ describe('usePressability', () => {
       render(<Target config={{ onPress, disabled: true }} />)
       byTestId().click()
       expect(onPress).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('the click of a tap', () => {
+    test('does not press what the tap rendered under the finger', () => {
+      const onSecond = vi.fn()
+      render(<Swap onSecond={onSecond} />)
+      tapFirst()
+      const click = pointerClick(byTestId('second'))
+      expect(onSecond).not.toHaveBeenCalled()
+      expect(click.defaultPrevented).toBe(true)
+    })
+
+    test('passes on the pressed element, and presses once', () => {
+      const log: string[] = []
+      const clicks = recordEvents('click')
+      render(<Target config={logConfig(log)} />)
+      pointer(byTestId(), 'pointerdown')
+      pointer(byTestId(), 'pointerup')
+      pointerClick(byTestId())
+      expect(log).toEqual(['in', 'out', 'press'])
+      expect(clicks).toHaveLength(1)
+    })
+
+    test('a new tap starts its own press', () => {
+      const onSecond = vi.fn()
+      render(<Swap onSecond={onSecond} />)
+      tapFirst()
+      pointer(byTestId('second'), 'pointerdown')
+      pointer(byTestId('second'), 'pointerup')
+      pointerClick(byTestId('second'))
+      expect(onSecond).toHaveBeenCalledTimes(1)
+    })
+
+    test('a mouse press leaves the next click alone', () => {
+      const onSecond = vi.fn()
+      render(<Swap onSecond={onSecond} />)
+      tapFirst('mouse')
+      expect(pointerClick(byTestId('second')).defaultPrevented).toBe(false)
+    })
+
+    test('a click with no detail passes, as from the keyboard', () => {
+      const onSecond = vi.fn()
+      render(<Swap onSecond={onSecond} />)
+      tapFirst()
+      byTestId('second').click()
+      expect(onSecond).toHaveBeenCalledTimes(1)
+      // The guard still waits for the click of the tap.
+      expect(pointerClick(byTestId('second')).defaultPrevented).toBe(true)
+      expect(onSecond).toHaveBeenCalledTimes(1)
     })
   })
 

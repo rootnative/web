@@ -188,6 +188,9 @@ Pressable
   130 ms, as on native.
 - onPress gets the pointer up event, or the click event for a keyboard or
   assistive technology press. preventDefault() on it cancels the click.
+- The click that follows a tap stops when it lands outside the pressed
+  element, for example on a modal that the press opened. A click on the
+  pressed element goes through.
 - hitSlop grows the hit area with a ::before box. A parent with overflow
   hidden clips it.
 - pressRetentionOffset defaults to 20 on three sides and 30 at the bottom.

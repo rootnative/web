@@ -20,6 +20,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 - A `ScrollView` with `refreshControl` gives the control the style props that place the box, and the scroller fills it, as on Android. Before, the scroller kept the whole style.
 
+### Fixed
+
+- A tap that put a new pressable under the finger, for example in a modal that it opened, pressed that pressable too in Chrome on Android. The click of the tap now stops when it lands outside the pressed element.
+
 ## [0.0.0-alpha.2] - 2026-11-11
 
 ### Added

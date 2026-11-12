@@ -136,6 +136,31 @@ const startsInNativeControl = (event: SyntheticEvent<HTMLElement>): boolean => {
   return control !== null && control !== currentTarget && currentTarget.contains(control)
 }
 
+// The click of a tap follows its pointerup within this time.
+const TAP_CLICK_WINDOW_MS = 1000
+
+// Chrome on Android sends the click of a tap to the element under the finger after the press
+// rendered, for example a button in a modal that the press just opened. That click belongs to the
+// press, so it stops before React sees it. A click on the pressed element passes, so a link still
+// follows its href. The next pointerdown starts a new tap and ends the guard.
+const stopRetargetedClick = (element: HTMLElement, releasedAt: number): void => {
+  function end(): void {
+    window.removeEventListener('click', onClick, true)
+    window.removeEventListener('pointerdown', end, true)
+  }
+  function onClick(event: MouseEvent): void {
+    // A click from the keyboard, assistive technology, or element.click() has no detail.
+    if (event.detail === 0) return
+    end()
+    if (event.timeStamp - releasedAt > TAP_CLICK_WINDOW_MS) return
+    if (event.target instanceof Node && element.contains(event.target)) return
+    event.preventDefault()
+    event.stopImmediatePropagation()
+  }
+  window.addEventListener('click', onClick, true)
+  window.addEventListener('pointerdown', end, true)
+}
+
 type Region = { bottom: number; left: number; right: number; top: number }
 
 type Timer = ReturnType<typeof setTimeout>
@@ -243,6 +268,8 @@ export class Pressability {
         if (event.pointerId !== this.pointerId || element === null) return
         this.pointerId = null
         this.receiveSignal('RESPONDER_RELEASE', toGestureResponderEvent(event, element))
+        // A mouse click goes to the pressed element, but a tap's click can go elsewhere.
+        if (event.pointerType !== 'mouse') stopRetargetedClick(element, event.timeStamp)
       },
 
       onPointerCancel: (event) => {
