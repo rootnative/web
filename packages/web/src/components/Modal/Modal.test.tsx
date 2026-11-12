@@ -1,9 +1,10 @@
 import { act, createRef, StrictMode, useState, type ReactElement } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server.browser'
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, describe, expect, onTestFinished, test, vi } from 'vitest'
 import { userEvent } from 'vitest/browser'
 
+import { installFakeMatchMedia } from '../../test/matchMedia'
 import { cleanup, render } from '../../test/render'
 import { Pressable } from '../Pressable'
 import { Text } from '../Text'
@@ -68,6 +69,25 @@ function Nested(): ReactElement {
       </Modal>
     </View>
   )
+}
+
+// The one animation that runs on the dialog.
+const running = (): Animation => {
+  const animations = dialog().getAnimations()
+  expect(animations).toHaveLength(1)
+  return animations[0] as Animation
+}
+
+const framesOf = (animation: Animation): ComputedKeyframe[] =>
+  (animation.effect as KeyframeEffect).getKeyframes()
+
+const easingOf = (animation: Animation): string =>
+  String(animation.effect?.getTiming().easing).replace(/\s/g, '')
+
+const finish = async (animation: Animation): Promise<void> => {
+  await act(async () => {
+    await animation.finished
+  })
 }
 
 describe('Modal', () => {
@@ -283,5 +303,100 @@ describe('Modal', () => {
     } finally {
       Object.defineProperty(HTMLDialogElement.prototype, 'showModal', showModal!)
     }
+  })
+})
+
+describe('Modal animationType', () => {
+  test('slide moves the modal up from the bottom in 200 ms, then onShow fires', async () => {
+    const onShow = vi.fn()
+    render(<Modal animationType="slide" onShow={onShow} />)
+    const enter = running()
+    expect(enter.effect?.getTiming().duration).toBe(200)
+    expect(easingOf(enter)).toBe('cubic-bezier(0.37,0,0.63,1)')
+    const frames = framesOf(enter)
+    expect(frames[0]?.['transform']).toBe('translateY(100%)')
+    expect(frames[1]?.['transform']).toMatch(/^translateY\(0(px)?\)$/)
+    expect(onShow).not.toHaveBeenCalled()
+
+    await finish(enter)
+    expect(onShow).toHaveBeenCalledTimes(1)
+    expect(dialog().getAnimations()).toHaveLength(0)
+  })
+
+  test('fade fades the modal in with the curve t²', () => {
+    render(<Modal animationType="fade" />)
+    const enter = running()
+    expect(easingOf(enter)).toBe('cubic-bezier(0.333,0,0.667,0.333)')
+    const frames = framesOf(enter)
+    expect(frames[0]?.['opacity']).toBe('0')
+    expect(frames[1]?.['opacity']).toBe('1')
+  })
+
+  test('hiding slides the modal out, then it closes and onDismiss fires', async () => {
+    const onDismiss = vi.fn()
+    const { rerender } = render(<Modal animationType="slide" onDismiss={onDismiss} />)
+    await finish(running())
+
+    rerender(<Modal animationType="slide" onDismiss={onDismiss} visible={false} />)
+    expect(dialog().open).toBe(true)
+    expect(dialog().hasAttribute('data-closing')).toBe(true)
+    expect(getComputedStyle(dialog()).pointerEvents).toBe('none')
+    const exit = running()
+    expect(framesOf(exit)[1]?.['transform']).toBe('translateY(100%)')
+    expect(onDismiss).not.toHaveBeenCalled()
+
+    await finish(exit)
+    expect(dialogs()).toHaveLength(0)
+    expect(onDismiss).toHaveBeenCalledTimes(1)
+    expect(document.documentElement.style.overflow).toBe('')
+  })
+
+  test('shown again during the exit, the modal turns back and stays', async () => {
+    const onShow = vi.fn()
+    const onDismiss = vi.fn()
+    const modal = (visible: boolean): ReactElement => (
+      <Modal animationType="fade" visible={visible} onShow={onShow} onDismiss={onDismiss} />
+    )
+    const { rerender } = render(modal(true))
+    await finish(running())
+    rerender(modal(false))
+    rerender(modal(true))
+    expect(dialog().hasAttribute('data-closing')).toBe(false)
+    const back = running()
+    expect(framesOf(back)[1]?.['opacity']).toBe('1')
+
+    await finish(back)
+    expect(dialog().open).toBe(true)
+    expect(onShow).toHaveBeenCalledTimes(1)
+    expect(onDismiss).not.toHaveBeenCalled()
+  })
+
+  test('a nested modal closes at once when its parent slides out', async () => {
+    const { rerender } = render(
+      <Modal animationType="slide" testID="parent">
+        <Modal testID="child" />
+      </Modal>,
+    )
+    await finish(byTestId('parent').getAnimations()[0] as Animation)
+    rerender(
+      <Modal animationType="slide" testID="parent" visible={false}>
+        <Modal testID="child" />
+      </Modal>,
+    )
+    expect((byTestId('child') as HTMLDialogElement).open).toBe(false)
+    expect((byTestId('parent') as HTMLDialogElement).open).toBe(true)
+  })
+
+  test('with reduced motion, the modal shows and hides at once', () => {
+    const media = installFakeMatchMedia()
+    onTestFinished(media.restore)
+    media.get('(prefers-reduced-motion: reduce)').set(true)
+    const onShow = vi.fn()
+    const { rerender } = render(<Modal animationType="slide" onShow={onShow} />)
+    expect(dialog().getAnimations()).toHaveLength(0)
+    expect(onShow).toHaveBeenCalledTimes(1)
+
+    rerender(<Modal animationType="slide" onShow={onShow} visible={false} />)
+    expect(dialogs()).toHaveLength(0)
   })
 })

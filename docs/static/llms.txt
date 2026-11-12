@@ -365,18 +365,23 @@ Modal
 - visible decides (default true). Escape, and the back gesture of Chrome on
   Android, call onRequestClose: hide the modal there. While visible is true,
   the modal stays open.
-- onShow fires once per show. onDismiss fires after visible becomes false,
-  not on unmount.
-- The focus moves into the modal, and back to the opener when it hides.
+- onShow fires once per show, when the enter animation ends. onDismiss fires
+  after visible becomes false and the exit animation ends, not on unmount.
+- The focus moves into the modal (the first control, or the dialog itself),
+  and back to the opener when it hides.
 - A press inside doesn't reach a Pressable around the Modal. A nested modal
   goes on top, and Escape closes the top one first.
 - The children go in a box that fills the viewport: white, backdropColor, or
   clear with transparent. style goes to the box. ref and modalRef are the
   <dialog>. testID, aria props, and DOM handlers go to the <dialog>.
 - Renders nothing on the server. It shows after hydration.
-- animationType: not yet. presentationStyle, supportedOrientations,
-  onOrientationChange, allowSwipeDismissal, hardwareAccelerated,
-  statusBarTranslucent, navigationBarTranslucent: ignored.
+- animationType: slide (up from the bottom) or fade, 200 ms with the curves
+  of the Android modal; none (default) is instant. The modal stays until its
+  exit animation ends and takes no presses then; a nested modal closes at
+  once. Reduced motion: instant.
+- presentationStyle, supportedOrientations, onOrientationChange,
+  allowSwipeDismissal, hardwareAccelerated, statusBarTranslucent,
+  navigationBarTranslucent: ignored.
 - Firefox before 98 and Safari before 15.4 have no showModal(): a fixed box
   on top, Escape works, the page isn't inert.
 

@@ -2,12 +2,14 @@ import { useState, type ReactElement } from 'react'
 import { Button, Modal, StyleSheet, Text, TextInput, View } from 'react-native'
 
 const ROWS = Array.from({ length: 30 }, (_, i) => i + 1)
+const ANIMATIONS = ['none', 'slide', 'fade'] as const
 
 export function ModalRoute(): ReactElement {
   const [screen, setScreen] = useState(false)
   const [dialog, setDialog] = useState(false)
   const [nested, setNested] = useState(false)
   const [log, setLog] = useState<string[]>([])
+  const [animation, setAnimation] = useState<(typeof ANIMATIONS)[number]>('slide')
 
   const note = (line: string): void => setLog((current) => [line, ...current].slice(0, 6))
 
@@ -19,11 +21,20 @@ export function ModalRoute(): ReactElement {
 
       <Text>
         A full-screen modal, and a transparent one with a card and a nested modal. Escape calls
-        onRequestClose. The page under a modal doesn't scroll and can't take the focus.
+        onRequestClose. The page under a modal doesn't scroll and can't take the focus. The third
+        button picks the animationType of all three.
       </Text>
       <View style={styles.row}>
         <Button title="Full screen" onPress={() => setScreen(true)} />
         <Button title="Transparent card" onPress={() => setDialog(true)} />
+        <Button
+          title={`Animation: ${animation}`}
+          onPress={() =>
+            setAnimation(
+              ANIMATIONS[(ANIMATIONS.indexOf(animation) + 1) % ANIMATIONS.length] ?? 'none',
+            )
+          }
+        />
       </View>
       <Text style={styles.log}>{log.length === 0 ? 'No events yet.' : log.join('\n')}</Text>
       <View style={styles.rows}>
@@ -35,6 +46,7 @@ export function ModalRoute(): ReactElement {
       </View>
 
       <Modal
+        animationType={animation}
         visible={screen}
         onShow={() => note('full screen: onShow')}
         onDismiss={() => note('full screen: onDismiss')}
@@ -47,12 +59,13 @@ export function ModalRoute(): ReactElement {
           <Text role="heading" aria-level={2} style={styles.title}>
             A full-screen modal
           </Text>
-          <TextInput placeholder="The focus starts here" style={styles.input} />
+          <TextInput placeholder="A text field" style={styles.input} />
           <Button title="Close" onPress={() => setScreen(false)} />
         </View>
       </Modal>
 
       <Modal
+        animationType={animation}
         transparent
         visible={dialog}
         onShow={() => note('card: onShow')}
@@ -74,6 +87,7 @@ export function ModalRoute(): ReactElement {
         </View>
 
         <Modal
+          animationType={animation}
           transparent
           visible={nested}
           onRequestClose={() => {

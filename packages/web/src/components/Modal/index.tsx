@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useImperativeHandle,
@@ -15,6 +16,7 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 
+import { Platform } from '../../apis/Platform'
 import { StyleSheet } from '../../apis/StyleSheet'
 import { claimPress } from '../../events/press/Pressability'
 import { toDOMProps } from '../../render/domProps'
@@ -32,9 +34,54 @@ const RULES = [
   `.${MODAL_CLASS}[open]{display:flex;flex-direction:column}`,
   `.${MODAL_CLASS}:not([open]){display:none}`,
   `.${MODAL_CLASS}:focus{outline:none}`,
+  // A modal on its way out takes no more presses.
+  `.${MODAL_CLASS}[data-closing]{pointer-events:none}`,
   // A browser without `::backdrop` drops the inner rule, where `insertRule` would throw.
   `@supports selector(::backdrop){.${MODAL_CLASS}::backdrop{background:transparent}}`,
 ]
+
+// The window animations of React Native's Android modal: 200 ms (`config_shortAnimTime`). `slide`
+// uses the default AccelerateDecelerateInterpolator, (1 - cos(πt)) / 2, and `fade` the
+// AccelerateInterpolator, t², which this Bézier draws exactly.
+const DURATION_MS = 200
+type Motion = { property: 'transform' | 'opacity'; hidden: string; shown: string; easing: string }
+const motions: Record<'slide' | 'fade', Motion> = {
+  slide: {
+    property: 'transform',
+    hidden: 'translateY(100%)',
+    shown: 'translateY(0)',
+    easing: 'cubic-bezier(0.37, 0, 0.63, 1)',
+  },
+  fade: {
+    property: 'opacity',
+    hidden: '0',
+    shown: '1',
+    easing: 'cubic-bezier(0.333, 0, 0.667, 0.333)',
+  },
+}
+
+const motionOf = (type: ModalProps['animationType']): Motion | null =>
+  type === 'slide' || type === 'fade' ? (Platform.isDisableAnimations ? null : motions[type]) : null
+
+// Runs from the end opposite `to`, or from where a running animation is, so a turn doesn't jump.
+// The way out holds its last frame until the dialog closes.
+const animate = (
+  element: HTMLElement,
+  motion: Motion,
+  to: 'shown' | 'hidden',
+  running: Animation | null,
+): Animation => {
+  const from =
+    running === null
+      ? motion[to === 'shown' ? 'hidden' : 'shown']
+      : getComputedStyle(element)[motion.property]
+  running?.cancel()
+  return element.animate([{ [motion.property]: from }, { [motion.property]: motion[to] }], {
+    duration: DURATION_MS,
+    easing: motion.easing,
+    fill: to === 'hidden' ? 'forwards' : 'none',
+  })
+}
 
 // A nested modal shows after its parent, so it's on top, and hides before it.
 type Layer = { show: () => void; hide: () => void }
@@ -93,23 +140,41 @@ const useIsClient = (): boolean =>
  * page inert, keeps the focus inside, and turns Escape into `onRequestClose`.
  */
 export function Modal(props: ModalProps): ReactElement | null {
-  const { visible = true, onDismiss } = props
+  const { visible = true, onDismiss, animationType } = props
   const shown = useIsClient() && visible
 
+  // The dialog stays while its exit animation runs, as on iOS.
+  const [exiting, setExiting] = useState(false)
+  const [lastShown, setLastShown] = useState(shown)
+  if (lastShown !== shown) {
+    setLastShown(shown)
+    setExiting(!shown && animationType != null && animationType !== 'none')
+  }
+  const mounted = shown || exiting
+  const onExited = useCallback(() => setExiting(false), [])
+
   const dismiss = useRef(onDismiss)
-  const wasShown = useRef(false)
+  const wasMounted = useRef(false)
   useEffect(() => {
     dismiss.current = onDismiss
   })
   useEffect(() => {
-    if (wasShown.current && !shown) dismiss.current?.()
-    wasShown.current = shown
-  }, [shown])
+    if (wasMounted.current && !mounted) dismiss.current?.()
+    wasMounted.current = mounted
+  }, [mounted])
 
-  return shown ? createPortal(<ModalDialog {...props} />, document.body) : null
+  return mounted
+    ? createPortal(<ModalDialog {...props} closing={!shown} onExited={onExited} />, document.body)
+    : null
 }
 
-function ModalDialog(props: ModalProps): ReactElement {
+type DialogProps = ModalProps & {
+  // `visible` became `false`, and the exit animation runs.
+  closing: boolean
+  onExited: () => void
+}
+
+function ModalDialog(props: DialogProps): ReactElement {
   const {
     children,
     style,
@@ -119,11 +184,12 @@ function ModalDialog(props: ModalProps): ReactElement {
     onShow,
     ref,
     modalRef,
+    animationType,
+    closing,
+    onExited,
     // Read by Modal.
     visible: _visible,
     onDismiss: _onDismiss,
-    // Not shipped yet.
-    animationType: _animationType,
     // Native only.
     allowSwipeDismissal: _allowSwipeDismissal,
     hardwareAccelerated: _hardwareAccelerated,
@@ -144,9 +210,10 @@ function ModalDialog(props: ModalProps): ReactElement {
   const parent = useContext(HostContext)
   const [host] = useState(createHost)
 
-  const latest = useRef({ onRequestClose, onShow })
+  const animation = useRef<Animation | null>(null)
+  const latest = useRef({ onRequestClose, onShow, onExited, animationType })
   useLayoutEffect(() => {
-    latest.current = { onRequestClose, onShow }
+    latest.current = { onRequestClose, onShow, onExited, animationType }
   })
 
   useImperativeHandle(ref, () => dialog.current as HTMLDialogElement, [])
@@ -173,14 +240,30 @@ function ModalDialog(props: ModalProps): ReactElement {
         }
         lockScroll()
         host.showChildren()
-        if (!announced.current) {
+        const announce = (): void => {
+          if (announced.current) return
           announced.current = true
           latest.current.onShow?.({ nativeEvent: null })
+        }
+        const motion = motionOf(latest.current.animationType)
+        if (motion === null || typeof element.animate !== 'function') {
+          announce()
+          return
+        }
+        const next = animate(element, motion, 'shown', null)
+        animation.current = next
+        // As on iOS, onShow fires once the modal is in place.
+        next.onfinish = () => {
+          if (animation.current !== next) return
+          animation.current = null
+          announce()
         }
       },
       hide: () => {
         if (!open.current) return
         open.current = false
+        animation.current?.cancel()
+        animation.current = null
         host.hideChildren()
         // The browser gives the focus back to the element that had it before `showModal()`.
         if (modal) element.close()
@@ -201,6 +284,38 @@ function ModalDialog(props: ModalProps): ReactElement {
     }
   }, [host, parent])
 
+  // The exit animation when `visible` becomes `false`, and the way back when it turns `true` again
+  // before the exit ends.
+  const wasClosing = useRef(false)
+  useLayoutEffect(() => {
+    const element = dialog.current
+    if (element === null || closing === wasClosing.current) return
+    wasClosing.current = closing
+    const motion = motionOf(latest.current.animationType)
+    const canAnimate = motion !== null && typeof element.animate === 'function'
+    if (closing) {
+      // A nested modal goes at once.
+      host.hideChildren()
+      if (!canAnimate) {
+        latest.current.onExited()
+        return
+      }
+      const next = animate(element, motion, 'hidden', animation.current)
+      animation.current = next
+      next.onfinish = () => {
+        if (animation.current === next) latest.current.onExited()
+      }
+      return
+    }
+    host.showChildren()
+    if (!canAnimate || animation.current === null) return
+    const next = animate(element, motion, 'shown', animation.current)
+    animation.current = next
+    next.onfinish = () => {
+      if (animation.current === next) animation.current = null
+    }
+  }, [closing, host])
+
   const requestClose = (): void => {
     latest.current.onRequestClose?.({ nativeEvent: null })
   }
@@ -210,7 +325,7 @@ function ModalDialog(props: ModalProps): ReactElement {
   const handleCancel = (event: SyntheticEvent<HTMLDialogElement>): void => {
     if (event.target !== event.currentTarget) return
     event.preventDefault()
-    requestClose()
+    if (!closing) requestClose()
   }
 
   // Chrome closes a dialog anyway on a second Escape with no other input between. The app still
@@ -236,6 +351,7 @@ function ModalDialog(props: ModalProps): ReactElement {
       {...domProps}
       ref={dialog}
       className={className}
+      data-closing={closing ? '' : undefined}
       onCancel={handleCancel}
       onClose={handleClose}
       // The presses inside stay inside, as the native host claims the responder.
