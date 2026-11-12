@@ -11,7 +11,8 @@ const liveRegionToAriaLive: Record<string, string> = {
 }
 
 // React Native handlers that are not DOM events. A component maps them itself.
-const nativeHandler = /^on(Press|Layout|TextLayout|Accessibility|Magic|Responder|.*ShouldSet)/
+const nativeHandler =
+  /^on(Press|Layout|TextLayout|Accessibility|Magic|Responder|Refresh|.*ShouldSet)/
 
 const passThrough = new Set(['lang', 'dir', 'target', 'rel', 'download'])
 

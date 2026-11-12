@@ -11,7 +11,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 - **`Share`**: opens the browser's share sheet with the title, the message, and the URL. A closed sheet resolves `dismissedAction`. A browser with no share sheet rejects with `Unsupported platform`.
 - **`Vibration`**: vibrates with Android's rules: a number is milliseconds, and an array starts with a wait. `repeat` plays an array until `cancel()`. A browser with no Vibration API, such as Safari, does nothing.
 - **`Clipboard`**: `setString` and `getString` through the async Clipboard API. `setString` falls back to a hidden text field on a page with no Clipboard API, and `getString` rejects when the browser refuses. It's deprecated in React Native, so the first call logs a warning.
-- **`RefreshControl`**: pull to refresh with touch, with Android's indicator: an arc on a white disc that comes down from the top. A release past the target calls `onRefresh`. `colors`, `progressBackgroundColor`, `size`, `progressViewOffset`, and `enabled` work. A mouse or a keyboard has no pull.
+- **`RefreshControl`**: pull to refresh with touch, with Android's indicator: an arc on a white disc that comes down from the top. A release past the target calls `onRefresh`. `colors`, `progressBackgroundColor`, `size`, `progressViewOffset`, and `enabled` work. A mouse or a keyboard has no pull. In a flipped scroller, such as an inverted `FlatList`, the pull goes up from the bottom, as on native.
+- **`FlatList`** pull to refresh: `onRefresh` and `refreshing` wrap the scroller in a `RefreshControl`, with `progressViewOffset`, as on native. With `onRefresh`, `refreshing` must be a boolean, or the list throws.
 - **`EventSubscription`**, the type of the object that `addEventListener` returns.
 
 ### Changed

@@ -30,7 +30,25 @@ const RULES = [
   `@media (prefers-reduced-motion:reduce){.${INDICATOR_CLASS}{transition:none}}`,
 ]
 
-type Gesture = { id: number; x: number; y: number; pulling: boolean; distance: number }
+type Gesture = {
+  id: number
+  x: number
+  y: number
+  pulling: boolean
+  distance: number
+  toLocal: DOMMatrixReadOnly
+}
+
+// Maps a finger movement into the frame of the element, as Android does for its touch events. An
+// inverted FlatList flips the element, so the pull starts at the visual bottom and goes up.
+const frameOf = (element: Element): DOMMatrixReadOnly => {
+  let toScreen = new DOMMatrix()
+  for (let node: Element | null = element; node !== null; node = node.parentElement) {
+    const { transform } = getComputedStyle(node)
+    if (transform !== 'none') toScreen = new DOMMatrix(transform).multiply(toScreen)
+  }
+  return toScreen.inverse()
+}
 
 export function RefreshControl(props: RefreshControlProps): ReactElement {
   const {
@@ -104,6 +122,7 @@ export function RefreshControl(props: RefreshControlProps): ReactElement {
               y: touch.clientY,
               pulling: false,
               distance: 0,
+              toLocal: frameOf(area),
             }
           : null
     }
@@ -111,8 +130,11 @@ export function RefreshControl(props: RefreshControlProps): ReactElement {
     const onMove = (event: TouchEvent): void => {
       const touch = touchOf(event)
       if (gesture === null || touch === undefined) return
-      const dx = touch.clientX - gesture.x
-      const dy = touch.clientY - gesture.y
+      const { a, b, c, d } = gesture.toLocal
+      const screenX = touch.clientX - gesture.x
+      const screenY = touch.clientY - gesture.y
+      const dx = a * screenX + c * screenY
+      const dy = b * screenX + d * screenY
       if (!gesture.pulling) {
         if (dx === 0 && dy === 0) return
         // The first move decides: once the browser scrolls, it makes the later moves uncancelable.

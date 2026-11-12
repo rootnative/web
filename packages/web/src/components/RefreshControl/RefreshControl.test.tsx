@@ -1,7 +1,8 @@
-import { act, createRef, type ReactElement, useState } from 'react'
+import { createRef, type ReactElement, useState } from 'react'
 import { afterEach, beforeEach, describe, expect, type Mock, test, vi } from 'vitest'
 
 import { cleanup, render } from '../../test/render'
+import { canTouch, sendTouch } from '../../test/touch'
 import { ScrollView } from '../ScrollView'
 import { View } from '../View'
 import { RefreshControl } from './index'
@@ -106,16 +107,6 @@ describe('RefreshControl', () => {
   })
 })
 
-// Firefox and Safari on a desktop can't build touch events, so these run where the engine can.
-// Desktop WebKit has a `Touch` function, but `new Touch()` throws, so only a real build tells.
-const canTouch = ((): boolean => {
-  try {
-    return new Touch({ identifier: 0, target: document.body }) instanceof Touch
-  } catch {
-    return false
-  }
-})()
-
 describe.skipIf(!canTouch)('RefreshControl pull', () => {
   let container: HTMLElement
   let onRefresh: Mock<() => void>
@@ -146,20 +137,8 @@ describe.skipIf(!canTouch)('RefreshControl pull', () => {
   const scroller = (): HTMLElement =>
     (container.firstElementChild as HTMLElement).firstElementChild as HTMLElement
 
-  const send = (type: string, y: number, x = 100): TouchEvent => {
-    const target = scroller().firstElementChild as HTMLElement
-    const point = new Touch({ identifier: 7, target, clientX: x, clientY: y })
-    const event = new TouchEvent(type, {
-      bubbles: true,
-      cancelable: true,
-      touches: type === 'touchend' || type === 'touchcancel' ? [] : [point],
-      changedTouches: [point],
-    })
-    act(() => {
-      target.dispatchEvent(event)
-    })
-    return event
-  }
+  const send = (type: string, y: number, x = 100): TouchEvent =>
+    sendTouch(scroller().firstElementChild as HTMLElement, type, x, y)
 
   const mount = (props: { controlled?: boolean } & Partial<RefreshControlProps> = {}): void => {
     container = render(<App controlled={props.controlled ?? true} {...props} />).container
@@ -261,6 +240,24 @@ describe.skipIf(!canTouch)('RefreshControl pull', () => {
     send('touchstart', 100)
     expect(send('touchmove', 400).defaultPrevented).toBe(false)
     send('touchend', 400)
+    expect(onRefresh).toHaveBeenCalledTimes(1)
+  })
+
+  test('a flipped parent flips the pull: it starts at the visual bottom and goes up', () => {
+    container = render(
+      <View style={{ transform: [{ scaleY: -1 }] }}>
+        <App controlled />
+      </View>,
+    ).container
+    const area = container.querySelector('[aria-busy]') as HTMLElement
+    const target = area.firstElementChild?.firstElementChild as HTMLElement
+    sendTouch(target, 'touchstart', 100, 100)
+    expect(sendTouch(target, 'touchmove', 100, 300).defaultPrevented).toBe(false)
+    sendTouch(target, 'touchend', 100, 300)
+
+    sendTouch(target, 'touchstart', 100, 300)
+    expect(sendTouch(target, 'touchmove', 100, 100).defaultPrevented).toBe(true)
+    sendTouch(target, 'touchend', 100, 100)
     expect(onRefresh).toHaveBeenCalledTimes(1)
   })
 

@@ -1,7 +1,9 @@
-import { act, createRef, type ReactElement } from 'react'
+import { act, createRef, type ReactElement, useState } from 'react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { cleanup, render } from '../../test/render'
+import { canTouch, sendTouch } from '../../test/touch'
+import { RefreshControl } from '../RefreshControl'
 import { ScrollView } from '../ScrollView'
 import type { ScrollViewProps } from '../ScrollView/types'
 import { Text } from '../Text'
@@ -546,5 +548,134 @@ describe('FlatList', () => {
     expect(element.dataset['testid']).toBe('custom-scroller')
     expect(cellsOf(container)).toHaveLength(3)
     expect(ref.current?.getScrollableNode()).toBe(element)
+  })
+})
+
+describe('FlatList refresh', () => {
+  const wrapper = (container: HTMLElement): HTMLElement =>
+    container.firstElementChild as HTMLElement
+  const scrollerIn = (container: HTMLElement): HTMLElement =>
+    wrapper(container).firstElementChild as HTMLElement
+  const indicatorOf = (container: HTMLElement): HTMLElement | null =>
+    container.querySelector('[role="progressbar"]')
+
+  test('onRefresh wraps the scroller in a RefreshControl', () => {
+    const ref = createRef<FlatListInstance<Item>>()
+    const { container } = render(
+      <FlatList
+        ref={ref}
+        data={items(20)}
+        renderItem={renderRow}
+        onRefresh={() => {}}
+        refreshing
+        progressViewOffset={10}
+        style={{ height: 120 }}
+      />,
+    )
+    const element = scrollerIn(container)
+    expect(wrapper(container).getAttribute('aria-busy')).toBe('true')
+    expect(getComputedStyle(wrapper(container)).height).toBe('120px')
+    expect(element.clientHeight).toBe(120)
+    expect(element.firstElementChild?.children).toHaveLength(20)
+    expect(ref.current?.getScrollableNode()).toBe(element)
+
+    const indicator = indicatorOf(container)
+    expect(indicator?.hasAttribute('data-refreshing')).toBe(true)
+    expect(indicator?.style.getPropertyValue('--rn-refresh-top')).toBe('10px')
+  })
+
+  test('refreshing without onRefresh adds no control', () => {
+    const { container } = render(<FlatList data={items(2)} renderItem={renderRow} refreshing />)
+    expect(indicatorOf(container)).toBeNull()
+  })
+
+  test('onRefresh without a boolean refreshing throws, as on native', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    expect(() =>
+      render(<FlatList data={items(2)} renderItem={renderRow} onRefresh={() => {}} />),
+    ).toThrow(
+      '`refreshing` prop must be set as a boolean in order to use `onRefresh`, but got `"undefined"`',
+    )
+  })
+
+  test('a refreshControl of the app wins over onRefresh', () => {
+    const { container } = render(
+      <FlatList
+        data={items(2)}
+        renderItem={renderRow}
+        onRefresh={() => {}}
+        refreshing={false}
+        refreshControl={<RefreshControl refreshing testID="custom" />}
+      />,
+    )
+    expect(container.querySelectorAll('[role="progressbar"]')).toHaveLength(1)
+    expect(wrapper(container).dataset['testid']).toBe('custom')
+  })
+
+  test('renderScrollComponent gets the refresh props and adds no control itself', () => {
+    const onRefresh = vi.fn()
+    const error = vi.spyOn(console, 'error')
+    const seen: ScrollViewProps[] = []
+    const { container } = render(
+      <FlatList
+        data={items(2)}
+        renderItem={renderRow}
+        onRefresh={onRefresh}
+        refreshing={false}
+        progressViewOffset={4}
+        renderScrollComponent={(props) => {
+          seen.push(props)
+          return <ScrollView {...props} />
+        }}
+      />,
+    )
+    expect(seen[0]).toMatchObject({ onRefresh, refreshing: false, progressViewOffset: 4 })
+    expect(indicatorOf(container)).toBeNull()
+    // `onRefresh` from the spread doesn't reach the DOM, so React doesn't warn.
+    expect(error).not.toHaveBeenCalled()
+  })
+
+  function PullApp(props: { inverted?: boolean; onRefresh: () => void }): ReactElement {
+    const [refreshing, setRefreshing] = useState(false)
+    return (
+      <FlatList
+        data={items(20)}
+        renderItem={renderRow}
+        inverted={props.inverted}
+        style={{ height: 200 }}
+        refreshing={refreshing}
+        onRefresh={() => {
+          props.onRefresh()
+          setRefreshing(true)
+        }}
+      />
+    )
+  }
+
+  test.skipIf(!canTouch)('a pull calls onRefresh', () => {
+    const onRefresh = vi.fn()
+    const { container } = render(<PullApp onRefresh={onRefresh} />)
+    const target = scrollerIn(container).firstElementChild as HTMLElement
+    sendTouch(target, 'touchstart', 100, 100)
+    expect(sendTouch(target, 'touchmove', 100, 300).defaultPrevented).toBe(true)
+    sendTouch(target, 'touchend', 100, 300)
+    expect(onRefresh).toHaveBeenCalledTimes(1)
+    expect(wrapper(container).getAttribute('aria-busy')).toBe('true')
+  })
+
+  test.skipIf(!canTouch)('inverted: the pull starts at the visual bottom and goes up', () => {
+    const onRefresh = vi.fn()
+    const { container } = render(<PullApp inverted onRefresh={onRefresh} />)
+    const target = scrollerIn(container).firstElementChild as HTMLElement
+    // A finger that moves down scrolls the list toward the older items.
+    sendTouch(target, 'touchstart', 100, 100)
+    expect(sendTouch(target, 'touchmove', 100, 300).defaultPrevented).toBe(false)
+    sendTouch(target, 'touchend', 100, 300)
+    expect(onRefresh).not.toHaveBeenCalled()
+
+    sendTouch(target, 'touchstart', 100, 300)
+    expect(sendTouch(target, 'touchmove', 100, 100).defaultPrevented).toBe(true)
+    sendTouch(target, 'touchend', 100, 100)
+    expect(onRefresh).toHaveBeenCalledTimes(1)
   })
 })

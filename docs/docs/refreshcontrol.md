@@ -6,7 +6,7 @@ description: Pull to refresh on the web, with touch and Android's indicator. Pas
 
 # `RefreshControl`
 
-Pull to refresh. Pass it to a `ScrollView` as `refreshControl`. When the user pulls down at the top of the list and lets go, `onRefresh` runs. Set `refreshing` while the data loads.
+Pull to refresh. Pass it to a `ScrollView` as `refreshControl`, or give a [`FlatList`](/flatlist) `onRefresh` and `refreshing`. When the user pulls down at the top of the list and lets go, `onRefresh` runs. Set `refreshing` while the data loads.
 
 ```tsx
 import { useState } from 'react'
@@ -35,6 +35,7 @@ It works as on Android: the control wraps the scroll box, and an indicator on a 
 - The indicator moves half as far as the finger. A release after 128 px of finger travel calls `onRefresh`. A shorter pull goes back.
 - `onRefresh` should set `refreshing` to `true` at once. When it doesn't, the indicator goes back after the release, as on native.
 - There's no pull while `refreshing` is `true`.
+- In a flipped scroller, such as an `inverted` `FlatList`, the indicator sits at the bottom and the pull goes up, as on native.
 
 ## Props
 

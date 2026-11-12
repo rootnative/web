@@ -15,6 +15,7 @@ import {
 } from 'react'
 
 import type { StyleProp } from '../../style/types'
+import { RefreshControl } from '../RefreshControl'
 import { ScrollView } from '../ScrollView'
 import type { ScrollEvent, ScrollViewInstance, ScrollViewProps } from '../ScrollView/types'
 import { View } from '../View'
@@ -106,9 +107,11 @@ type CellProps<ItemT> = {
   onElement: (index: number, node: HTMLElement | null) => void
 }
 
-type CustomScrollerProps = ScrollViewProps & {
-  render: (props: ScrollViewProps) => ReactElement<ScrollViewProps>
-}
+// As in React Native, a custom scroller also gets the refresh props, to build its own control.
+type CustomScrollerProps = ScrollViewProps &
+  Pick<FlatListProps<unknown>, 'onRefresh' | 'refreshing' | 'progressViewOffset'> & {
+    render: (props: ScrollViewProps) => ReactElement<ScrollViewProps>
+  }
 
 // Calls `renderScrollComponent` in a render of its own. A call in the FlatList
 // render would hand it handlers that read refs.
@@ -256,15 +259,15 @@ export function FlatList<ItemT>(props: FlatListProps<ItemT>): ReactElement {
     viewabilityConfig: _viewabilityConfig,
     viewabilityConfigCallbackPairs: _viewabilityConfigCallbackPairs,
     onScrollToIndexFailed: _onScrollToIndexFailed,
+    onRefresh,
+    refreshing,
+    progressViewOffset,
     // Not shipped yet, or ignored on the web.
     extraData: _extraData,
-    onRefresh: _onRefresh,
-    refreshing: _refreshing,
     debug: _debug,
     disableVirtualization: _disableVirtualization,
     initialNumToRender: _initialNumToRender,
     maxToRenderPerBatch: _maxToRenderPerBatch,
-    progressViewOffset: _progressViewOffset,
     strictMode: _strictMode,
     updateCellsBatchingPeriod: _updateCellsBatchingPeriod,
     windowSize: _windowSize,
@@ -658,7 +661,35 @@ export function FlatList<ItemT>(props: FlatListProps<ItemT>): ReactElement {
   }
 
   if (renderScrollComponent !== undefined) {
-    return <CustomScroller {...scrollProps} ref={scroller} render={renderScrollComponent} />
+    return (
+      <CustomScroller
+        {...scrollProps}
+        onRefresh={onRefresh}
+        refreshing={refreshing}
+        progressViewOffset={progressViewOffset}
+        ref={scroller}
+        render={renderScrollComponent}
+      />
+    )
   }
-  return <ScrollView {...scrollProps} ref={scroller} />
+
+  // React Native's `_defaultRenderScrollComponent`: a `refreshControl` of the app wins.
+  let refreshControl = scrollProps.refreshControl
+  if (onRefresh != null) {
+    if (typeof refreshing !== 'boolean') {
+      throw new Error(
+        '`refreshing` prop must be set as a boolean in order to use `onRefresh`, but got `' +
+          JSON.stringify(refreshing ?? 'undefined') +
+          '`',
+      )
+    }
+    refreshControl ??= (
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        progressViewOffset={progressViewOffset}
+      />
+    )
+  }
+  return <ScrollView {...scrollProps} refreshControl={refreshControl} ref={scroller} />
 }

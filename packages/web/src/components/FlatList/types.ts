@@ -138,14 +138,15 @@ export type FlatListProps<ItemT> = Omit<ScrollViewProps, ReservedScrollViewProps
         averageItemLength: number
       }) => void)
     | undefined
+  // With `onRefresh`, the list wraps its scroller in a RefreshControl. `refreshing` must be a boolean.
   onRefresh?: (() => void) | null | undefined
   refreshing?: boolean | null | undefined
+  progressViewOffset?: number | undefined
   // Native only, or virtualizer only. Accepted and ignored.
   debug?: boolean | undefined
   disableVirtualization?: boolean | undefined
   initialNumToRender?: number | undefined
   maxToRenderPerBatch?: number | undefined
-  progressViewOffset?: number | undefined
   strictMode?: boolean | undefined
   updateCellsBatchingPeriod?: number | undefined
   windowSize?: number | undefined

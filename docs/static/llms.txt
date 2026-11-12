@@ -275,12 +275,15 @@ ScrollView
   ...) are ignored.
 
 RefreshControl
-- Pass it to ScrollView as refreshControl. Pull to refresh with TOUCH ONLY:
-  mouse, pen, and keyboard have no pull, so add a refresh button too.
+- Pass it to ScrollView as refreshControl, or give FlatList onRefresh and
+  refreshing. Pull to refresh with TOUCH ONLY: mouse, pen, and keyboard have
+  no pull, so add a refresh button too.
 - A pull starts at the top of the list when the finger first moves down. The
   indicator moves half the finger distance. A release after 128 px of finger
   calls onRefresh. onRefresh must set refreshing to true at once, or the
   indicator goes back. No pull while refreshing or with enabled={false}.
+- In a flipped scroller (an inverted FlatList), the indicator sits at the
+  bottom and the pull goes up, as on native.
 - Android's look: an arc on a white disc (40 px, size="large" 56 px), at rest
   64 px under progressViewOffset minus the disc. colors[0], else tintColor,
   else black, is the arc. progressBackgroundColor is the disc.
@@ -301,8 +304,10 @@ FlatList
   stickyHeaderIndices, and the ScrollView props.
 - onEndReached fires once per content length. The default threshold is 2 px.
   A list shorter than its viewport fires it after mount.
-- onRefresh and refreshing show no indicator yet. Pass
-  refreshControl={<RefreshControl ... />} instead.
+- onRefresh and refreshing wrap the scroller in a RefreshControl, with
+  progressViewOffset, as on native. With onRefresh, refreshing must be a
+  boolean, or the list throws. A refreshControl prop wins.
+  renderScrollComponent gets the three props and adds its own control.
 - Ref: scrollToOffset, scrollToIndex (a row index with numColumns),
   scrollToItem, scrollToEnd, recordInteraction, getScrollableNode.
   onScrollToIndexFailed never fires.

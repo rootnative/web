@@ -25,6 +25,9 @@ export function FlatListRoute(): ReactElement {
   const [viewable, setViewable] = useState<number[]>([])
   const [loads, setLoads] = useState(0)
   const [index, setIndex] = useState('12')
+  const [refreshing, setRefreshing] = useState(false)
+  const [chatRefreshing, setChatRefreshing] = useState(false)
+  const [chatRefreshes, setChatRefreshes] = useState(0)
 
   const renderRow = ({ item, index: i, separators }: ListRenderItemInfo<Item>): ReactElement => (
     <Pressable
@@ -45,6 +48,23 @@ export function FlatListRoute(): ReactElement {
     setItems((current) => [...current, ...makeItems(current.length, 10)])
   }
 
+  const onRefresh = () => {
+    setRefreshing(true)
+    setTimeout(() => {
+      setItems(makeItems(0, 30))
+      setLoads(0)
+      setRefreshing(false)
+    }, 1000)
+  }
+
+  const onChatRefresh = () => {
+    setChatRefreshing(true)
+    setTimeout(() => {
+      setChatRefreshes((n) => n + 1)
+      setChatRefreshing(false)
+    }, 1000)
+  }
+
   return (
     <>
       <Text role="heading" aria-level={2} style={styles.title}>
@@ -53,8 +73,8 @@ export function FlatListRoute(): ReactElement {
 
       <Text>
         A vertical list with a sticky header, separators that highlight on press, viewability at
-        50%, and ten more items on each end reached. Viewable: {viewable.join(', ')}. Loads: {loads}
-        . Items: {items.length}.
+        50%, and ten more items on each end reached. Pull down at the top with touch to go back to
+        30 items. Viewable: {viewable.join(', ')}. Loads: {loads}. Items: {items.length}.
       </Text>
       <View style={styles.rowGroup}>
         <FlatList
@@ -74,6 +94,8 @@ export function FlatListRoute(): ReactElement {
           onEndReachedThreshold={0.5}
           onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={viewabilityConfig}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
           style={styles.list}
         />
         <View style={styles.column}>
@@ -118,6 +140,23 @@ export function FlatListRoute(): ReactElement {
           </View>
         )}
         style={styles.strip}
+      />
+
+      <Text>
+        Inverted, as a chat: the first item sits at the bottom. Pull up at the bottom with touch to
+        refresh, as on native. Refreshed {chatRefreshes} times.
+      </Text>
+      <FlatList
+        inverted
+        data={items.slice(0, 15)}
+        renderItem={({ item, index: i }) => (
+          <View style={[styles.row, { backgroundColor: COLORS[i % COLORS.length] }]}>
+            <Text>{item.label}</Text>
+          </View>
+        )}
+        refreshing={chatRefreshing}
+        onRefresh={onChatRefresh}
+        style={styles.chat}
       />
 
       <Text>An empty list shows ListEmptyComponent.</Text>
@@ -171,6 +210,7 @@ const styles = StyleSheet.create({
   columns: { gap: 8, marginBottom: 8 },
   tile: { flex: 1, height: 60, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   strip: { height: 80, width: 320 },
+  chat: { height: 200, width: 320, borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8 },
   card: {
     width: 80,
     height: 80,
