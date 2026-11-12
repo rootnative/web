@@ -51,6 +51,25 @@ function Screen(props: Partial<ModalProps> & { initial?: boolean }): ReactElemen
   )
 }
 
+// A modal in a modal, both shown by one press.
+function Nested(): ReactElement {
+  const [visible, setVisible] = useState(false)
+  return (
+    <View>
+      <Pressable role="button" testID="opener" onPress={() => setVisible(true)}>
+        <Text>Open</Text>
+      </Pressable>
+      <Modal visible={visible} testID="parent">
+        <Modal testID="child">
+          <Pressable role="button" testID="close" onPress={() => setVisible(false)}>
+            <Text>Close both</Text>
+          </Pressable>
+        </Modal>
+      </Modal>
+    </View>
+  )
+}
+
 describe('Modal', () => {
   test('renders nothing while hidden, and a modal dialog on the body while visible', () => {
     const { rerender } = render(
@@ -187,23 +206,6 @@ describe('Modal', () => {
   })
 
   test('a nested modal that shows with its parent is on top, and hides first', async () => {
-    function Nested(): ReactElement {
-      const [visible, setVisible] = useState(false)
-      return (
-        <View>
-          <Pressable role="button" testID="opener" onPress={() => setVisible(true)}>
-            <Text>Open</Text>
-          </Pressable>
-          <Modal visible={visible} testID="parent">
-            <Modal testID="child">
-              <Pressable role="button" testID="close" onPress={() => setVisible(false)}>
-                <Text>Close both</Text>
-              </Pressable>
-            </Modal>
-          </Modal>
-        </View>
-      )
-    }
     render(<Nested />)
     await open()
     const top = document.elementFromPoint(5, 5)

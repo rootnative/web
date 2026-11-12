@@ -58,7 +58,9 @@ const createHost = (): Host & { showChildren: () => void; hideChildren: () => vo
     },
     hideChildren: () => {
       shown = false
-      for (const child of Array.from(children).reverse()) child.hide()
+      // Last shown, first hidden. No `toReversed()`: Chrome 95 and Safari 15.1 don't have it.
+      const list = Array.from(children)
+      for (let index = list.length - 1; index >= 0; index--) list[index]?.hide()
     },
   }
 }
