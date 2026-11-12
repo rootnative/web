@@ -99,6 +99,12 @@ const normalizeRect = (rect: RectOrSize | undefined): Rect | undefined =>
 // with the native responder system. A disabled pressable does not claim.
 const claimed = new WeakSet<Event>()
 
+// Claims a native event for a boundary that isn't a pressable, so the pressables above it skip
+// the event. A Modal claims the presses inside it, as its native host claims the responder.
+export const claimPress = (event: Event): void => {
+  claimed.add(event)
+}
+
 const isActivationKey = (key: string): boolean => key === 'Enter' || key === ' '
 
 // The browser turns a key press on these elements into a click, which calls onPress.

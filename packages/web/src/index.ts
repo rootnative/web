@@ -83,6 +83,8 @@ export type {
   ImageStatics,
   ImageURISource,
 } from './components/Image'
+export { Modal } from './components/Modal'
+export type { ModalEvent, ModalOrientationChangeEvent, ModalProps } from './components/Modal'
 export { Pressable } from './components/Pressable'
 export type {
   PressableAndroidRippleConfig,

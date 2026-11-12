@@ -67,7 +67,7 @@ Import /dom and /server only in code that runs on the web.
 Components: View, Text, Image, Pressable, TouchableHighlight,
 TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, Button,
 ScrollView, FlatList, RefreshControl, TextInput, Switch, ActivityIndicator,
-StatusBar.
+Modal, StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AppState, Linking, Share, Vibration, Clipboard,
@@ -75,7 +75,6 @@ AccessibilityInfo, I18nManager, BackHandler, PixelRatio, processColor,
 PanResponder, usePressability.
 
 NOT IMPLEMENTED, do not import:
-- Modal.
 - Alert.
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
 - A Next.js plugin, and templates for a Vite app with and without server
@@ -356,6 +355,27 @@ ActivityIndicator
 - Two elements, as on native: style and onLayout go to a container that
   centers the indicator. The ref and the other props go to the indicator.
 - It turns also with prefers-reduced-motion.
+
+Modal
+- A <dialog> opened with showModal(), in a portal on <body>: the top layer,
+  above every zIndex. The rest of the page is inert and doesn't scroll.
+- visible decides (default true). Escape, and the back gesture of Chrome on
+  Android, call onRequestClose: hide the modal there. While visible is true,
+  the modal stays open.
+- onShow fires once per show. onDismiss fires after visible becomes false,
+  not on unmount.
+- The focus moves into the modal, and back to the opener when it hides.
+- A press inside doesn't reach a Pressable around the Modal. A nested modal
+  goes on top, and Escape closes the top one first.
+- The children go in a box that fills the viewport: white, backdropColor, or
+  clear with transparent. style goes to the box. ref and modalRef are the
+  <dialog>. testID, aria props, and DOM handlers go to the <dialog>.
+- Renders nothing on the server. It shows after hydration.
+- animationType: not yet. presentationStyle, supportedOrientations,
+  onOrientationChange, allowSwipeDismissal, hardwareAccelerated,
+  statusBarTranslucent, navigationBarTranslucent: ignored.
+- Firefox before 98 and Safari before 15.4 have no showModal(): a fixed box
+  on top, Escape works, the page isn't inert.
 
 StatusBar
 - backgroundColor writes <meta name="theme-color"> in the browser, after

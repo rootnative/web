@@ -32,6 +32,7 @@ const sidebars: SidebarsConfig = {
         'textinput',
         'switch',
         'activityindicator',
+        'modal',
         'statusbar',
       ],
     },
