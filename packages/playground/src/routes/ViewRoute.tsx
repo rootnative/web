@@ -24,7 +24,7 @@ export function ViewRoute(): ReactElement {
       </View>
 
       <Text>Logical properties follow the writing direction.</Text>
-      <View style={[styles.row, { writingDirection: 'rtl' }]}>
+      <View style={[styles.row, { direction: 'rtl' }]}>
         <View style={[styles.box, { marginStart: 40, backgroundColor: '#fcd34d' }]} />
         <View style={[styles.box, { backgroundColor: '#fcd34d' }]} />
       </View>
