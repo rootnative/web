@@ -158,6 +158,10 @@ export type {
   Role,
   ViewProps,
 } from './components/View'
+export { unstable_createElement } from './compat/createElement'
+export type { CreateElementProps } from './compat/createElement'
+export { findNodeHandle } from './compat/findNodeHandle'
+export { TurboModuleRegistry } from './compat/TurboModuleRegistry'
 export { usePressability } from './events/press'
 export type { Insets, PressabilityConfig, PressabilityEventHandlers } from './events/press'
 export type {

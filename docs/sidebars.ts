@@ -58,6 +58,7 @@ const sidebars: SidebarsConfig = {
         'processcolor',
         'panresponder',
         'usepressability',
+        'compat',
       ],
     },
   ],

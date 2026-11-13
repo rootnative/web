@@ -20,12 +20,13 @@ export default defineConfig({
 
 ## What it does
 
-| Part                 | What it does                                                                                                                                                                            |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `react-native` alias | Resolves the import name `react-native` to `@rootnative/web`. Only the exact name: a deep import such as `react-native/Libraries/Image` doesn't resolve.                                |
-| `.web` files         | Resolves `Button.web.tsx` before `Button.tsx` for an import of `./Button`, as Metro does for the web. Each extension gets a `.web` variant in front.                                    |
-| `__DEV__`            | Defines the React Native global: `true` on the dev server, `false` in a production build. It follows `NODE_ENV`, as React's development mode does. Pre-bundled dependencies get it too. |
-| `Platform.OS`        | Puts `'web'` in place of each `Platform.OS` read, so the minifier drops the code of the other platforms.                                                                                |
+| Part                  | What it does                                                                                                                                                                                                                             |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `react-native` alias  | Resolves the import name `react-native` to `@rootnative/web`. Only the exact name: a deep import such as `react-native/Libraries/Image` doesn't resolve.                                                                                 |
+| Assets registry alias | Resolves `@react-native/assets-registry/registry` to `@rootnative/web/assets-registry`. Libraries such as `react-native-svg` import that module on the web.                                                                              |
+| `.web` files          | Resolves `Button.web.tsx` before `Button.tsx` for an import of `./Button`, as Metro does for the web. Each extension gets a `.web` variant in front. Pre-bundled dependencies get the same list, so a library loads its `.web.js` files. |
+| `__DEV__`             | Defines the React Native global: `true` on the dev server, `false` in a production build. It follows `NODE_ENV`, as React's development mode does. Pre-bundled dependencies get it too.                                                  |
+| `Platform.OS`         | Puts `'web'` in place of each `Platform.OS` read, so the minifier drops the code of the other platforms.                                                                                                                                 |
 
 Your own config wins. A `react-native` alias or a `__DEV__` define in your config keeps its value. A `resolve.extensions` list of your own gets the `.web` variants in front.
 

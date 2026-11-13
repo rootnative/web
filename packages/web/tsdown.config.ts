@@ -1,7 +1,13 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/dom/index.ts', 'src/server/index.ts', 'src/vite/index.ts'],
+  entry: [
+    'src/index.ts',
+    'src/assets-registry/index.ts',
+    'src/dom/index.ts',
+    'src/server/index.ts',
+    'src/vite/index.ts',
+  ],
   format: 'esm',
   platform: 'browser',
   target: 'es2021',

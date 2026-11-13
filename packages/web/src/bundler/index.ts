@@ -3,6 +3,8 @@ export { inlinePlatformOS } from './inlinePlatformOS'
 /** Module names that resolve to this package. Each one matches the exact name only. */
 export const ALIASES: Readonly<Record<string, string>> = {
   'react-native': '@rootnative/web',
+  // Libraries import it on the web, and the real module is Flow source that no web bundler reads.
+  '@react-native/assets-registry/registry': '@rootnative/web/assets-registry',
 }
 
 /**

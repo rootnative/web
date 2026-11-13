@@ -6,6 +6,7 @@ import { AlertRoute } from './routes/AlertRoute'
 import { ApisRoute } from './routes/ApisRoute'
 import { AppearanceRoute } from './routes/AppearanceRoute'
 import { ButtonRoute } from './routes/ButtonRoute'
+import { CompatRoute } from './routes/CompatRoute'
 import { DimensionsRoute } from './routes/DimensionsRoute'
 import { FlatListRoute } from './routes/FlatListRoute'
 import { HeadRoute } from './routes/HeadRoute'
@@ -43,6 +44,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'press', title: 'usePressability', Component: PressabilityRoute },
   { path: 'pan', title: 'PanResponder', Component: PanResponderRoute },
   { path: 'head', title: 'Head', Component: HeadRoute },
+  { path: 'compat', title: 'Compat exports', Component: CompatRoute },
 ]
 
 const subscribe = (onChange: () => void): (() => void) => {

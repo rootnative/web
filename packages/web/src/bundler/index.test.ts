@@ -21,7 +21,10 @@ describe('webExtensions', () => {
 
 describe('ALIASES', () => {
   test('points react-native at this package', () => {
-    expect(ALIASES).toEqual({ 'react-native': '@rootnative/web' })
+    expect(ALIASES).toEqual({
+      'react-native': '@rootnative/web',
+      '@react-native/assets-registry/registry': '@rootnative/web/assets-registry',
+    })
   })
 })
 

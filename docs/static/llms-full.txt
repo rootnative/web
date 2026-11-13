@@ -175,12 +175,13 @@ export default defineConfig({
 
 ## What it does
 
-| Part                 | What it does                                                                                                                                                                            |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `react-native` alias | Resolves the import name `react-native` to `@rootnative/web`. Only the exact name: a deep import such as `react-native/Libraries/Image` doesn't resolve.                                |
-| `.web` files         | Resolves `Button.web.tsx` before `Button.tsx` for an import of `./Button`, as Metro does for the web. Each extension gets a `.web` variant in front.                                    |
-| `__DEV__`            | Defines the React Native global: `true` on the dev server, `false` in a production build. It follows `NODE_ENV`, as React's development mode does. Pre-bundled dependencies get it too. |
-| `Platform.OS`        | Puts `'web'` in place of each `Platform.OS` read, so the minifier drops the code of the other platforms.                                                                                |
+| Part                  | What it does                                                                                                                                                                                                                             |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `react-native` alias  | Resolves the import name `react-native` to `@rootnative/web`. Only the exact name: a deep import such as `react-native/Libraries/Image` doesn't resolve.                                                                                 |
+| Assets registry alias | Resolves `@react-native/assets-registry/registry` to `@rootnative/web/assets-registry`. Libraries such as `react-native-svg` import that module on the web.                                                                              |
+| `.web` files          | Resolves `Button.web.tsx` before `Button.tsx` for an import of `./Button`, as Metro does for the web. Each extension gets a `.web` variant in front. Pre-bundled dependencies get the same list, so a library loads its `.web.js` files. |
+| `__DEV__`             | Defines the React Native global: `true` on the dev server, `false` in a production build. It follows `NODE_ENV`, as React's development mode does. Pre-bundled dependencies get it too.                                                  |
+| `Platform.OS`         | Puts `'web'` in place of each `Platform.OS` read, so the minifier drops the code of the other platforms.                                                                                                                                 |
 
 Your own config wins. A `react-native` alias or a `__DEV__` define in your config keeps its value. A `resolve.extensions` list of your own gets the `.web` variants in front.
 
@@ -251,6 +252,7 @@ The latest release is [`0.0.0-alpha.2`](https://www.npmjs.com/package/@rootnativ
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`Modal`](https://rootnative.github.io/web/modal), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                    |
 | APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Linking`](https://rootnative.github.io/web/linking), [`Alert`](https://rootnative.github.io/web/alert), [`Share`](https://rootnative.github.io/web/share), [`Vibration`](https://rootnative.github.io/web/vibration), [`Clipboard`](https://rootnative.github.io/web/clipboard), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
+| Compat     | [`unstable_createElement`](https://rootnative.github.io/web/compat), [`findNodeHandle`](https://rootnative.github.io/web/compat), [`TurboModuleRegistry`](https://rootnative.github.io/web/compat). Libraries import them, your app doesn't.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                                   |
 | Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -2202,3 +2204,60 @@ A `null` config returns `null` and sets up nothing. The hook sets up when a conf
 | `hitSlop`, `pressRectOffset`                                          | Grow the area where a release still presses. `hitSlop` doesn't grow the hit area here: `Pressable` does that with CSS.                                                                               |
 | `cancelable`                                                          | Accepted. `Pressable` turns `false` into `touch-action: none`. With the hook, set `touchAction` in the style yourself.                                                                               |
 | `android_disableSound`, `blockNativeResponder`                        | Native only. Accepted and ignored.                                                                                                                                                                   |
+
+---
+
+# Compat exports
+
+Three exports that exist for libraries, not for your app. A library such as `react-native-svg` or `react-native-safe-area-context` imports them from `react-native` on the web. Without them, the library doesn't load.
+
+**Don't call them in app code.** Use a `ref` to get an element, and the components of this package to render one.
+
+## `unstable_createElement`
+
+`unstable_createElement(type, props)` renders an element from React Native props. React Native itself doesn't have this export. It comes from `react-native-web`, and libraries rely on it.
+
+```tsx
+import { unstable_createElement } from 'react-native'
+
+unstable_createElement('path', { d: 'M0 0L10 10', style: { opacity: 0.5 } })
+```
+
+| Prop                                                               | Result                                            |
+| ------------------------------------------------------------------ | ------------------------------------------------- |
+| `style`                                                            | Compiles to class names, as on [`View`](https://rootnative.github.io/web/view).   |
+| `className`                                                        | Stays, in front of the class names of `style`.    |
+| `accessibilityLabel`, `testID`, `nativeID`, `focusable`, and so on | Become ARIA and DOM attributes, as on `View`.     |
+| `onPress` and the responder handlers                               | Dropped. Pass a DOM handler such as `onClick`.    |
+| `ref`, `key`, `children`                                           | Work as in React. The `ref` gets the DOM element. |
+| Every other prop                                                   | Goes to the element as it is, for example `d`.    |
+
+The element gets no style reset. A `div` from this function is a plain `div`, not a `View`.
+
+## `findNodeHandle`
+
+On native, `findNodeHandle` returns the number of a view. On the web, it returns the DOM element.
+
+| Input                                           | Result                 |
+| ----------------------------------------------- | ---------------------- |
+| A `ref` object                                  | Its element, or `null` |
+| A DOM element                                   | The same element       |
+| A [`ScrollView`](https://rootnative.github.io/web/scrollview) or `FlatList` ref | The scroll element     |
+| A number                                        | The same number        |
+| A class component instance                      | `null`                 |
+| `null`, `undefined`, or any other value         | `null`                 |
+
+A class component instance gives `null`, because React 19 can't find the element of a component.
+
+## `TurboModuleRegistry`
+
+A browser has no native modules.
+
+- `TurboModuleRegistry.get(name)` returns `null` for every name.
+- `TurboModuleRegistry.getEnforcing(name)` throws an error with the name.
+
+A library that reads its native module when it loads gets `null`, and then takes its JavaScript path.
+
+## `@rootnative/web/assets-registry`
+
+An entry with `registerAsset` and `getAssetByID`, the two functions of `@react-native/assets-registry/registry`. The [Vite plugin](https://rootnative.github.io/web/vite-plugin) points that module name at this entry, because `react-native-svg` imports it on the web. A web bundler gives an image import a URL, not a number, so the registry stays empty.

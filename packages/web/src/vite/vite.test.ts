@@ -36,6 +36,9 @@ describe('rootnative() config', () => {
     const config = await resolveConfig(baseConfig({ plugins: [rootnative()] }), 'serve')
     expect(firstAlias(config.resolve.alias, 'react-native')?.replacement).toBe('@rootnative/web')
     expect(firstAlias(config.resolve.alias, 'react-native/Libraries/Image')).toBeUndefined()
+    expect(
+      firstAlias(config.resolve.alias, '@react-native/assets-registry/registry')?.replacement,
+    ).toBe('@rootnative/web/assets-registry')
   })
 
   test("lets the app's own react-native alias win", async () => {
@@ -77,6 +80,30 @@ describe('rootnative() config', () => {
       'serve',
     )
     expect(config.resolve.extensions).toEqual(['.web.ts', '.web.js', '.ts', '.js'])
+  })
+
+  test('gives the dependency optimizer the same extensions', async () => {
+    const config = await resolveConfig(
+      baseConfig({ plugins: [rootnative()], resolve: { extensions: ['.ts', '.js'] } }),
+      'serve',
+    )
+    expect(config.optimizeDeps.rolldownOptions?.resolve?.extensions).toEqual([
+      '.web.ts',
+      '.web.js',
+      '.ts',
+      '.js',
+    ])
+  })
+
+  test("keeps the app's own optimizer extensions", async () => {
+    const config = await resolveConfig(
+      baseConfig({
+        plugins: [rootnative()],
+        optimizeDeps: { rolldownOptions: { resolve: { extensions: ['.js'] } } },
+      }),
+      'serve',
+    )
+    expect(config.optimizeDeps.rolldownOptions?.resolve?.extensions).toEqual(['.js'])
   })
 })
 

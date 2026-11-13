@@ -14,6 +14,8 @@ const liveRegionToAriaLive: Record<string, string> = {
 const nativeHandler =
   /^on(Press|Layout|TextLayout|Accessibility|Magic|Responder|Refresh|.*ShouldSet)/
 
+export const isNativeHandler = (name: string): boolean => nativeHandler.test(name)
+
 const passThrough = new Set(['lang', 'dir', 'target', 'rel', 'download'])
 
 // Maps React Native props to DOM attributes. Unknown props are dropped, so they never

@@ -25,6 +25,9 @@ Peers: react ^19.0.0, react-dom ^19.0.0. ESM only.
    It resolves react-native to @rootnative/web (the exact name only), resolves
    .web.* files first, defines __DEV__ (true on the dev server, false in a
    production build, from NODE_ENV), and puts 'web' in place of Platform.OS.
+   It also resolves @react-native/assets-registry/registry to
+   @rootnative/web/assets-registry, and gives pre-bundled dependencies the
+   .web.* extensions.
    An alias or a __DEV__ define in your own config wins.
 2. Add src/react-native.d.ts (in a folder that tsconfig.json includes):
    declare module 'react-native' { export * from '@rootnative/web' }
@@ -73,6 +76,9 @@ APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AppState, Linking, Alert, Share, Vibration, Clipboard,
 AccessibilityInfo, I18nManager, BackHandler, PixelRatio, processColor,
 PanResponder, usePressability.
+
+Compat, for libraries only, do not call in app code: unstable_createElement,
+findNodeHandle, TurboModuleRegistry.
 
 NOT IMPLEMENTED, do not import:
 - SectionList, VirtualizedList, Animated, LayoutAnimation.
@@ -479,6 +485,17 @@ StatusBar
   the native responder handlers. Spread them on a View. Memoize the config.
   A null config returns null. hitSlop doesn't grow the hit area. Set
   touchAction yourself for cancelable={false}.
+- unstable_createElement(type, props): compat, not in React Native. Renders an
+  element from React Native props: style compiles to class names, the
+  accessibility props become ARIA attributes, onPress and the responder
+  handlers are dropped, every other prop goes to the element. No style reset.
+- findNodeHandle(value): compat. Returns the DOM element of a ref, of an
+  element, or of a ScrollView ref. A number comes back as it is. null for a
+  class component instance.
+- TurboModuleRegistry: compat. get() returns null, getEnforcing() throws.
+- @rootnative/web/assets-registry: compat entry with registerAsset and
+  getAssetByID. The Vite plugin aliases @react-native/assets-registry/registry
+  to it. Empty unless your code registers an asset.
 
 ## Server rendering
 

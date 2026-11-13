@@ -13,6 +13,7 @@ export default defineConfig({
   resolve: {
     alias: {
       'react-native': webSource('index.ts'),
+      '@react-native/assets-registry/registry': webSource('assets-registry/index.ts'),
       '@rootnative/web/dom': webSource('dom/index.ts'),
       '@rootnative/web': webSource('index.ts'),
     },

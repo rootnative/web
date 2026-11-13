@@ -41,7 +41,8 @@ export const rootnative = (): Plugin => ({
         replacement,
       })),
     ]
-    config.resolve.extensions = webExtensions(config.resolve.extensions ?? VITE_DEFAULT_EXTENSIONS)
+    const extensions = webExtensions(config.resolve.extensions ?? VITE_DEFAULT_EXTENSIONS)
+    config.resolve.extensions = extensions
 
     // Vite has set NODE_ENV before this hook runs, so `__DEV__` follows React's development mode.
     const defines = Object.fromEntries(
@@ -59,6 +60,10 @@ export const rootnative = (): Plugin => ({
       ...defines,
       ...config.optimizeDeps.rolldownOptions.transform.define,
     }
+    // The dep optimizer resolves a relative import inside a library with its own list. Without
+    // the `.web` variants there, a library loads its native file, not its `.web.js` file.
+    config.optimizeDeps.rolldownOptions.resolve ??= {}
+    config.optimizeDeps.rolldownOptions.resolve.extensions ??= extensions
   },
 
   transform: {

@@ -16,6 +16,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 - **`Modal`**: a `<dialog>` that opens with `showModal()`, so it's above the page, and the page under it is inert and doesn't scroll. Escape calls `onRequestClose`, the focus moves in and back to the opener, and a nested modal goes on top. `animationType` slides or fades the modal in and out in 200 ms, as on Android, and the modal stays until its exit animation ends. `transparent`, `backdropColor`, `onShow`, and `onDismiss` work. It renders nothing on the server and shows after hydration.
 - **`EventSubscription`**, the type of the object that `addEventListener` returns.
 - **`Alert`**: `Alert.alert` shows a `<dialog role="alertdialog">` with the look of Android's alert, outside the React tree. Escape presses the `cancel` button, a `cancelable` alert also closes on Escape or a click outside and calls `onDismiss`, `destructive` text is red, and the dark scheme follows `Appearance` or `userInterfaceStyle`. `Alert.prompt` does nothing yet.
+- **Compat exports** for libraries that import them from `react-native` on the web: `unstable_createElement` renders an element from React Native props, `findNodeHandle` returns the DOM element of a ref, and `TurboModuleRegistry.get` returns `null`. `react-native-svg` and `react-native-safe-area-context` need them.
+- **`@rootnative/web/assets-registry`**, an entry with `registerAsset` and `getAssetByID`. The Vite plugin resolves `@react-native/assets-registry/registry` to it, because `react-native-svg` imports that module on the web.
 
 ### Changed
 
@@ -23,6 +25,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ### Fixed
 
+- The Vite plugin now gives the dependency optimizer the `.web` extensions too. Before, a pre-bundled library loaded its native file where it had a `.web.js` file, and the dev server stopped on `react-native-safe-area-context`.
 - A tap that put a new pressable under the finger, for example in a modal that it opened, pressed that pressable too in Chrome on Android. The click of the tap now stops when it lands outside the pressed element.
 
 ## [0.0.0-alpha.2] - 2026-11-11
