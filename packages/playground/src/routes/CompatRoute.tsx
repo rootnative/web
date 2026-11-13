@@ -6,7 +6,14 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react'
-import { findNodeHandle, StyleSheet, Text, TurboModuleRegistry, View } from 'react-native'
+import {
+  findNodeHandle,
+  StyleSheet,
+  Text,
+  TurboModuleRegistry,
+  View,
+  type HostInstance,
+} from 'react-native'
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as SvgLibrary from 'react-native-svg'
 
@@ -30,7 +37,7 @@ function Insets(): ReactElement {
 // Its own component: `SafeAreaProvider` mounts its children after it measures the insets, so
 // an effect of the route runs before the box exists.
 function Handles(): ReactElement {
-  const box = useRef<HTMLElement>(null)
+  const box = useRef<HostInstance>(null)
   const [handle, setHandle] = useState('')
 
   useEffect(() => {
