@@ -129,7 +129,7 @@ const sameMetrics = (a: KeyboardMetrics | null, b: KeyboardMetrics | null): bool
 const emit = (name: KeyboardEventName, event: KeyboardEvent): void => {
   const set = listeners.get(name)
   if (set === undefined) return
-  for (const listener of [...set]) listener(event)
+  for (const listener of set) listener(event)
 }
 
 // As on Android: a new height while the keyboard shows fires `keyboardDidShow` again.
