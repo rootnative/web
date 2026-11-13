@@ -29,8 +29,6 @@ type ExportGaps =
   | 'Animated'
   | 'Easing'
   | 'ImageBackground'
-  | 'Keyboard'
-  | 'KeyboardAvoidingView'
   | 'LayoutAnimation'
   | 'SafeAreaView'
   | 'SectionList'
@@ -210,6 +208,7 @@ export type TypeParity = [
   None<PropDiff<Native.RefreshControlProps, Web.RefreshControlProps, ViewGaps>>,
   None<PropDiff<Native.ButtonProps, Web.ButtonProps, never>>,
   None<PropDiff<Native.ModalProps, Web.ModalProps, ViewGaps>>,
+  None<PropDiff<Native.KeyboardAvoidingViewProps, Web.KeyboardAvoidingViewProps, ViewGaps>>,
   None<PropDiff<Native.ActivityIndicatorProps, Web.ActivityIndicatorProps, ViewGaps>>,
   None<
     PropDiff<
@@ -242,6 +241,7 @@ export type TypeParity = [
   None<PropDiff<typeof Native.Share, typeof Web.Share, 'prototype'>>,
   None<PropDiff<typeof Native.Vibration, typeof Web.Vibration, never>>,
   None<PropDiff<typeof Native.Clipboard, typeof Web.Clipboard, never>>,
+  None<PropDiff<typeof Native.Keyboard, typeof Web.Keyboard, never>>,
   // A class on native, a plain object here.
   None<PropDiff<typeof Native.Alert, typeof Web.Alert, 'prototype'>>,
 ]

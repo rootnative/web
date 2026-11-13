@@ -28,6 +28,15 @@ export type {
 } from './apis/Dimensions'
 export { I18nManager } from './apis/I18nManager'
 export type { I18nManagerConstants } from './apis/I18nManager'
+export { Keyboard } from './apis/Keyboard'
+export type {
+  AndroidKeyboardEvent,
+  IOSKeyboardEvent,
+  KeyboardEvent,
+  KeyboardEventEasing,
+  KeyboardEventName,
+  KeyboardMetrics,
+} from './apis/Keyboard'
 export { Linking } from './apis/Linking'
 export { PanResponder } from './apis/PanResponder'
 export type {
@@ -85,6 +94,11 @@ export type {
   ImageStatics,
   ImageURISource,
 } from './components/Image'
+export { KeyboardAvoidingView } from './components/KeyboardAvoidingView'
+export type {
+  KeyboardAvoidingViewInstance,
+  KeyboardAvoidingViewProps,
+} from './components/KeyboardAvoidingView'
 export { Modal } from './components/Modal'
 export type { ModalEvent, ModalOrientationChangeEvent, ModalProps } from './components/Modal'
 export { Pressable } from './components/Pressable'

@@ -11,6 +11,7 @@ import { DimensionsRoute } from './routes/DimensionsRoute'
 import { FlatListRoute } from './routes/FlatListRoute'
 import { HeadRoute } from './routes/HeadRoute'
 import { ImageRoute } from './routes/ImageRoute'
+import { KeyboardRoute } from './routes/KeyboardRoute'
 import { ModalRoute } from './routes/ModalRoute'
 import { PanResponderRoute } from './routes/PanResponderRoute'
 import { PressabilityRoute } from './routes/PressabilityRoute'
@@ -35,6 +36,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'switch', title: 'Switch', Component: SwitchRoute },
   { path: 'activityindicator', title: 'ActivityIndicator', Component: ActivityIndicatorRoute },
   { path: 'modal', title: 'Modal', Component: ModalRoute },
+  { path: 'keyboard', title: 'Keyboard', Component: KeyboardRoute },
   { path: 'alert', title: 'Alert', Component: AlertRoute },
   { path: 'dimensions', title: 'Dimensions', Component: DimensionsRoute },
   { path: 'appearance', title: 'Appearance', Component: AppearanceRoute },

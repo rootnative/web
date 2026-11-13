@@ -263,14 +263,14 @@ The latest release is [`0.0.0-alpha.2`](https://www.npmjs.com/package/@rootnativ
 
 ## What ships today
 
-| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`Modal`](https://rootnative.github.io/web/modal), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                    |
-| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Linking`](https://rootnative.github.io/web/linking), [`Alert`](https://rootnative.github.io/web/alert), [`Share`](https://rootnative.github.io/web/share), [`Vibration`](https://rootnative.github.io/web/vibration), [`Clipboard`](https://rootnative.github.io/web/clipboard), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
-| Compat     | [`unstable_createElement`](https://rootnative.github.io/web/compat), [`findNodeHandle`](https://rootnative.github.io/web/compat), [`TurboModuleRegistry`](https://rootnative.github.io/web/compat), and the entries `@rootnative/web/assets-registry` and `@rootnative/web/style`. Libraries import them, your app doesn't.                                                                                                                                                                                                                                                                                                                                                      |
-| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                                   |
-| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`Modal`](https://rootnative.github.io/web/modal), [`KeyboardAvoidingView`](https://rootnative.github.io/web/keyboardavoidingview), [`StatusBar`](https://rootnative.github.io/web/statusbar)            |
+| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Keyboard`](https://rootnative.github.io/web/keyboard), [`Linking`](https://rootnative.github.io/web/linking), [`Alert`](https://rootnative.github.io/web/alert), [`Share`](https://rootnative.github.io/web/share), [`Vibration`](https://rootnative.github.io/web/vibration), [`Clipboard`](https://rootnative.github.io/web/clipboard), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
+| Compat     | [`unstable_createElement`](https://rootnative.github.io/web/compat), [`findNodeHandle`](https://rootnative.github.io/web/compat), [`TurboModuleRegistry`](https://rootnative.github.io/web/compat), and the entries `@rootnative/web/assets-registry` and `@rootnative/web/style`. Libraries import them, your app doesn't.                                                                                                                                                                                                                                                                                                                                                                               |
+| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 `FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now.
 
@@ -1585,6 +1585,54 @@ Firefox before 98 and Safari before 15.4 have no `showModal()`. There the modal 
 
 ---
 
+# `KeyboardAvoidingView`
+
+A view that moves out of the way of the on-screen keyboard, so a text field at the bottom stays in sight. It reads the keyboard from [`Keyboard`](https://rootnative.github.io/web/keyboard), and it uses the same math as React Native 0.88.
+
+```tsx
+import { KeyboardAvoidingView, ScrollView, TextInput } from 'react-native'
+
+export function Chat() {
+  return (
+    <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={56} style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }}>{/* messages */}</ScrollView>
+      <TextInput placeholder="Write a message" />
+    </KeyboardAvoidingView>
+  )
+}
+```
+
+## Behaviors
+
+| `behavior`   | What the view does while the keyboard covers it                                                |
+| ------------ | ---------------------------------------------------------------------------------------------- |
+| `'padding'`  | Adds the covered height to its `paddingBottom`.                                                |
+| `'height'`   | Takes its first height less the covered height, with `flex: 0`. It gets its height back after. |
+| `'position'` | Wraps the children in an inner view, and moves that view up with `bottom`.                     |
+| None         | Nothing. It's a plain `View`.                                                                  |
+
+## The math
+
+As on native, the view finds the covered height from its own `onLayout` frame, and its `y` is relative to its parent, not to the window.
+
+- At the top of the window, the math is exact.
+- Under a header, pass the header height in `keyboardVerticalOffset`. It's the same value as on native.
+- In a page that scrolls, the `y` of the view isn't its place in the window. Use it in a layout that fills the window, for example in a [`Modal`](https://rootnative.github.io/web/modal) or a root view with `flex: 1`.
+
+## Props
+
+| Prop                     | On the web                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------- |
+| `behavior`               | `'height'`, `'position'`, or `'padding'`. See the table above.                        |
+| `keyboardVerticalOffset` | The distance from the top of the window to the top of the view. Defaults to 0.        |
+| `enabled`                | `false` stops the view from moving. It moves again when it's enabled. Default `true`. |
+| `contentContainerStyle`  | The style of the inner view, with `'position'`.                                       |
+| View props               | Go to the outer view, as on [`View`](https://rootnative.github.io/web/view). `ref` gets its element.                  |
+
+There's no animation: the view changes on the frame when the keyboard changes.
+
+---
+
 # `StatusBar`
 
 The browser has no status bar. Its nearest match is the `theme-color` meta tag, which mobile browsers paint around the page. `StatusBar` writes that tag.
@@ -1787,6 +1835,68 @@ An unknown event name throws, as on native.
 ## On the server
 
 `currentState` is `'active'` on the server, and no event fires there. In a tab that opens in the background, the browser value is `'background'`, so don't read `currentState` in render.
+
+---
+
+# `Keyboard`
+
+Tells you when the on-screen keyboard of a phone or a tablet shows and hides, and how much of the window it covers. On the web it works as on Android: `keyboardDidShow` fires when the keyboard shows and when its height changes, and `keyboardDidHide` fires when it hides.
+
+```tsx
+import { useEffect, useState } from 'react'
+import { Keyboard } from 'react-native'
+
+export function useKeyboardHeight() {
+  const [height, setHeight] = useState(0)
+  useEffect(() => {
+    const subscriptions = [
+      Keyboard.addListener('keyboardDidShow', (event) => setHeight(event.endCoordinates.height)),
+      Keyboard.addListener('keyboardDidHide', () => setHeight(0)),
+    ]
+    return () => subscriptions.forEach((subscription) => subscription.remove())
+  }, [])
+  return height
+}
+```
+
+## How it finds the keyboard
+
+- A browser has no keyboard event. When the keyboard shows, the browser shrinks the visual viewport, and `Keyboard` reads that.
+- The keyboard counts only while a text field has the focus: a text input, a `textarea`, or an element that you can edit. A field with `readOnly` or `disabled` doesn't count.
+- A pinch zoom doesn't count as a keyboard.
+- An app that turns on the VirtualKeyboard API with `navigator.virtualKeyboard.overlaysContent = true` gets the rectangle of that API instead. Chrome on Android has it.
+- With `interactive-widget=resizes-content` in the viewport meta tag, the browser makes the page shorter instead. Then no event fires, because nothing covers the page.
+
+A hardware keyboard and a desktop browser give no event.
+
+## API
+
+| Member                                        | On the web                                                                                         |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `Keyboard.addListener('keyboardDidShow', fn)` | Calls `fn` when the keyboard shows and when its height changes. Returns `{ remove() }`.            |
+| `Keyboard.addListener('keyboardDidHide', fn)` | Calls `fn` when the keyboard hides.                                                                |
+| `Keyboard.addListener(otherEvent, fn)`        | Registers `fn`. It never runs. The `Will` and `ChangeFrame` events don't fire, as on Android.      |
+| `Keyboard.removeAllListeners(eventType?)`     | Removes the listeners of one event, or of all events with no argument.                             |
+| `Keyboard.dismiss()`                          | Takes the focus from the focused text field, so the keyboard hides. Other elements keep the focus. |
+| `Keyboard.isVisible()`                        | `true` while the keyboard shows.                                                                   |
+| `Keyboard.metrics()`                          | The `endCoordinates` of the keyboard while it shows, else `undefined`.                             |
+| `Keyboard.scheduleLayoutAnimation(event)`     | Does nothing. The web has no layout animation, and its events have no duration.                    |
+
+## The event
+
+Each event has the shape of Android's event:
+
+| Field            | On the web                                                                                                                                                                                                                                    |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `duration`       | `0`.                                                                                                                                                                                                                                          |
+| `easing`         | `'keyboard'`.                                                                                                                                                                                                                                 |
+| `endCoordinates` | `screenY` is the top of the keyboard, from the top of the window. `height` is the part that it covers. `screenX` is 0, and `width` is the width of the window. In `keyboardDidHide`, `height` is 0 and `screenY` is the height of the window. |
+
+The values are CSS pixels. While the keyboard moves, the browser can resize the viewport on each frame. `Keyboard` reads it once for each frame, so `keyboardDidShow` can fire a few times with a growing height.
+
+## On the server
+
+No event fires on the server, and `isVisible()` is `false`.
 
 ---
 
