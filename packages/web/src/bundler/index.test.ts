@@ -24,16 +24,19 @@ describe('ALIASES', () => {
     expect(ALIASES).toEqual({
       'react-native': '@rootnative/web',
       '@react-native/assets-registry/registry': '@rootnative/web/assets-registry',
+      'react-native-web/dist/cjs/exports/StyleSheet/compiler/createReactDOMStyle.js':
+        '@rootnative/web/style',
+      'react-native-web/dist/cjs/exports/StyleSheet/preprocess.js': '@rootnative/web/style',
     })
   })
 })
 
 describe('globalDefines', () => {
   test('sets __DEV__ to true in development', () => {
-    expect(globalDefines(false)).toEqual({ __DEV__: 'true' })
+    expect(globalDefines(false)).toEqual({ __DEV__: 'true', global: 'globalThis' })
   })
 
   test('sets __DEV__ to false in production', () => {
-    expect(globalDefines(true)).toEqual({ __DEV__: 'false' })
+    expect(globalDefines(true)).toEqual({ __DEV__: 'false', global: 'globalThis' })
   })
 })

@@ -25,9 +25,11 @@ Peers: react ^19.0.0, react-dom ^19.0.0. ESM only.
    It resolves react-native to @rootnative/web (the exact name only), resolves
    .web.* files first, defines __DEV__ (true on the dev server, false in a
    production build, from NODE_ENV), and puts 'web' in place of Platform.OS.
-   It also resolves @react-native/assets-registry/registry to
-   @rootnative/web/assets-registry, and gives pre-bundled dependencies the
-   .web.* extensions.
+   It also defines global as globalThis, resolves
+   @react-native/assets-registry/registry to @rootnative/web/assets-registry,
+   resolves the two react-native-web style files that Reanimated 4 imports to
+   @rootnative/web/style, and gives pre-bundled dependencies the .web.*
+   extensions.
    An alias or a __DEV__ define in your own config wins.
 2. Add src/react-native.d.ts (in a folder that tsconfig.json includes):
    declare module 'react-native' { export * from '@rootnative/web' }
@@ -46,9 +48,11 @@ Browsers: Chrome 95, Edge 95, Firefox 93, Safari 15.1, iOS Safari 15.1.
 
 Without the plugin (another bundler): alias the exact name react-native to
 @rootnative/web, put a .web variant of each extension first, and define
-__DEV__. In Vite, define it in define and in
-optimizeDeps.rolldownOptions.transform.define: the dependency optimizer
-doesn't apply define. Platform.OS then stays a read at run time.
+__DEV__ and global (as globalThis). In Vite, set the defines in define and in
+optimizeDeps.rolldownOptions.transform.define, and the extensions in
+resolve.extensions and optimizeDeps.rolldownOptions.resolve.extensions: the
+dependency optimizer has its own. Add the compat aliases that a library
+needs. Platform.OS then stays a read at run time.
 
 Server rendering with Vite: the plugin applies to app code on the server. A
 dependency that Vite leaves to Node gets no __DEV__ and throws a
@@ -496,6 +500,11 @@ StatusBar
 - @rootnative/web/assets-registry: compat entry with registerAsset and
   getAssetByID. The Vite plugin aliases @react-native/assets-registry/registry
   to it. Empty unless your code registers an asset.
+- @rootnative/web/style: compat entry for Reanimated 4. createReactDOMStyle
+  (also the default export) gives inline DOM style values, shorthands first.
+  createTransformValue and createTextShadowValue give CSS values. Without the
+  Worklets Babel plugin, pass the shared values as a dependency array to each
+  Reanimated hook.
 
 ## Server rendering
 

@@ -35,6 +35,7 @@
     "./assets-registry": "./dist/assets-registry/index.js",
     "./dom": "./dist/dom/index.js",
     "./server": "./dist/server/index.js",
+    "./style": "./dist/style/index.js",
     "./vite": "./dist/vite/index.js",
     "./package.json": "./package.json"
   },

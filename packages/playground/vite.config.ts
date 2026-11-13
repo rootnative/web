@@ -14,6 +14,9 @@ export default defineConfig({
     alias: {
       'react-native': webSource('index.ts'),
       '@react-native/assets-registry/registry': webSource('assets-registry/index.ts'),
+      'react-native-web/dist/cjs/exports/StyleSheet/compiler/createReactDOMStyle.js':
+        webSource('style/index.ts'),
+      'react-native-web/dist/cjs/exports/StyleSheet/preprocess.js': webSource('style/index.ts'),
       '@rootnative/web/dom': webSource('dom/index.ts'),
       '@rootnative/web': webSource('index.ts'),
     },

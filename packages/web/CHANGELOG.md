@@ -18,6 +18,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 - **`Alert`**: `Alert.alert` shows a `<dialog role="alertdialog">` with the look of Android's alert, outside the React tree. Escape presses the `cancel` button, a `cancelable` alert also closes on Escape or a click outside and calls `onDismiss`, `destructive` text is red, and the dark scheme follows `Appearance` or `userInterfaceStyle`. `Alert.prompt` does nothing yet.
 - **Compat exports** for libraries that import them from `react-native` on the web: `unstable_createElement` renders an element from React Native props, `findNodeHandle` returns the DOM element of a ref, and `TurboModuleRegistry.get` returns `null`. `react-native-svg` and `react-native-safe-area-context` need them.
 - **`@rootnative/web/assets-registry`**, an entry with `registerAsset` and `getAssetByID`. The Vite plugin resolves `@react-native/assets-registry/registry` to it, because `react-native-svg` imports that module on the web.
+- **`@rootnative/web/style`**, an entry with `createReactDOMStyle`, `createTransformValue`, and `createTextShadowValue`. The Vite plugin resolves the two `react-native-web` files that Reanimated 4 imports to it, so Reanimated animates the components of this package.
+- The Vite plugin defines `global` as `globalThis`, as Metro does. Reanimated and Worklets read it.
 
 ### Changed
 

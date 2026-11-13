@@ -179,11 +179,13 @@ export default defineConfig({
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `react-native` alias  | Resolves the import name `react-native` to `@rootnative/web`. Only the exact name: a deep import such as `react-native/Libraries/Image` doesn't resolve.                                                                                 |
 | Assets registry alias | Resolves `@react-native/assets-registry/registry` to `@rootnative/web/assets-registry`. Libraries such as `react-native-svg` import that module on the web.                                                                              |
+| Reanimated aliases    | Resolves two `react-native-web` internal files, which Reanimated 4 reads its web style helpers from, to `@rootnative/web/style`. See [Compat exports](https://rootnative.github.io/web/compat).                                                                          |
 | `.web` files          | Resolves `Button.web.tsx` before `Button.tsx` for an import of `./Button`, as Metro does for the web. Each extension gets a `.web` variant in front. Pre-bundled dependencies get the same list, so a library loads its `.web.js` files. |
 | `__DEV__`             | Defines the React Native global: `true` on the dev server, `false` in a production build. It follows `NODE_ENV`, as React's development mode does. Pre-bundled dependencies get it too.                                                  |
+| `global`              | Defines React Native's name for the global object as `globalThis`. Reanimated and Worklets read it. Pre-bundled dependencies get it too.                                                                                                 |
 | `Platform.OS`         | Puts `'web'` in place of each `Platform.OS` read, so the minifier drops the code of the other platforms.                                                                                                                                 |
 
-Your own config wins. A `react-native` alias or a `__DEV__` define in your config keeps its value. A `resolve.extensions` list of your own gets the `.web` variants in front.
+Your own config wins. A `react-native` alias, or a `__DEV__` or `global` define in your config, keeps its value. A `resolve.extensions` list of your own gets the `.web` variants in front.
 
 TypeScript doesn't read the Vite config. For `.web` files, add `moduleSuffixes` to `tsconfig.json`, as [Installation](https://rootnative.github.io/web/installation#add-the-types) shows.
 
@@ -215,28 +217,41 @@ export default defineConfig({
 
 ## Without the plugin
 
-With another bundler, or without the plugin, set up the alias, the `.web` extensions, and `__DEV__` yourself. In Vite:
+With another bundler, or without the plugin, set up the alias, the `.web` extensions, `__DEV__`, and `global` yourself. In Vite:
 
 ```ts title="vite.config.ts"
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-const extensions = ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json']
-const dev = JSON.stringify(process.env.NODE_ENV !== 'production')
+const defaults = ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json']
+const extensions = [...defaults.map((extension) => `.web${extension}`), ...defaults]
+const define = {
+  __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
+  global: 'globalThis',
+}
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: [{ find: /^react-native$/, replacement: '@rootnative/web' }],
-    extensions: [...extensions.map((extension) => `.web${extension}`), ...extensions],
+    extensions,
   },
-  define: { __DEV__: dev },
-  // The dependency optimizer doesn't apply `define`, so pre-bundled libraries need their own.
-  optimizeDeps: { rolldownOptions: { transform: { define: { __DEV__: dev } } } },
+  define,
+  // The dependency optimizer has its own `define` and extension list, so pre-bundled
+  // libraries need them too.
+  optimizeDeps: { rolldownOptions: { transform: { define }, resolve: { extensions } } },
 })
 ```
 
 `Platform.OS` then stays a read at run time. It still returns `'web'`.
+
+A library that needs a [compat entry](https://rootnative.github.io/web/compat) also needs its alias. The plugin adds these three:
+
+| Import name                                                                    | Alias to                          |
+| ------------------------------------------------------------------------------ | --------------------------------- |
+| `@react-native/assets-registry/registry`                                       | `@rootnative/web/assets-registry` |
+| `react-native-web/dist/cjs/exports/StyleSheet/compiler/createReactDOMStyle.js` | `@rootnative/web/style`           |
+| `react-native-web/dist/cjs/exports/StyleSheet/preprocess.js`                   | `@rootnative/web/style`           |
 
 ---
 
@@ -252,7 +267,7 @@ The latest release is [`0.0.0-alpha.2`](https://www.npmjs.com/package/@rootnativ
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`Modal`](https://rootnative.github.io/web/modal), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                    |
 | APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Linking`](https://rootnative.github.io/web/linking), [`Alert`](https://rootnative.github.io/web/alert), [`Share`](https://rootnative.github.io/web/share), [`Vibration`](https://rootnative.github.io/web/vibration), [`Clipboard`](https://rootnative.github.io/web/clipboard), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`usePressability`](https://rootnative.github.io/web/usepressability) |
-| Compat     | [`unstable_createElement`](https://rootnative.github.io/web/compat), [`findNodeHandle`](https://rootnative.github.io/web/compat), [`TurboModuleRegistry`](https://rootnative.github.io/web/compat). Libraries import them, your app doesn't.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Compat     | [`unstable_createElement`](https://rootnative.github.io/web/compat), [`findNodeHandle`](https://rootnative.github.io/web/compat), [`TurboModuleRegistry`](https://rootnative.github.io/web/compat), and the entries `@rootnative/web/assets-registry` and `@rootnative/web/style`. Libraries import them, your app doesn't.                                                                                                                                                                                                                                                                                                                                                      |
 | Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                                   |
 | Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -2209,7 +2224,7 @@ A `null` config returns `null` and sets up nothing. The hook sets up when a conf
 
 # Compat exports
 
-Three exports that exist for libraries, not for your app. A library such as `react-native-svg` or `react-native-safe-area-context` imports them from `react-native` on the web. Without them, the library doesn't load.
+Exports and entries that exist for libraries, not for your app. `react-native-svg`, `react-native-safe-area-context`, and Reanimated import them on the web. Without them, these libraries don't load.
 
 **Don't call them in app code.** Use a `ref` to get an element, and the components of this package to render one.
 
@@ -2261,3 +2276,21 @@ A library that reads its native module when it loads gets `null`, and then takes
 ## `@rootnative/web/assets-registry`
 
 An entry with `registerAsset` and `getAssetByID`, the two functions of `@react-native/assets-registry/registry`. The [Vite plugin](https://rootnative.github.io/web/vite-plugin) points that module name at this entry, because `react-native-svg` imports it on the web. A web bundler gives an image import a URL, not a number, so the registry stays empty.
+
+## `@rootnative/web/style`
+
+An entry with the style helpers that Reanimated 4 imports from two `react-native-web` internal files. The [Vite plugin](https://rootnative.github.io/web/vite-plugin) points both file names at this entry. Reanimated then animates `View`, `Text`, `Image`, and `ScrollView` from this package.
+
+| Export                            | Result                                                                                                                                             |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createReactDOMStyle(style)`      | The inline DOM style of a React Native style, with the same rules as the class names of `View`. Also the default export, as in `react-native-web`. |
+| `createTransformValue(transform)` | The CSS `transform` value of a `transform` array. An empty string for no valid transform.                                                          |
+| `createTextShadowValue(style)`    | The CSS `text-shadow` value of `textShadowColor`, `textShadowOffset`, and `textShadowRadius`.                                                      |
+
+In `createReactDOMStyle`, shorthands such as `margin` come before longhands such as `marginLeft`. A library that writes the values one at a time then gets the longhand, as on native.
+
+Reanimated on the web needs its Worklets Babel plugin, or a dependency array on each hook. Without the plugin, list the shared values that a hook reads:
+
+```tsx
+const style = useAnimatedStyle(() => ({ opacity: progress.value }), [progress])
+```

@@ -15,6 +15,7 @@ import { ModalRoute } from './routes/ModalRoute'
 import { PanResponderRoute } from './routes/PanResponderRoute'
 import { PressabilityRoute } from './routes/PressabilityRoute'
 import { PressableRoute } from './routes/PressableRoute'
+import { ReanimatedRoute } from './routes/ReanimatedRoute'
 import { RefreshControlRoute } from './routes/RefreshControlRoute'
 import { ScrollViewRoute } from './routes/ScrollViewRoute'
 import { SwitchRoute } from './routes/SwitchRoute'
@@ -45,6 +46,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'pan', title: 'PanResponder', Component: PanResponderRoute },
   { path: 'head', title: 'Head', Component: HeadRoute },
   { path: 'compat', title: 'Compat exports', Component: CompatRoute },
+  { path: 'reanimated', title: 'Reanimated', Component: ReanimatedRoute },
 ]
 
 const subscribe = (onChange: () => void): (() => void) => {

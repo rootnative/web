@@ -39,6 +39,10 @@ describe('rootnative() config', () => {
     expect(
       firstAlias(config.resolve.alias, '@react-native/assets-registry/registry')?.replacement,
     ).toBe('@rootnative/web/assets-registry')
+    expect(
+      firstAlias(config.resolve.alias, 'react-native-web/dist/cjs/exports/StyleSheet/preprocess.js')
+        ?.replacement,
+    ).toBe('@rootnative/web/style')
   })
 
   test("lets the app's own react-native alias win", async () => {
@@ -104,6 +108,14 @@ describe('rootnative() config', () => {
       'serve',
     )
     expect(config.optimizeDeps.rolldownOptions?.resolve?.extensions).toEqual(['.js'])
+  })
+})
+
+describe('rootnative() global', () => {
+  test('is globalThis, for the app and the pre-bundled dependencies', async () => {
+    const config = await resolveConfig(baseConfig({ plugins: [rootnative()] }), 'serve')
+    expect(config.define?.['global']).toBe('globalThis')
+    expect(config.optimizeDeps.rolldownOptions?.transform?.define?.['global']).toBe('globalThis')
   })
 })
 

@@ -31,6 +31,8 @@ const shorthandProperties: ReadonlySet<string> = new Set([
   'textDecoration',
 ])
 
+export const isShorthandProperty = (name: string): boolean => shorthandProperties.has(name)
+
 const toKebab = (name: string): string => name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)
 
 const hash = (input: string): string => {
@@ -65,7 +67,7 @@ export class StyleRegistry {
     const className = `rn-${hash(key)}`
     this.classNames.set(key, className)
 
-    const shorthand = shorthandProperties.has(property)
+    const shorthand = isShorthandProperty(property)
     const rule = `.${className}{${toKebab(property)}:${value}}`
     const rules = shorthand ? this.shorthandRules : this.longhandRules
     rules.push(rule)

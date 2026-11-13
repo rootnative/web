@@ -1,12 +1,12 @@
 ---
 id: compat
 title: Compat exports
-description: Three exports that libraries import from react-native on the web - unstable_createElement, findNodeHandle, and TurboModuleRegistry.
+description: The exports and entries that libraries such as react-native-svg, react-native-safe-area-context, and Reanimated import on the web.
 ---
 
 # Compat exports
 
-Three exports that exist for libraries, not for your app. A library such as `react-native-svg` or `react-native-safe-area-context` imports them from `react-native` on the web. Without them, the library doesn't load.
+Exports and entries that exist for libraries, not for your app. `react-native-svg`, `react-native-safe-area-context`, and Reanimated import them on the web. Without them, these libraries don't load.
 
 **Don't call them in app code.** Use a `ref` to get an element, and the components of this package to render one.
 
@@ -58,3 +58,21 @@ A library that reads its native module when it loads gets `null`, and then takes
 ## `@rootnative/web/assets-registry`
 
 An entry with `registerAsset` and `getAssetByID`, the two functions of `@react-native/assets-registry/registry`. The [Vite plugin](/vite-plugin) points that module name at this entry, because `react-native-svg` imports it on the web. A web bundler gives an image import a URL, not a number, so the registry stays empty.
+
+## `@rootnative/web/style`
+
+An entry with the style helpers that Reanimated 4 imports from two `react-native-web` internal files. The [Vite plugin](/vite-plugin) points both file names at this entry. Reanimated then animates `View`, `Text`, `Image`, and `ScrollView` from this package.
+
+| Export                            | Result                                                                                                                                             |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createReactDOMStyle(style)`      | The inline DOM style of a React Native style, with the same rules as the class names of `View`. Also the default export, as in `react-native-web`. |
+| `createTransformValue(transform)` | The CSS `transform` value of a `transform` array. An empty string for no valid transform.                                                          |
+| `createTextShadowValue(style)`    | The CSS `text-shadow` value of `textShadowColor`, `textShadowOffset`, and `textShadowRadius`.                                                      |
+
+In `createReactDOMStyle`, shorthands such as `margin` come before longhands such as `marginLeft`. A library that writes the values one at a time then gets the longhand, as on native.
+
+Reanimated on the web needs its Worklets Babel plugin, or a dependency array on each hook. Without the plugin, list the shared values that a hook reads:
+
+```tsx
+const style = useAnimatedStyle(() => ({ opacity: progress.value }), [progress])
+```

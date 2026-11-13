@@ -6,6 +6,7 @@ export default defineConfig({
     'src/assets-registry/index.ts',
     'src/dom/index.ts',
     'src/server/index.ts',
+    'src/style/index.ts',
     'src/vite/index.ts',
   ],
   format: 'esm',
