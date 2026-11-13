@@ -242,6 +242,9 @@ importers:
 
   packages/playground:
     dependencies:
+      '@rootnative/inertia':
+        specifier: 0.0.29
+        version: 0.0.29(5dd49bde30da0905217b42339894c631)
       '@rootnative/web':
         specifier: workspace:*
         version: link:../web
@@ -2217,6 +2220,18 @@ packages:
 
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
+
+  '@rootnative/inertia@0.0.29':
+    resolution: {integrity: sha512-J47j81LgE37cBs/XN4lCZtGoWt4//ndcrUK0BuPml5wz1zItBxskYQeW8MOq3PsNnpLCU8i+98I3uC0QNzqgBg==}
+    peerDependencies:
+      '@testing-library/react-native': '>=13.0.0'
+      react: '>=19.3.0 <20.0.0'
+      react-native: '>=0.88.0 <0.89.0'
+      react-native-reanimated: '>=4.7.0 <4.8.0'
+      react-native-worklets: '>=0.13.0 <0.14.0'
+    peerDependenciesMeta:
+      '@testing-library/react-native':
+        optional: true
 
   '@sideway/address@4.1.5':
     resolution: {integrity: sha512-IqO/DUQHUkPeixNQ8n0JA6102hT9CmaljNTPmQ1u8MEhBo/R4Q8eKLN/vGZxuebwOroDB4cbpjheD4+/sKFK4Q==}
@@ -9890,6 +9905,13 @@ snapshots:
     optional: true
 
   '@rolldown/pluginutils@1.0.1': {}
+
+  '@rootnative/inertia@0.0.29(5dd49bde30da0905217b42339894c631)':
+    dependencies:
+      react: 19.3.1
+      react-native: 0.88.1(@babel/core@7.29.13(supports-color@8.1.1))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1)
+      react-native-reanimated: 4.7.1(react-native-worklets@0.13.0(@babel/core@7.29.13(supports-color@8.1.1))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@8.1.1))(supports-color@8.1.1))(react-native@0.88.1(@babel/core@7.29.13(supports-color@8.1.1))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(react@19.3.1)(supports-color@8.1.1))(react-native@0.88.1(@babel/core@7.29.13(supports-color@8.1.1))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(react@19.3.1)
+      react-native-worklets: 0.13.0(@babel/core@7.29.13(supports-color@8.1.1))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@8.1.1))(supports-color@8.1.1))(react-native@0.88.1(@babel/core@7.29.13(supports-color@8.1.1))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(react@19.3.1)(supports-color@8.1.1)
 
   '@sideway/address@4.1.5':
     dependencies:

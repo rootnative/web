@@ -6,4 +6,7 @@ packages:
 allowBuilds:
   core-js: false
 
+minimumReleaseAgeExclude:
+  - '@rootnative/inertia@0.0.29'
+
 strictPeerDependencies: true

@@ -11,6 +11,7 @@ import { DimensionsRoute } from './routes/DimensionsRoute'
 import { FlatListRoute } from './routes/FlatListRoute'
 import { HeadRoute } from './routes/HeadRoute'
 import { ImageRoute } from './routes/ImageRoute'
+import { InertiaRoute } from './routes/InertiaRoute'
 import { KeyboardRoute } from './routes/KeyboardRoute'
 import { ModalRoute } from './routes/ModalRoute'
 import { PanResponderRoute } from './routes/PanResponderRoute'
@@ -49,6 +50,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'head', title: 'Head', Component: HeadRoute },
   { path: 'compat', title: 'Compat exports', Component: CompatRoute },
   { path: 'reanimated', title: 'Reanimated', Component: ReanimatedRoute },
+  { path: 'inertia', title: 'Inertia', Component: InertiaRoute },
 ]
 
 const subscribe = (onChange: () => void): (() => void) => {
