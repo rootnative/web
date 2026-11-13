@@ -214,8 +214,8 @@ const APP_LINES: readonly Line[] = [
   [['</'], ['View', 'tag'], ['>']],
 ]
 
-// The real server output of APP_LINES, with the class lists cut short. Render it again when the
-// style defaults change, because the class names are hashes of the declarations.
+// The real server output of APP_LINES. Render it again when a reset class or the style compiler
+// changes: the atomic class names are hashes of the declarations.
 const HTML_LINES: readonly Line[] = [
   [
     ['<'],
@@ -223,7 +223,7 @@ const HTML_LINES: readonly Line[] = [
     [' '],
     ['class', 'attr'],
     ['='],
-    ['"rn-hxnk25 rn-vylb87 …"', 'string'],
+    ['"rn-view rn-hst5or"', 'string'],
     ['>'],
   ],
   [
@@ -232,7 +232,7 @@ const HTML_LINES: readonly Line[] = [
     [' '],
     ['class', 'attr'],
     ['='],
-    ['"rn-vylb87 rn-qgdmll …"', 'string'],
+    ['"rn-text"', 'string'],
     ['>Hello from React Native</'],
     ['h1', 'tag'],
     ['>'],
@@ -247,7 +247,7 @@ const HTML_LINES: readonly Line[] = [
     [' '],
     ['class', 'attr'],
     ['='],
-    ['"rn-vylb87 …"', 'string'],
+    ['"rn-text"', 'string'],
     ['>About</'],
     ['a', 'tag'],
     ['>'],

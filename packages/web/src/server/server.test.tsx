@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest'
 
 import { Text } from '../components/Text'
 import { View } from '../components/View'
-import { LONGHAND_STYLE_ID, SHORTHAND_STYLE_ID } from '../style/registry'
+import { LONGHAND_STYLE_ID, RESET_STYLE_ID, SHORTHAND_STYLE_ID } from '../style/registry'
 import { createStyleRegistry, renderStyleTags, StyleRegistryProvider, styleTagsHTML } from './index'
 
 const page = (registry: ReturnType<typeof createStyleRegistry>): string =>
@@ -35,14 +35,14 @@ describe('server', () => {
     expect(b.ruleCount).toBe(0)
   })
 
-  test('renders the two style tags the client adopts', () => {
+  test('renders the three style tags the client adopts', () => {
     const registry = createStyleRegistry()
     page(registry)
 
     const asString = styleTagsHTML(registry)
     expect(asString).toMatch(
       new RegExp(
-        `^<style id="${SHORTHAND_STYLE_ID}">[^<]+</style><style id="${LONGHAND_STYLE_ID}">[^<]+</style>$`,
+        `^<style id="${RESET_STYLE_ID}">[^<]+</style><style id="${SHORTHAND_STYLE_ID}">[^<]+</style><style id="${LONGHAND_STYLE_ID}">[^<]+</style>$`,
       ),
     )
     expect(renderToString(renderStyleTags(registry))).toBe(asString)
@@ -57,7 +57,7 @@ describe('server', () => {
   test('every class name in the markup has a rule', () => {
     const registry = createStyleRegistry()
     const html = page(registry)
-    const css = `${registry.cssText().shorthand}\n${registry.cssText().longhand}`
+    const css = Object.values(registry.cssText()).join('\n')
     for (const className of html.match(/rn-[a-z0-9-]+/g) ?? []) {
       expect(css).toContain(`.${className}`)
     }

@@ -17,7 +17,7 @@ import {
 import { toDOMProps } from '../../render/domProps'
 import { useElementLayout } from '../../render/useElementLayout'
 import { toCSSColor } from '../../style/color'
-import { compileStyle, flattenStyle } from '../../style/compile'
+import { compileReset, compileStyle, flattenStyle, joinClassNames } from '../../style/compile'
 import type { StyleRegistry } from '../../style/registry'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { hasDOM } from '../../utils/env'
@@ -379,7 +379,11 @@ function TextInputComponent(props: TextInputProps): ReactElement {
   else if (caret !== undefined) colorStyle['caretColor'] = caret
   if (textAlign !== undefined) colorStyle['textAlign'] = textAlign
 
-  let className = compileStyle([resetStyle, multiline && textareaStyle, flat, colorStyle], registry)
+  let className = joinClassNames(
+    compileReset('rn-text-input', resetStyle, registry),
+    multiline === true && compileReset('rn-text-input-multiline', textareaStyle, registry),
+    compileStyle([flat, colorStyle], registry),
+  )
   const placeholderName = placeholderClass(registry, placeholderTextColor)
   if (placeholderName !== undefined) className = `${className} ${placeholderName}`
   const selectionName = selectionClass(registry, selectionColor)

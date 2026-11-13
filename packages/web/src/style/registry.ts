@@ -1,10 +1,16 @@
 import { hasDOM } from '../utils/env'
 import type { CSSDeclarations } from './types'
 
-// Two style elements: shorthand rules first, longhand rules after them. With equal
-// specificity the later sheet wins, so a longhand always beats a shorthand, as on native.
+// Three style elements, and with equal specificity the later sheet wins:
+// - the reset rules of the components, which stand for the defaults of native layout,
+// - the shorthand rules of the app's styles,
+// - the longhand rules of the app's styles.
+// So any style of the app beats a default, and a longhand always beats a shorthand, as on native.
+export const RESET_STYLE_ID = 'rootnative-style-reset'
 export const SHORTHAND_STYLE_ID = 'rootnative-style-shorthand'
 export const LONGHAND_STYLE_ID = 'rootnative-style-longhand'
+
+const SHEET_ORDER = [RESET_STYLE_ID, SHORTHAND_STYLE_ID, LONGHAND_STYLE_ID] as const
 
 const shorthandProperties: ReadonlySet<string> = new Set([
   'border',
@@ -44,17 +50,23 @@ const hash = (input: string): string => {
   return (h >>> 0).toString(36)
 }
 
-export type StyleSheets = { shorthand: CSSStyleSheet | null; longhand: CSSStyleSheet | null }
+export type StyleSheets = {
+  reset: CSSStyleSheet | null
+  shorthand: CSSStyleSheet | null
+  longhand: CSSStyleSheet | null
+}
 
 export class StyleRegistry {
   private readonly classNames = new Map<string, string>()
   private readonly adopted = new Set<string>()
+  private readonly resetRules: string[] = []
   private readonly shorthandRules: string[] = []
   private readonly longhandRules: string[] = []
   private readonly sheets: StyleSheets
 
-  constructor(sheets: StyleSheets = { shorthand: null, longhand: null }) {
+  constructor(sheets: StyleSheets = { reset: null, shorthand: null, longhand: null }) {
     this.sheets = sheets
+    this.adopt(sheets.reset)
     this.adopt(sheets.shorthand)
     this.adopt(sheets.longhand)
   }
@@ -102,13 +114,35 @@ export class StyleRegistry {
     return className
   }
 
+  // Inserts the default style of a component as one rule in the reset sheet, once. Its class
+  // name is its own, never an atomic one, so a style of the app with the same declaration
+  // still gets an atomic class that beats the default.
+  resetClass(className: string, declarations: CSSDeclarations): string {
+    if (this.classNames.has(className)) return className
+    this.classNames.set(className, className)
+    const body = Object.entries(declarations)
+      .map(([property, value]) => `${toKebab(property)}:${value}`)
+      .join(';')
+    const rule = `.${className}{${body}}`
+    this.resetRules.push(rule)
+    if (!this.adopted.has(className)) {
+      const sheet = this.sheets.reset
+      sheet?.insertRule(rule, sheet.cssRules.length)
+    }
+    return className
+  }
+
   // The rules of each sheet, for server rendering.
-  cssText(): { shorthand: string; longhand: string } {
-    return { shorthand: this.shorthandRules.join('\n'), longhand: this.longhandRules.join('\n') }
+  cssText(): { reset: string; shorthand: string; longhand: string } {
+    return {
+      reset: this.resetRules.join('\n'),
+      shorthand: this.shorthandRules.join('\n'),
+      longhand: this.longhandRules.join('\n'),
+    }
   }
 
   get ruleCount(): number {
-    return this.shorthandRules.length + this.longhandRules.length
+    return this.resetRules.length + this.shorthandRules.length + this.longhandRules.length
   }
 
   // Remembers the class names the server already rendered, so the client does not insert them again.
@@ -126,8 +160,12 @@ export const getStyleRegistry = (): StyleRegistry => {
   if (defaultRegistry !== null) return defaultRegistry
   defaultRegistry = new StyleRegistry(
     hasDOM()
-      ? { shorthand: domSheet(SHORTHAND_STYLE_ID), longhand: domSheet(LONGHAND_STYLE_ID) }
-      : { shorthand: null, longhand: null },
+      ? {
+          reset: domSheet(RESET_STYLE_ID),
+          shorthand: domSheet(SHORTHAND_STYLE_ID),
+          longhand: domSheet(LONGHAND_STYLE_ID),
+        }
+      : { reset: null, shorthand: null, longhand: null },
   )
   return defaultRegistry
 }
@@ -136,16 +174,21 @@ export const getStyleRegistry = (): StyleRegistry => {
 export const resetStyleRegistry = (): void => {
   defaultRegistry = null
   if (!hasDOM()) return
-  document.getElementById(SHORTHAND_STYLE_ID)?.remove()
-  document.getElementById(LONGHAND_STYLE_ID)?.remove()
+  for (const id of SHEET_ORDER) document.getElementById(id)?.remove()
 }
 
-const domSheet = (id: string): CSSStyleSheet => {
+// A new style element goes before the sheets that must come after it. A page from an older
+// server can have the other two sheets already.
+const domSheet = (id: (typeof SHEET_ORDER)[number]): CSSStyleSheet => {
   let element = document.getElementById(id) as HTMLStyleElement | null
   if (element === null) {
     element = document.createElement('style')
     element.id = id
-    document.head.appendChild(element)
+    const later = SHEET_ORDER.slice(SHEET_ORDER.indexOf(id) + 1)
+      .map((name) => document.getElementById(name))
+      .find((found) => found !== null)
+    if (later === undefined || later === null) document.head.appendChild(element)
+    else later.before(element)
   }
   return element.sheet as CSSStyleSheet
 }

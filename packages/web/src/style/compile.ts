@@ -42,3 +42,17 @@ export const compileStyle = (
   }
   return classes
 }
+
+/**
+ * The class of a component's default style, in the reset sheet. Any style of the app beats it,
+ * as any style beats the defaults of native layout.
+ */
+export const compileReset = (
+  className: string,
+  style: FlatStyle,
+  registry: StyleRegistry = getStyleRegistry(),
+): string => registry.resetClass(className, resolveStyle(style))
+
+// Joins class names and skips the empty ones.
+export const joinClassNames = (...names: ReadonlyArray<string | false | undefined>): string =>
+  names.filter((name) => typeof name === 'string' && name !== '').join(' ')

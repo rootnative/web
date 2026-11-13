@@ -3,7 +3,7 @@ import { createElement, useImperativeHandle, useRef, type ReactElement } from 'r
 import { toDOMProps } from '../../render/domProps'
 import { resolveTag } from '../../render/resolveTag'
 import { useElementLayout } from '../../render/useElementLayout'
-import { compileStyle } from '../../style/compile'
+import { compileReset, compileStyle, joinClassNames } from '../../style/compile'
 import type { StyleRegistry } from '../../style/registry'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import type { ViewProps } from './types'
@@ -64,7 +64,10 @@ export function useViewElement(props: ViewProps, extraClassName?: string): React
 
   const pointerStyle =
     pointerEvents === 'none' || pointerEvents === 'auto' ? { pointerEvents } : undefined
-  let className = compileStyle([resetStyle, style, pointerStyle], registry)
+  let className = joinClassNames(
+    compileReset('rn-view', resetStyle, registry),
+    compileStyle([style, pointerStyle], registry),
+  )
   if (pointerEvents === 'box-none' || pointerEvents === 'box-only') {
     className = `${className} ${pointerEventsClass(registry, pointerEvents)}`
   }

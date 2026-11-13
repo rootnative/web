@@ -4,6 +4,7 @@ import { compileStyle } from './compile'
 import {
   getStyleRegistry,
   LONGHAND_STYLE_ID,
+  RESET_STYLE_ID,
   resetStyleRegistry,
   SHORTHAND_STYLE_ID,
   StyleRegistry,
@@ -40,21 +41,61 @@ describe('StyleRegistry', () => {
     const left = registry.classFor('paddingLeft', '8px')
     const all = registry.classFor('padding', '0')
     expect(registry.cssText()).toEqual({
+      reset: '',
       shorthand: `.${all}{padding:0}`,
       longhand: `.${left}{padding-left:8px}`,
     })
   })
 
-  test('the default registry inserts rules into two style elements, shorthand first', () => {
+  test('writes a reset as one rule under its own class name, once', () => {
+    const registry = new StyleRegistry()
+    const declarations = { display: 'flex', flexShrink: '0' }
+    expect(registry.resetClass('rn-box', declarations)).toBe('rn-box')
+    expect(registry.resetClass('rn-box', declarations)).toBe('rn-box')
+    expect(registry.cssText().reset).toBe('.rn-box{display:flex;flex-shrink:0}')
+    expect(registry.ruleCount).toBe(1)
+  })
+
+  test('the default registry inserts rules into three style elements: reset, shorthand, longhand', () => {
     const registry = getStyleRegistry()
     const opacity = registry.classFor('opacity', '0.5')
     const margin = registry.classFor('margin', '0')
+    registry.resetClass('rn-box', { flexShrink: '0' })
+    expect(domRules(RESET_STYLE_ID)).toEqual(['.rn-box { flex-shrink: 0; }'])
     expect(domRules(SHORTHAND_STYLE_ID)).toEqual([`.${margin} { margin: 0px; }`])
     expect(domRules(LONGHAND_STYLE_ID)).toEqual([`.${opacity} { opacity: 0.5; }`])
 
-    const short = document.getElementById(SHORTHAND_STYLE_ID) as HTMLElement
-    const long = document.getElementById(LONGHAND_STYLE_ID) as HTMLElement
+    const [reset, short, long] = [RESET_STYLE_ID, SHORTHAND_STYLE_ID, LONGHAND_STYLE_ID].map(
+      (id) => document.getElementById(id) as HTMLElement,
+    ) as [HTMLElement, HTMLElement, HTMLElement]
+    expect(reset.compareDocumentPosition(short) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(short.compareDocumentPosition(long) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  test('a shorthand of the app beats a longhand of a reset', () => {
+    const registry = getStyleRegistry()
+    const reset = registry.resetClass('rn-box', { flexShrink: '0', flexBasis: 'auto' })
+    const flex = registry.classFor('flex', '1 1 0%')
+
+    const element = document.createElement('div')
+    element.className = `${reset} ${flex}`
+    document.body.appendChild(element)
+    const computed = getComputedStyle(element)
+    expect(computed.flexShrink).toBe('1')
+    expect(computed.flexBasis).toBe('0%')
+    element.remove()
+  })
+
+  test('puts a new reset sheet before the sheets of an older server page', () => {
+    for (const id of [SHORTHAND_STYLE_ID, LONGHAND_STYLE_ID]) {
+      const element = document.createElement('style')
+      element.id = id
+      document.head.appendChild(element)
+    }
+    getStyleRegistry()
+    const reset = document.getElementById(RESET_STYLE_ID) as HTMLElement
+    const short = document.getElementById(SHORTHAND_STYLE_ID) as HTMLElement
+    expect(reset.compareDocumentPosition(short) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   test('longhand wins over shorthand in the DOM, whatever the insertion order', () => {
@@ -74,7 +115,9 @@ describe('StyleRegistry', () => {
     const server = new StyleRegistry()
     const color = server.classFor('color', 'rgb(255,0,0)')
     const margin = server.classFor('margin', '0')
+    server.resetClass('rn-box', { flexShrink: '0' })
     for (const [id, text] of [
+      [RESET_STYLE_ID, server.cssText().reset],
       [SHORTHAND_STYLE_ID, server.cssText().shorthand],
       [LONGHAND_STYLE_ID, server.cssText().longhand],
     ] as const) {
@@ -87,6 +130,8 @@ describe('StyleRegistry', () => {
     const client = getStyleRegistry()
     expect(client.classFor('color', 'rgb(255,0,0)')).toBe(color)
     expect(client.classFor('margin', '0')).toBe(margin)
+    expect(client.resetClass('rn-box', { flexShrink: '0' })).toBe('rn-box')
+    expect(domRules(RESET_STYLE_ID)).toHaveLength(1)
     expect(domRules(SHORTHAND_STYLE_ID)).toHaveLength(1)
     expect(domRules(LONGHAND_STYLE_ID)).toHaveLength(1)
 

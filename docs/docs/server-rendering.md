@@ -50,7 +50,7 @@ Three rules:
 
 Your server code needs the same setup, so that `App` and its imports resolve to `@rootnative/web`. With Vite's server rendering, the [Vite plugin](/vite-plugin#server-rendering) does it.
 
-`renderStyleTags(registry)` returns the same two `<style>` elements as React elements. Use it when your framework takes head elements, not a string.
+`renderStyleTags(registry)` returns the same three `<style>` elements as React elements. Use it when your framework takes head elements, not a string.
 
 ## In the browser
 
@@ -64,7 +64,7 @@ import { App } from './App'
 hydrateRoot(document.getElementById('root')!, <App />)
 ```
 
-The client needs no provider. It finds the two `<style>` elements by their id and adopts their rules, so it inserts no rule twice.
+The client needs no provider. It finds the three `<style>` elements by their id and adopts their rules, so it inserts no rule twice. Keep them in their order: the defaults of the components, then the shorthands, then the longhands.
 
 ## Values that differ on the server
 

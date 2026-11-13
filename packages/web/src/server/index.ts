@@ -1,6 +1,11 @@
 import { createElement, Fragment, type ReactElement, type ReactNode } from 'react'
 
-import { LONGHAND_STYLE_ID, SHORTHAND_STYLE_ID, StyleRegistry } from '../style/registry'
+import {
+  LONGHAND_STYLE_ID,
+  RESET_STYLE_ID,
+  SHORTHAND_STYLE_ID,
+  StyleRegistry,
+} from '../style/registry'
 import { StyleRegistryContext } from '../style/StyleRegistryContext'
 
 export { StyleRegistry } from '../style/registry'
@@ -18,12 +23,16 @@ export function StyleRegistryProvider(props: {
 // A closing tag inside CSS text would end the style element early.
 const escapeCSS = (css: string): string => css.replace(/<\//g, '<\\/')
 
-// The two style elements the client adopts on hydration. Render them in <head>.
+// The three style elements the client adopts on hydration. Render them in <head>, in this order.
 export const renderStyleTags = (registry: StyleRegistry): ReactElement => {
-  const { shorthand, longhand } = registry.cssText()
+  const { reset, shorthand, longhand } = registry.cssText()
   return createElement(
     Fragment,
     null,
+    createElement('style', {
+      id: RESET_STYLE_ID,
+      dangerouslySetInnerHTML: { __html: escapeCSS(reset) },
+    }),
     createElement('style', {
       id: SHORTHAND_STYLE_ID,
       dangerouslySetInnerHTML: { __html: escapeCSS(shorthand) },
@@ -35,10 +44,11 @@ export const renderStyleTags = (registry: StyleRegistry): ReactElement => {
   )
 }
 
-// The same two elements as an HTML string, for a template.
+// The same three elements as an HTML string, for a template.
 export const styleTagsHTML = (registry: StyleRegistry): string => {
-  const { shorthand, longhand } = registry.cssText()
+  const { reset, shorthand, longhand } = registry.cssText()
   return (
+    `<style id="${RESET_STYLE_ID}">${escapeCSS(reset)}</style>` +
     `<style id="${SHORTHAND_STYLE_ID}">${escapeCSS(shorthand)}</style>` +
     `<style id="${LONGHAND_STYLE_ID}">${escapeCSS(longhand)}</style>`
   )

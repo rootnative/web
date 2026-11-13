@@ -29,6 +29,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ### Fixed
 
+- `flex: 1` now grows and shrinks from a size of 0, as the docs say. Before, the defaults of `View` (`flexShrink: 0`, `flexBasis: 'auto'`) won over it, so a `flex: 1` view grew to its content and a `ScrollView` in it didn't scroll. Any style now wins over the defaults of `View`, `Text`, `TextInput`, and `Image`. The same fix makes `fontWeight` and the other font props work in a nested `Text`.
+- The server renders three `<style>` elements now: the defaults of the components come first. Render all three with `renderStyleTags` or `styleTagsHTML`.
 - The Vite plugin now gives the dependency optimizer the `.web` extensions too. Before, a pre-bundled library loaded its native file where it had a `.web.js` file, and the dev server stopped on `react-native-safe-area-context`.
 - A tap that put a new pressable under the finger, for example in a modal that it opened, pressed that pressable too in Chrome on Android. The click of the tap now stops when it lands outside the pressed element.
 

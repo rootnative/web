@@ -14,7 +14,7 @@ import { toDOMProps } from '../../render/domProps'
 import { resolveTag } from '../../render/resolveTag'
 import { useElementLayout } from '../../render/useElementLayout'
 import { toCSSColor } from '../../style/color'
-import { compileStyle } from '../../style/compile'
+import { compileReset, compileStyle, joinClassNames } from '../../style/compile'
 import type { StyleRegistry } from '../../style/registry'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { TextAncestorContext } from './TextAncestorContext'
@@ -138,16 +138,11 @@ export function Text(props: TextProps): ReactElement {
   const pointerStyle =
     pointerEvents === 'none' || pointerEvents === 'auto' ? { pointerEvents } : undefined
 
-  let className = compileStyle(
-    [
-      nested ? nestedResetStyle : resetStyle,
-      style,
-      lineStyle,
-      clipStyle,
-      selectStyle,
-      pointerStyle,
-    ],
-    registry,
+  let className = joinClassNames(
+    nested
+      ? compileReset('rn-text-nested', nestedResetStyle, registry)
+      : compileReset('rn-text', resetStyle, registry),
+    compileStyle([style, lineStyle, clipStyle, selectStyle, pointerStyle], registry),
   )
   if (selectionColor !== undefined) {
     const extra = selectionClass(registry, selectionColor)

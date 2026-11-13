@@ -2,6 +2,7 @@ import { createRef } from 'react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { StyleSheet } from '../../apis/StyleSheet'
+import { ScrollView, type ScrollViewInstance } from '../ScrollView'
 import { cleanup, render } from '../../test/render'
 import { View } from './index'
 
@@ -33,6 +34,40 @@ describe('View', () => {
     expect(computed.display).toBe('contents')
     expect(computed.flexDirection).toBe('row')
     expect(computed.paddingLeft).toBe('4px')
+  })
+
+  test('flex: 1 beats the defaults: it grows and shrinks from a size of 0', () => {
+    const { container } = render(<View style={{ flex: 1 }} />)
+    const computed = getComputedStyle(first(container))
+    expect(computed.flexGrow).toBe('1')
+    expect(computed.flexShrink).toBe('1')
+    expect(computed.flexBasis).toBe('0%')
+  })
+
+  test('an explicit flexShrink or flexBasis beats flex, whatever the key order', () => {
+    const { container } = render(<View style={{ flexShrink: 0, flexBasis: 10, flex: 1 }} />)
+    const computed = getComputedStyle(first(container))
+    expect(computed.flexGrow).toBe('1')
+    expect(computed.flexShrink).toBe('0')
+    expect(computed.flexBasis).toBe('10px')
+  })
+
+  test('a flex: 1 view stays inside its parent, so a ScrollView in it scrolls', () => {
+    const scroller = createRef<ScrollViewInstance>()
+    const { container } = render(
+      <View style={{ height: 200 }}>
+        <View style={{ flex: 1 }}>
+          <ScrollView ref={scroller} style={{ flex: 1 }}>
+            <View style={{ height: 1000 }} />
+          </ScrollView>
+        </View>
+      </View>,
+    )
+    const middle = first(container).firstElementChild as HTMLElement
+    expect(middle.offsetHeight).toBe(200)
+    const node = scroller.current?.getScrollableNode() as HTMLElement
+    expect(node.clientHeight).toBe(200)
+    expect(node.scrollHeight).toBe(1000)
   })
 
   test('a longhand in style wins over a shorthand in the reset', () => {

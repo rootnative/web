@@ -413,6 +413,8 @@ Every `View` starts with the React Native defaults: `display: flex`, `flexDirect
 
 Every `Text` starts at 14 px, black, in the system font, and keeps its spaces and line breaks.
 
+Any style of yours wins over a default, as on native. For example, `flex: 1` beats the default `flexShrink: 0`.
+
 ## Values
 
 - **Numbers get `px`.** `padding: 16` is `16px`, and `lineHeight: 20` is `20px`, as on native. `flex`, `flexGrow`, `flexShrink`, `opacity`, `zIndex`, `aspectRatio`, and `fontWeight` stay unitless.
@@ -433,7 +435,7 @@ Every `Text` starts at 14 px, black, in the system font, and keeps its spaces an
 
 ## Shorthands and longhands
 
-A longhand always wins over a shorthand, whatever the key order, as on native:
+A longhand always wins over a shorthand, whatever the key order, as on native. So `flexShrink` or `flexBasis` wins over the matching part of `flex`:
 
 ```tsx
 // The top padding is 16. The other three sides are 8.
@@ -521,7 +523,7 @@ Three rules:
 
 Your server code needs the same setup, so that `App` and its imports resolve to `@rootnative/web`. With Vite's server rendering, the [Vite plugin](https://rootnative.github.io/web/vite-plugin#server-rendering) does it.
 
-`renderStyleTags(registry)` returns the same two `<style>` elements as React elements. Use it when your framework takes head elements, not a string.
+`renderStyleTags(registry)` returns the same three `<style>` elements as React elements. Use it when your framework takes head elements, not a string.
 
 ## In the browser
 
@@ -535,7 +537,7 @@ import { App } from './App'
 hydrateRoot(document.getElementById('root')!, <App />)
 ```
 
-The client needs no provider. It finds the two `<style>` elements by their id and adopts their rules, so it inserts no rule twice.
+The client needs no provider. It finds the three `<style>` elements by their id and adopts their rules, so it inserts no rule twice. Keep them in their order: the defaults of the components, then the shorthands, then the longhands.
 
 ## Values that differ on the server
 

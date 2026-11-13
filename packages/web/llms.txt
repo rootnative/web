@@ -137,7 +137,8 @@ only). Any other prop that isn't a React Native prop is dropped.
   aspectRatio, and fontWeight stay unitless. Strings pass through.
 - Colors use the React Native parser. A color it can't parse is dropped.
 - flex: 1 is 1 1 0%. flex: 0 is 0 0 auto. flex: -1 is 0 1 auto.
-- A longhand wins over a shorthand, whatever the key order.
+- Any style wins over a default (flex: 1 beats the default flexShrink 0). A
+  longhand wins over a shorthand, whatever the key order.
 - Start and end props (marginStart, paddingEnd, start, end, borderStartWidth,
   borderTopStartRadius, ...) become logical CSS and flip in right-to-left.
 - marginLeft, paddingLeft, left, and their right partners stay physical in a
@@ -543,7 +544,7 @@ Render the whole <html> document with React, not only the app:
 - Write the style tags after the render ends.
 - Render <head> with React, so the tags of Head land in it. Pasted into a
   template, they land at the start of <body>.
-- renderStyleTags(registry) returns the same two <style> elements as React
+- renderStyleTags(registry) returns the same three <style> elements as React
   elements.
 - The client calls hydrateRoot(root, <App />) with no provider. It adopts the
   server's <style> elements, so it inserts no rule twice.

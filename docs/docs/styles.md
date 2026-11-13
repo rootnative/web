@@ -22,6 +22,8 @@ Every `View` starts with the React Native defaults: `display: flex`, `flexDirect
 
 Every `Text` starts at 14 px, black, in the system font, and keeps its spaces and line breaks.
 
+Any style of yours wins over a default, as on native. For example, `flex: 1` beats the default `flexShrink: 0`.
+
 ## Values
 
 - **Numbers get `px`.** `padding: 16` is `16px`, and `lineHeight: 20` is `20px`, as on native. `flex`, `flexGrow`, `flexShrink`, `opacity`, `zIndex`, `aspectRatio`, and `fontWeight` stay unitless.
@@ -42,7 +44,7 @@ Every `Text` starts at 14 px, black, in the system font, and keeps its spaces an
 
 ## Shorthands and longhands
 
-A longhand always wins over a shorthand, whatever the key order, as on native:
+A longhand always wins over a shorthand, whatever the key order, as on native. So `flexShrink` or `flexBasis` wins over the matching part of `flex`:
 
 ```tsx
 // The top padding is 16. The other three sides are 8.

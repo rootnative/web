@@ -12,7 +12,7 @@ import {
 import { toDOMProps } from '../../render/domProps'
 import { resolveTag } from '../../render/resolveTag'
 import { useElementLayout } from '../../render/useElementLayout'
-import { compileStyle, flattenStyle } from '../../style/compile'
+import { compileReset, compileStyle, flattenStyle, joinClassNames } from '../../style/compile'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { hasDOM } from '../../utils/env'
 import { resolveAssetSource, resolveSource, type ImageRequest } from './source'
@@ -290,7 +290,10 @@ function ImageComponent(props: ImageProps): ReactElement {
     width: userBoxStyle['width'] ?? width ?? resolved.width,
     height: userBoxStyle['height'] ?? height ?? resolved.height,
   }
-  const boxClassName = compileStyle([boxStyle, sizeStyle, userBoxStyle], registry)
+  const boxClassName = joinClassNames(
+    compileReset('rn-image', boxStyle, registry),
+    compileStyle([sizeStyle, userBoxStyle], registry),
+  )
 
   const label = alt ?? rest.accessibilityLabel ?? rest['aria-label']
   const domProps = toDOMProps(rest)
