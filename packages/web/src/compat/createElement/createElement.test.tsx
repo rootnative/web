@@ -54,12 +54,9 @@ describe('unstable_createElement', () => {
     expect(element.getAttribute('data-testid')).toBe('chart')
     expect(element.id).toBe('chart-1')
     expect(element.tabIndex).toBe(0)
-    expect(element.getAttributeNames().sort()).toEqual([
-      'aria-label',
-      'data-testid',
-      'id',
-      'tabindex',
-    ])
+    expect(new Set(element.getAttributeNames())).toEqual(
+      new Set(['aria-label', 'data-testid', 'id', 'tabindex']),
+    )
   })
 
   test('gives the ref the element, calls DOM handlers, and renders children', () => {

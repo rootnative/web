@@ -10,28 +10,29 @@ import Animated, {
 } from 'react-native-reanimated'
 
 // The playground has no Worklets Babel plugin, so each hook lists its shared values, as
-// Reanimated's guide for the web without the plugin says.
+// Reanimated's guide for the web without the plugin says. `get` and `set` in place of `value`
+// keep the React Compiler rules.
 export function ReanimatedRoute(): ReactElement {
   const turn = useSharedValue(0)
   const progress = useSharedValue(0)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    turn.value = withRepeat(withTiming(360, { duration: 2000, easing: Easing.linear }), -1)
+    turn.set(withRepeat(withTiming(360, { duration: 2000, easing: Easing.linear }), -1))
   }, [turn])
 
-  const spin = useAnimatedStyle(() => ({ transform: [{ rotate: `${turn.value}deg` }] }), [turn])
+  const spin = useAnimatedStyle(() => ({ transform: [{ rotate: `${turn.get()}deg` }] }), [turn])
   const slide = useAnimatedStyle(
     () => ({
-      transform: [{ translateX: progress.value * 160 }],
-      opacity: 0.4 + progress.value * 0.6,
-      backgroundColor: interpolateColor(progress.value, [0, 1], ['#2563eb', '#dc2626']),
+      transform: [{ translateX: progress.get() * 160 }],
+      opacity: 0.4 + progress.get() * 0.6,
+      backgroundColor: interpolateColor(progress.get(), [0, 1], ['#2563eb', '#dc2626']),
     }),
     [progress],
   )
 
   const toggle = (): void => {
-    progress.value = withTiming(open ? 0 : 1, { duration: 300 })
+    progress.set(withTiming(open ? 0 : 1, { duration: 300 }))
     setOpen(!open)
   }
 

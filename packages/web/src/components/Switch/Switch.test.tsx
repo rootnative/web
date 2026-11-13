@@ -19,6 +19,12 @@ const part = (name: string): HTMLElement =>
 const thumbOffset = (): number =>
   Math.round(part('thumb').getBoundingClientRect().left - root().getBoundingClientRect().left)
 
+// The colors and the thumb move with CSS transitions. A headless WebKit can hold the clock of a
+// transition, so a test jumps each one to its end value and doesn't wait for it.
+const settle = (): void => {
+  for (const animation of root().getAnimations({ subtree: true })) animation.finish()
+}
+
 const user = async (action: () => Promise<void>): Promise<void> => {
   await act(action)
 }
@@ -57,37 +63,35 @@ describe('Switch', () => {
     expect(thumbOffset()).toBe(0)
   })
 
-  test('on: the default colors, and the thumb at the end', async () => {
+  test('on: the default colors, and the thumb at the end', () => {
     render(<Switch value />)
     expect(input().checked).toBe(true)
-    await expect
-      .poll(() => getComputedStyle(part('track')).backgroundColor)
-      .toBe('rgb(163, 211, 207)')
+    settle()
+    expect(getComputedStyle(part('track')).backgroundColor).toBe('rgb(163, 211, 207)')
     expect(getComputedStyle(part('thumb')).backgroundColor).toBe('rgb(0, 150, 136)')
-    await expect.poll(thumbOffset).toBe(20)
+    expect(thumbOffset()).toBe(20)
   })
 
-  test('in a right-to-left layout, the thumb of an on switch is at the left', async () => {
+  test('in a right-to-left layout, the thumb of an on switch is at the left', () => {
     render(
       <div dir="rtl">
         <Switch value />
       </div>,
     )
-    await expect.poll(thumbOffset).toBe(0)
+    settle()
+    expect(thumbOffset()).toBe(0)
   })
 
-  test('trackColor and thumbColor set the colors', async () => {
+  test('trackColor and thumbColor set the colors', () => {
     const trackColor = { false: '#fecaca', true: '#bbf7d0' }
     const { rerender } = render(<Switch trackColor={trackColor} thumbColor="#111827" />)
-    await expect
-      .poll(() => getComputedStyle(part('track')).backgroundColor)
-      .toBe('rgb(254, 202, 202)')
-    await expect.poll(() => getComputedStyle(part('thumb')).backgroundColor).toBe('rgb(17, 24, 39)')
+    settle()
+    expect(getComputedStyle(part('track')).backgroundColor).toBe('rgb(254, 202, 202)')
+    expect(getComputedStyle(part('thumb')).backgroundColor).toBe('rgb(17, 24, 39)')
 
     rerender(<Switch value trackColor={trackColor} thumbColor="#111827" />)
-    await expect
-      .poll(() => getComputedStyle(part('track')).backgroundColor)
-      .toBe('rgb(187, 247, 208)')
+    settle()
+    expect(getComputedStyle(part('track')).backgroundColor).toBe('rgb(187, 247, 208)')
     expect(getComputedStyle(part('thumb')).backgroundColor).toBe('rgb(17, 24, 39)')
   })
 
@@ -111,10 +115,12 @@ describe('Switch', () => {
     render(<Controlled />)
     await user(() => userEvent.click(input()))
     expect(input().checked).toBe(true)
-    await expect.poll(thumbOffset).toBe(20)
+    settle()
+    expect(thumbOffset()).toBe(20)
     await user(() => userEvent.click(input()))
     expect(input().checked).toBe(false)
-    await expect.poll(thumbOffset).toBe(0)
+    settle()
+    expect(thumbOffset()).toBe(0)
   })
 
   test('the switch goes back when value does not change', async () => {
@@ -123,7 +129,8 @@ describe('Switch', () => {
     await user(() => userEvent.click(input()))
     expect(onValueChange).toHaveBeenCalledWith(true)
     expect(input().checked).toBe(false)
-    await expect.poll(thumbOffset).toBe(0)
+    settle()
+    expect(thumbOffset()).toBe(0)
   })
 
   test('Space toggles a focused switch', async () => {
