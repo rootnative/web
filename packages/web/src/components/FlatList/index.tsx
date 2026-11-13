@@ -14,6 +14,7 @@ import {
   type ReactNode,
 } from 'react'
 
+import type { ViewStyle } from '../../apis/StyleSheet/types'
 import type { StyleProp } from '../../style/types'
 import { RefreshControl } from '../RefreshControl'
 import { ScrollView } from '../ScrollView'
@@ -64,7 +65,7 @@ const horizontallyInvertedStyle = Object.freeze({ transform: [{ scaleX: -1 }] })
 const ON_EDGE_REACHED_EPSILON = 0.001
 const DEFAULT_EDGE_THRESHOLD_PX = 2
 
-type ItemStyle = StyleProp<Record<string, unknown>> | undefined
+type ItemStyle = StyleProp<ViewStyle> | undefined
 
 const defaultKeyExtractor = (item: unknown, index: number): string => {
   if (typeof item === 'object' && item !== null) {

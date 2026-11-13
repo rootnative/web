@@ -1,9 +1,10 @@
 import type { HTMLAttributeReferrerPolicy, Ref } from 'react'
 
+import type { ImageResizeMode, ImageStyle } from '../../apis/StyleSheet/types'
 import type { StyleProp } from '../../style/types'
 import type { AccessibilityProps, DOMEventHandlers, LayoutChangeEvent } from '../View/types'
 
-export type ImageResizeMode = 'cover' | 'contain' | 'stretch' | 'repeat' | 'center'
+export type { ImageResizeMode } from '../../apis/StyleSheet/types'
 
 export type ImageURISource = {
   uri?: string | undefined
@@ -58,7 +59,7 @@ export type ImageProps = AccessibilityProps &
     fadeDuration?: number | undefined
     progressiveRenderingEnabled?: boolean | undefined
     loadingIndicatorSource?: ImageURISource | number | undefined
-    style?: StyleProp<Record<string, unknown>> | undefined
+    style?: StyleProp<ImageStyle> | undefined
     ref?: Ref<HTMLElement> | undefined
     id?: string | undefined
     nativeID?: string | undefined

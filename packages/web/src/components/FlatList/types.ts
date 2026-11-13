@@ -1,5 +1,6 @@
 import type { ComponentType, FocusEvent, ReactElement, ReactNode, Ref } from 'react'
 
+import type { ViewStyle } from '../../apis/StyleSheet/types'
 import type { StyleProp } from '../../style/types'
 import type { ScrollViewInstance, ScrollViewProps } from '../ScrollView/types'
 import type { LayoutChangeEvent } from '../View/types'
@@ -54,7 +55,7 @@ export type CellRendererProps<ItemT> = {
   item: ItemT
   onFocusCapture?: ((event: FocusEvent<HTMLElement>) => void) | undefined
   onLayout?: ((event: LayoutChangeEvent) => void) | undefined
-  style: StyleProp<Record<string, unknown>> | undefined
+  style: StyleProp<ViewStyle> | undefined
 }
 
 // A component rendered with no props, or a ready element.
@@ -113,15 +114,15 @@ export type FlatListProps<ItemT> = Omit<ScrollViewProps, ReservedScrollViewProps
       ) => { length: number; offset: number; index: number })
     | undefined
   numColumns?: number | undefined
-  columnWrapperStyle?: StyleProp<Record<string, unknown>> | undefined
+  columnWrapperStyle?: StyleProp<ViewStyle> | undefined
   inverted?: boolean | null | undefined
   initialScrollIndex?: number | null | undefined
   ItemSeparatorComponent?: ListSeparatorComponent<ItemT>
   ListEmptyComponent?: ListComponent
   ListHeaderComponent?: ListComponent
-  ListHeaderComponentStyle?: StyleProp<Record<string, unknown>> | undefined
+  ListHeaderComponentStyle?: StyleProp<ViewStyle> | undefined
   ListFooterComponent?: ListComponent
-  ListFooterComponentStyle?: StyleProp<Record<string, unknown>> | undefined
+  ListFooterComponentStyle?: StyleProp<ViewStyle> | undefined
   CellRendererComponent?: ComponentType<CellRendererProps<ItemT>> | null | undefined
   renderScrollComponent?: ((props: ScrollViewProps) => ReactElement<ScrollViewProps>) | undefined
   onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined

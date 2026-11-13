@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     cursor: 'pointer',
   },
-  disabled: { opacity: 0.5, cursor: 'not-allowed' },
+  disabled: { opacity: 0.5 },
   slopArea: {
     width: 64,
     height: 64,

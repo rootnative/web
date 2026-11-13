@@ -1,5 +1,6 @@
 import type { ReactElement, Ref } from 'react'
 
+import type { ViewStyle } from '../../apis/StyleSheet/types'
 import type { NativeSyntheticEvent } from '../../events/types'
 import type { StyleProp } from '../../style/types'
 import type { ViewProps } from '../View/types'
@@ -45,7 +46,7 @@ type ReservedViewProps = 'ref' | 'onScroll' | 'onScrollEnd'
 
 export type ScrollViewProps = Omit<ViewProps, ReservedViewProps> & {
   ref?: Ref<ScrollViewInstance> | undefined
-  contentContainerStyle?: StyleProp<Record<string, unknown>> | undefined
+  contentContainerStyle?: StyleProp<ViewStyle> | undefined
   horizontal?: boolean | undefined
   scrollEnabled?: boolean | undefined
   showsHorizontalScrollIndicator?: boolean | undefined

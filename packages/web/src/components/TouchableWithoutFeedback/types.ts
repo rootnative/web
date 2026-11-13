@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import type { ViewStyle } from '../../apis/StyleSheet/types'
 import type { RectOrSize } from '../../events/press/types'
 import type { BlurEvent, FocusEvent, GestureResponderEvent } from '../../events/types'
 import type { StyleProp } from '../../style/types'
@@ -43,5 +44,5 @@ export type TouchableWithoutFeedbackProps = AccessibilityProps &
     testID?: string | undefined
     onLayout?: ((event: LayoutChangeEvent) => unknown) | undefined
     // React Native doesn't pass it to the child, and neither does the web.
-    style?: StyleProp<Record<string, unknown>> | undefined
+    style?: StyleProp<ViewStyle> | undefined
   }

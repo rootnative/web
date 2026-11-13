@@ -53,7 +53,25 @@ export type { ProcessedColorValue } from './apis/processColor'
 export { Share } from './apis/Share'
 export type { ShareAction, ShareContent, ShareOptions } from './apis/Share'
 export { StyleSheet } from './apis/StyleSheet'
-export type { AbsoluteFillStyle, StyleProp } from './apis/StyleSheet'
+export type {
+  AbsoluteFillStyle,
+  BoxShadowValue,
+  ColorValue,
+  CursorValue,
+  DimensionValue,
+  DropShadowValue,
+  EdgeInsetsValue,
+  FilterFunction,
+  FontVariant,
+  ImageStyle,
+  NativeColorValue,
+  OpaqueColorValue,
+  PointValue,
+  StyleProp,
+  TextStyle,
+  TransformsStyle,
+  ViewStyle,
+} from './apis/StyleSheet'
 export { useColorScheme } from './apis/useColorScheme'
 export { useWindowDimensions } from './apis/useWindowDimensions'
 export { Vibration } from './apis/Vibration'
@@ -163,13 +181,16 @@ export { TouchableWithoutFeedback } from './components/TouchableWithoutFeedback'
 export type { TouchableWithoutFeedbackProps } from './components/TouchableWithoutFeedback'
 export { View } from './components/View'
 export type {
+  AccessibilityActionEvent,
   AccessibilityProps,
   AccessibilityState,
   AccessibilityValue,
   DOMEventHandlers,
+  HostInstance,
   LayoutChangeEvent,
   LayoutRectangle,
   Role,
+  ViewInstance,
   ViewProps,
 } from './components/View'
 export { unstable_createElement } from './compat/createElement'
@@ -186,6 +207,8 @@ export type {
   MouseEvent,
   NativeSyntheticEvent,
   NativeTouchEvent,
+  PointerEvent,
+  TargetedEvent,
 } from './events/types'
 
 declare global {

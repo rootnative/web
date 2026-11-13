@@ -1,5 +1,6 @@
 import type { ReactNode, Ref } from 'react'
 
+import type { TextStyle } from '../../apis/StyleSheet/types'
 import type { RectOrSize } from '../../events/press/types'
 import type { GestureResponderEvent } from '../../events/types'
 import type { StyleProp } from '../../style/types'
@@ -11,7 +12,7 @@ export type PressEvent = GestureResponderEvent
 export type TextProps = AccessibilityProps &
   DOMEventHandlers<HTMLElement> & {
     children?: ReactNode
-    style?: StyleProp<Record<string, unknown>> | undefined
+    style?: StyleProp<TextStyle> | undefined
     ref?: Ref<HTMLElement> | undefined
     id?: string | undefined
     nativeID?: string | undefined

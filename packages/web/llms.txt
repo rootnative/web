@@ -150,6 +150,12 @@ only). Any other prop that isn't a React Native prop is dropped.
 - fontFamily 'System' is the browser's system font stack. Named font weights
   become numbers.
 - elevation, borderCurve, includeFontPadding, overlayColor: no web effect.
+- Types: the style props take React Native 0.88's ViewStyle, TextStyle, and
+  ImageStyle, and StyleSheet.create checks each key and value. touchAction is
+  the one web-only key. transform takes no Animated value, and resizeMode has
+  no 'none' yet. Any other CSS property passes through at runtime but needs a
+  cast: { transition: '...' } as ViewStyle, or as unknown as ViewStyle for a
+  value that React Native's type doesn't allow.
 
 ## Components
 

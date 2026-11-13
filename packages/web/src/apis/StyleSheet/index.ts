@@ -1,9 +1,25 @@
 import { flattenStyle } from '../../style/compile'
-import type { FlatStyle, StyleProp } from '../../style/types'
+import type { StyleProp } from '../../style/types'
+import type { NamedStyles } from './types'
 
 export type { StyleProp } from '../../style/types'
-
-type NamedStyles<T> = { [P in keyof T]: FlatStyle }
+export type {
+  BoxShadowValue,
+  ColorValue,
+  CursorValue,
+  DimensionValue,
+  DropShadowValue,
+  EdgeInsetsValue,
+  FilterFunction,
+  FontVariant,
+  ImageStyle,
+  NativeColorValue,
+  OpaqueColorValue,
+  PointValue,
+  TextStyle,
+  TransformsStyle,
+  ViewStyle,
+} from './types'
 
 const absoluteFillObject = {
   position: 'absolute',
@@ -15,14 +31,16 @@ const absoluteFillObject = {
 
 export type AbsoluteFillStyle = typeof absoluteFillObject
 
-const create = <T extends NamedStyles<T>>(styles: T): T => {
+// The intersection checks each style key against its type, and `S` keeps the literal values,
+// so `{ flexDirection: 'row' }` stays `'row'` and fits a `ViewStyle`.
+const create = <S extends NamedStyles>(styles: S & NamedStyles): Readonly<S> => {
   for (const key in styles) Object.freeze(styles[key])
   return Object.freeze(styles)
 }
 
-const flatten = <T extends FlatStyle>(style: StyleProp<T>): T | undefined => flattenStyle(style)
+const flatten = <T extends object>(style: StyleProp<T>): T | undefined => flattenStyle(style)
 
-const compose = <T extends FlatStyle>(style1: StyleProp<T>, style2: StyleProp<T>): StyleProp<T> => {
+const compose = <T>(style1: StyleProp<T>, style2: StyleProp<T>): StyleProp<T> => {
   if (style1 && style2) return [style1, style2]
   return style1 || style2
 }

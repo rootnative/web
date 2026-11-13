@@ -1,4 +1,8 @@
-import type { BaseSyntheticEvent, FocusEvent as ReactFocusEvent } from 'react'
+import type {
+  BaseSyntheticEvent,
+  FocusEvent as ReactFocusEvent,
+  PointerEvent as ReactPointerEvent,
+} from 'react'
 
 // On the web, `nativeEvent` is the DOM event. It keeps its DOM fields, for example
 // `pointerType`, `button`, and `shiftKey`, next to the React Native fields.
@@ -32,5 +36,11 @@ export type MouseEvent = NativeSyntheticEvent<
 export type FocusEvent = ReactFocusEvent<HTMLElement>
 
 export type BlurEvent = ReactFocusEvent<HTMLElement>
+
+// On native, `target` is a view tag. Here it's the target of the DOM event, so a focus event of
+// any component fits `NativeSyntheticEvent<TargetedEvent>`.
+export type TargetedEvent = Readonly<{ target: EventTarget | null }>
+
+export type PointerEvent = ReactPointerEvent<HTMLElement>
 
 export type EventSubscription = { remove: () => void }

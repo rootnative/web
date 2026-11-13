@@ -2,11 +2,11 @@ import { getStyleRegistry, type StyleRegistry } from './registry'
 import { resolveStyle } from './resolveStyle'
 import type { FlatStyle, StyleProp } from './types'
 
-export const flattenStyle = <T extends FlatStyle>(style: StyleProp<T>): T | undefined => {
+export const flattenStyle = <T extends object>(style: StyleProp<T>): T | undefined => {
   if (style === null || style === undefined || style === false || style === '') return undefined
   if (!Array.isArray(style)) return style as T
 
-  let result: Record<string, unknown> | undefined
+  let result: object | undefined
   for (const entry of style as ReadonlyArray<StyleProp<T>>) {
     const flat = flattenStyle(entry)
     if (flat === undefined) continue
@@ -18,10 +18,10 @@ export const flattenStyle = <T extends FlatStyle>(style: StyleProp<T>): T | unde
 const cache = new WeakMap<StyleRegistry, WeakMap<FlatStyle, string>>()
 
 export const compileStyle = (
-  style: StyleProp<FlatStyle>,
+  style: StyleProp<object>,
   registry: StyleRegistry = getStyleRegistry(),
 ): string => {
-  const flat = flattenStyle(style)
+  const flat = flattenStyle(style) as FlatStyle | undefined
   if (flat === undefined) return ''
 
   // Static objects from StyleSheet.create are frozen, so they can be cached by identity.

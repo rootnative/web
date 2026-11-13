@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   hovered: { borderColor: '#2563eb' },
   pressed: { backgroundColor: '#dbeafe' },
-  disabled: { opacity: 0.5, cursor: 'not-allowed' },
+  disabled: { opacity: 0.5 },
   label: { fontSize: 15 },
   log: {
     width: 380,

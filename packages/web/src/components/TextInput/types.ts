@@ -1,5 +1,6 @@
 import type { Ref } from 'react'
 
+import type { TextStyle } from '../../apis/StyleSheet/types'
 import type { NativeSyntheticEvent } from '../../events/types'
 import type { StyleProp } from '../../style/types'
 import type { NativeScrollEvent } from '../ScrollView/types'
@@ -74,7 +75,7 @@ type ReservedDOMHandlers =
 export type TextInputProps = AccessibilityProps &
   Omit<DOMEventHandlers<HTMLElement>, ReservedDOMHandlers> & {
     ref?: Ref<TextInputInstance> | undefined
-    style?: StyleProp<Record<string, unknown>> | undefined
+    style?: StyleProp<TextStyle> | undefined
     id?: string | undefined
     nativeID?: string | undefined
     testID?: string | undefined

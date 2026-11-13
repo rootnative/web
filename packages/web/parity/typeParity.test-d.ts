@@ -23,6 +23,19 @@ type PropDiff<NativeProps, OurProps, Gaps extends keyof NativeProps> = Diff<
   keyof OurProps,
   Gaps
 >
+// The keys whose value in `From` doesn't fit the value in `To`.
+type Misfits<From, To> = {
+  [K in keyof From & keyof To]-?: [From[K]] extends [To[K]] ? never : K
+}[keyof From & keyof To]
+// The misfits that aren't in the list, and the names in the list that fit now.
+type FitDiff<From, To, Gaps extends keyof From> =
+  Exclude<Misfits<From, To>, Gaps> | Exclude<Gaps, Misfits<From, To>>
+// The name, when a value of one type doesn't fit the other.
+type Mismatch<Name extends string, NativeType, OurType> = [NativeType] extends [OurType]
+  ? [OurType] extends [NativeType]
+    ? never
+    : Name
+  : Name
 
 type ExportGaps =
   // Not built yet.
@@ -192,6 +205,48 @@ type TextInputGaps =
   | 'rows'
   | 'selectionHandleColor'
   | 'tabIndex'
+
+// A style for native must type-check here, and a style written here must type-check on native.
+// `transform` takes no `Animated` node here. `resizeMode` has no `'none'` yet.
+type StyleGaps = 'transform'
+// The keys that React Native doesn't have. Each one needs a row in the Styles docs.
+type WebOnlyStyleKeys = 'touchAction'
+type ImageStyleGaps = StyleGaps | 'resizeMode'
+
+type StyleValueMismatches =
+  | Mismatch<'BoxShadowValue', Native.BoxShadowValue, Web.BoxShadowValue>
+  | Mismatch<'ColorValue', Native.ColorValue, Web.ColorValue>
+  | Mismatch<'CursorValue', Native.CursorValue, Web.CursorValue>
+  | Mismatch<'DimensionValue', Native.DimensionValue, Web.DimensionValue>
+  | Mismatch<'DropShadowValue', Native.DropShadowValue, Web.DropShadowValue>
+  | Mismatch<'EdgeInsetsValue', Native.EdgeInsetsValue, Web.EdgeInsetsValue>
+  | Mismatch<'FilterFunction', Native.FilterFunction, Web.FilterFunction>
+  | Mismatch<'FontVariant', Native.FontVariant, Web.FontVariant>
+  | Mismatch<'NativeColorValue', Native.NativeColorValue, Web.NativeColorValue>
+  | Mismatch<'OpaqueColorValue', Native.OpaqueColorValue, Web.OpaqueColorValue>
+  | Mismatch<'PointValue', Native.PointValue, Web.PointValue>
+  // One way: React Native's has `void` where this one has `undefined`, which keeps inference
+  // from an optional style prop working.
+  | ([Web.StyleProp<Web.ViewStyle>] extends [Native.StyleProp<Native.ViewStyle>]
+      ? never
+      : 'StyleProp')
+
+export type StyleParity = [
+  None<PropDiff<Native.ViewStyle, Web.ViewStyle, never>>,
+  None<PropDiff<Web.ViewStyle, Native.ViewStyle, WebOnlyStyleKeys>>,
+  None<FitDiff<Native.ViewStyle, Web.ViewStyle, StyleGaps>>,
+  None<FitDiff<Web.ViewStyle, Native.ViewStyle, never>>,
+  None<PropDiff<Native.TextStyle, Web.TextStyle, never>>,
+  None<PropDiff<Web.TextStyle, Native.TextStyle, WebOnlyStyleKeys>>,
+  None<FitDiff<Native.TextStyle, Web.TextStyle, StyleGaps>>,
+  None<FitDiff<Web.TextStyle, Native.TextStyle, never>>,
+  None<PropDiff<Native.ImageStyle, Web.ImageStyle, never>>,
+  None<PropDiff<Web.ImageStyle, Native.ImageStyle, WebOnlyStyleKeys>>,
+  None<FitDiff<Native.ImageStyle, Web.ImageStyle, ImageStyleGaps>>,
+  None<FitDiff<Web.ImageStyle, Native.ImageStyle, never>>,
+  None<FitDiff<Web.TransformsStyle, Native.TransformsStyle, never>>,
+  None<StyleValueMismatches>,
+]
 
 export type TypeParity = [
   None<Diff<keyof typeof Native, keyof typeof Web, ExportGaps>>,

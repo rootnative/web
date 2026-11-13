@@ -18,6 +18,7 @@ import { StyleSheet } from '../../apis/StyleSheet'
 import type { StyleRegistry } from '../../style/registry'
 import { splitLayoutProps } from '../../style/splitLayoutProps'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
+import { webStyle } from '../../style/webStyle'
 import { hasDOM } from '../../utils/env'
 import { useViewElement, View } from '../View'
 import type { LayoutChangeEvent } from '../View/types'
@@ -41,7 +42,7 @@ export type {
   ScrollViewProps,
 } from './types'
 
-const scrollerStyle = Object.freeze({
+const scrollerStyle = webStyle({
   flexGrow: 1,
   flexShrink: 1,
   overflowX: 'hidden',
@@ -49,13 +50,13 @@ const scrollerStyle = Object.freeze({
   WebkitOverflowScrolling: 'touch',
 })
 
-const horizontalScrollerStyle = Object.freeze({
+const horizontalScrollerStyle = webStyle({
   flexDirection: 'row',
   overflowX: 'auto',
   overflowY: 'hidden',
 })
 
-const disabledScrollerStyle = Object.freeze({ overflowX: 'hidden', overflowY: 'hidden' })
+const disabledScrollerStyle = webStyle({ overflowX: 'hidden', overflowY: 'hidden' })
 
 // The base of the box that wraps the scroller, as React Native's on Android.
 const refreshAreaStyle = Object.freeze({ flexGrow: 1, flexShrink: 1 })
@@ -64,9 +65,9 @@ const horizontalContentStyle = Object.freeze({ flexDirection: 'row' })
 
 const centerContentStyle = Object.freeze({ flexGrow: 1, justifyContent: 'center' })
 
-const stickyStyle = Object.freeze({ position: 'sticky', top: 0, zIndex: 10 })
+const stickyStyle = webStyle({ position: 'sticky', top: 0, zIndex: 10 })
 
-const invertedStickyStyle = Object.freeze({ position: 'sticky', bottom: 0, zIndex: 10 })
+const invertedStickyStyle = webStyle({ position: 'sticky', bottom: 0, zIndex: 10 })
 
 const hiddenScrollbarClass = (registry: StyleRegistry): string =>
   registry.staticClass('rn-scrollbar-none', [

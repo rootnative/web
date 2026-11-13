@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import type { ViewStyle } from '../../apis/StyleSheet/types'
 import type { StyleProp } from '../../style/types'
 import type { TouchablePressProps, TouchableTVProps } from '../TouchableWithoutFeedback/types'
 import type { ViewProps } from '../View/types'
@@ -9,7 +10,7 @@ export type TouchableHighlightProps = Omit<ViewProps, 'children' | 'style' | 'on
   TouchableTVProps & {
     // One element. While pressed, it gets `activeOpacity`.
     children?: ReactNode | undefined
-    style?: StyleProp<Record<string, unknown>> | undefined
+    style?: StyleProp<ViewStyle> | undefined
     // The opacity of the child while pressed. The default is 0.85.
     activeOpacity?: number | undefined
     // The background while pressed. The default is black.

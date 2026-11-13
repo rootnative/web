@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import type { ViewStyle } from '../../apis/StyleSheet/types'
 import type { RectOrSize } from '../../events/press/types'
 import type { BlurEvent, FocusEvent, GestureResponderEvent, MouseEvent } from '../../events/types'
 import type { StyleProp } from '../../style/types'
@@ -24,11 +25,10 @@ export type PressableAndroidRippleConfig = {
 
 export type PressableInstance = HTMLElement
 
-type ViewStyle = StyleProp<Record<string, unknown>>
-
 export type PressableProps = Omit<ViewProps, 'children' | 'style' | 'onBlur' | 'onFocus'> & {
   children?: ReactNode | ((state: PressableStateCallbackType) => ReactNode) | undefined
-  style?: ViewStyle | ((state: PressableStateCallbackType) => ViewStyle) | undefined
+  style?:
+    StyleProp<ViewStyle> | ((state: PressableStateCallbackType) => StyleProp<ViewStyle>) | undefined
   // `false` sets `touch-action: none`, so a scroll that starts on the element cannot cancel
   // the press.
   cancelable?: boolean | undefined

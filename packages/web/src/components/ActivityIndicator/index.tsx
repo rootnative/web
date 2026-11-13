@@ -3,6 +3,7 @@ import type { ReactElement } from 'react'
 import { StyleSheet } from '../../apis/StyleSheet'
 import { toCSSColor } from '../../style/color'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
+import { webStyle } from '../../style/webStyle'
 import { View } from '../View'
 import type { ActivityIndicatorProps } from './types'
 
@@ -15,6 +16,8 @@ const SPIN_RULES = [
   '@keyframes rn-activity-indicator-spin{to{transform:rotate(360deg)}}',
   `.${SPIN_CLASS}{animation:rn-activity-indicator-spin .75s linear infinite}`,
 ]
+
+const hiddenStyle = webStyle({ visibility: 'hidden' })
 
 const pausedStyle = { animationPlayState: 'paused' }
 
@@ -49,7 +52,7 @@ export function ActivityIndicator(props: ActivityIndicatorProps): ReactElement {
         role="progressbar"
         {...rest}
         ref={ref}
-        style={[sizeStyle, !animating && hidesWhenStopped && styles.hidden]}
+        style={[sizeStyle, !animating && hidesWhenStopped && hiddenStyle]}
       >
         <svg
           aria-hidden
@@ -88,5 +91,4 @@ const styles = StyleSheet.create({
   container: { alignItems: 'center', justifyContent: 'center' },
   sizeSmall: { width: 20, height: 20 },
   sizeLarge: { width: 36, height: 36 },
-  hidden: { visibility: 'hidden' },
 })

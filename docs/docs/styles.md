@@ -83,3 +83,26 @@ The start and end props map to CSS logical properties, so the browser flips them
 ## Native-only style props
 
 `elevation`, `borderCurve`, `includeFontPadding`, and `overlayColor` have no web effect. The package accepts them and ignores them.
+
+## Types
+
+The style props take the types of React Native 0.88: `ViewStyle`, `TextStyle`, and `ImageStyle`. A style that type-checks on native type-checks here, and `StyleSheet.create` checks each key and value, as on native.
+
+The types differ from native for three keys:
+
+| Key           | On the web                                                                                           |
+| ------------- | ---------------------------------------------------------------------------------------------------- |
+| `touchAction` | Web only. Set it on an element that you drag on a touch screen. See [`PanResponder`](/panresponder). |
+| `transform`   | Takes no `Animated` value. The package has no `Animated` yet.                                        |
+| `resizeMode`  | Has no `'none'` yet.                                                                                 |
+
+The package passes any other CSS property through to CSS, but the types don't have it. Cast the style:
+
+```tsx
+import type { ViewStyle } from 'react-native'
+
+const fade = { transition: 'opacity 200ms' } as ViewStyle
+
+// React Native's cursor is 'auto' or 'pointer', so another value needs `unknown` first.
+const grab = { cursor: 'grab' } as unknown as ViewStyle
+```

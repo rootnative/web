@@ -9,13 +9,16 @@ import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import type { ViewProps } from './types'
 
 export type {
+  AccessibilityActionEvent,
   AccessibilityProps,
   AccessibilityState,
   AccessibilityValue,
   DOMEventHandlers,
+  HostInstance,
   LayoutChangeEvent,
   LayoutRectangle,
   Role,
+  ViewInstance,
   ViewProps,
 } from './types'
 

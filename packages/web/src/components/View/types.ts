@@ -1,6 +1,16 @@
 import type { DOMAttributes, ReactNode, Ref } from 'react'
 
+import type { ViewStyle } from '../../apis/StyleSheet/types'
+import type { NativeSyntheticEvent } from '../../events/types'
 import type { StyleProp } from '../../style/types'
+
+// React Native 0.88's host instance is a DOM-like element. Here it's the DOM element.
+export type HostInstance = HTMLElement
+
+export type ViewInstance = HostInstance
+
+// The event of `onAccessibilityAction` on native. The web has no accessibility actions yet.
+export type AccessibilityActionEvent = NativeSyntheticEvent<Readonly<{ actionName: string }>>
 
 export type LayoutRectangle = { x: number; y: number; width: number; height: number }
 
@@ -126,8 +136,8 @@ export type AccessibilityProps = {
 export type ViewProps = AccessibilityProps &
   DOMEventHandlers<HTMLElement> & {
     children?: ReactNode
-    style?: StyleProp<Record<string, unknown>> | undefined
-    ref?: Ref<HTMLElement> | undefined
+    style?: StyleProp<ViewStyle> | undefined
+    ref?: Ref<ViewInstance> | undefined
     id?: string | undefined
     nativeID?: string | undefined
     testID?: string | undefined

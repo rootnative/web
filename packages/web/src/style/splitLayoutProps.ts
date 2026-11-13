@@ -1,5 +1,3 @@
-import type { FlatStyle } from './types'
-
 // React Native's list: the props that place a box among its siblings.
 const OUTER = new Set([
   'margin',
@@ -37,7 +35,7 @@ const OUTER = new Set([
  * `inner` is the rest. A wrapper takes `outer` and the wrapped box takes `inner`.
  */
 export const splitLayoutProps = (
-  style: FlatStyle | null | undefined,
+  style: object | null | undefined,
 ): { outer: Record<string, unknown>; inner: Record<string, unknown> } => {
   const outer: Record<string, unknown> = {}
   const inner: Record<string, unknown> = {}

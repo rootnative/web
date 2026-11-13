@@ -7,6 +7,7 @@ import {
   type ReactElement,
 } from 'react'
 
+import type { ViewStyle } from '../../apis/StyleSheet/types'
 import { usePressability } from '../../events/press'
 import { mergeHandlers } from '../../events/press/mergeHandlers'
 import type { PressabilityConfig } from '../../events/press/types'
@@ -28,8 +29,8 @@ const notCancelableStyle = Object.freeze({ touchAction: 'none' })
 const isTrue = (value: unknown): boolean | undefined =>
   value === undefined ? undefined : value === true || value === 'true'
 
-const restingOpacity = (style: StyleProp<Record<string, unknown>> | undefined): number => {
-  const opacity = flattenStyle(style)?.['opacity']
+const restingOpacity = (style: StyleProp<ViewStyle> | undefined): number => {
+  const opacity = flattenStyle(style)?.opacity
   return typeof opacity === 'number' ? opacity : 1
 }
 
