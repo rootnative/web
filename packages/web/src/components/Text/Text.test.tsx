@@ -7,6 +7,7 @@ import { cleanup, render } from '../../test/render'
 import { Pressable } from '../Pressable'
 import { View } from '../View'
 import { Text } from './index'
+import type { HostInstance } from '../View/types'
 
 afterEach(() => {
   cleanup()
@@ -362,7 +363,7 @@ describe('Text', () => {
   })
 
   test('ref is the DOM element', () => {
-    const ref = createRef<HTMLElement>()
+    const ref = createRef<HostInstance>()
     const { container } = render(<Text ref={ref}>Hello</Text>)
     expect(ref.current).toBe(first(container))
   })

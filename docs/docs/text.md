@@ -55,4 +55,4 @@ As on native, a pressable `Text` with no `role` has the role `link`. It's in the
 
 ## Ref
 
-The ref is the DOM element.
+The ref is the DOM element. It has the measure methods of [`View`](/view#ref). The type is `TextInstance`.

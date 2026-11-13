@@ -24,9 +24,11 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 - The Vite plugin defines `global` as `globalThis`, as Metro does. Reanimated and Worklets read it.
 - **Style types** of React Native 0.88: `ViewStyle`, `TextStyle`, `ImageStyle`, `ColorValue`, `DimensionValue`, `BoxShadowValue`, `CursorValue`, `DropShadowValue`, `EdgeInsetsValue`, `FilterFunction`, `FontVariant`, `NativeColorValue`, `OpaqueColorValue`, `PointValue`, and `TransformsStyle`.
 - **Event and instance types**: `TargetedEvent`, `PointerEvent`, `AccessibilityActionEvent`, `HostInstance`, and `ViewInstance`. A focus handler typed with `NativeSyntheticEvent<TargetedEvent>` fits the `onFocus` of each component.
+- **Host methods** on the ref of `View`, `Text`, `Image`, `TextInput`, `ScrollView`, `Pressable`, and the touchables: `measure`, `measureInWindow`, `measureLayout`, and `setNativeProps({ style })`. Each one calls its callback at once, with the box from `getBoundingClientRect()`. The new types are `HostMethods`, `TextInstance`, `ImageInstance`, `MeasureOnSuccessCallback`, `MeasureInWindowOnSuccessCallback`, and `MeasureLayoutOnSuccessCallback`.
 
 ### Changed
 
+- **Breaking:** the `ref` of a host component has the type `HostInstance`, which is the element plus the measure methods. A ref typed as `useRef<HTMLElement>(null)` is now a type error. Use `useRef<ViewInstance>(null)`, as on native.
 - **Breaking:** the `style` props take React Native's style types, not any object, and `StyleSheet.create` checks each key and value, as on native. A CSS property that React Native doesn't have is now a type error, except `touchAction`. It still works at runtime. See [Styles](https://rootnative.github.io/web/styles#types).
 - A `ScrollView` with `refreshControl` gives the control the style props that place the box, and the scroller fills it, as on Android. Before, the scroller kept the whole style.
 

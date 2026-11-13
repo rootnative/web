@@ -4,6 +4,7 @@ import { userEvent } from 'vitest/browser'
 
 import { cleanup, render } from '../../test/render'
 import { Button } from './index'
+import type { HostInstance } from '../View/types'
 
 afterEach(cleanup)
 
@@ -21,7 +22,7 @@ const user = async (action: () => Promise<void>): Promise<void> => {
 
 describe('Button', () => {
   test('renders a button with the title, and ref is the element', () => {
-    const ref = createRef<HTMLElement>()
+    const ref = createRef<HostInstance>()
     render(<Button ref={ref} title="Save" onPress={() => {}} />)
     expect(button().type).toBe('button')
     expect(button().textContent).toBe('Save')

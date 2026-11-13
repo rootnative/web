@@ -248,6 +248,34 @@ export type StyleParity = [
   None<StyleValueMismatches>,
 ]
 
+// Code that measures a native host instance must type-check with the instance here.
+// `measureLayout` is one way by design: it takes a DOM element here, a native element there.
+type HostMethodMismatches =
+  | Mismatch<
+      'MeasureOnSuccessCallback',
+      Native.MeasureOnSuccessCallback,
+      Web.MeasureOnSuccessCallback
+    >
+  | Mismatch<
+      'MeasureInWindowOnSuccessCallback',
+      Native.MeasureInWindowOnSuccessCallback,
+      Web.MeasureInWindowOnSuccessCallback
+    >
+  | Mismatch<
+      'MeasureLayoutOnSuccessCallback',
+      Native.MeasureLayoutOnSuccessCallback,
+      Web.MeasureLayoutOnSuccessCallback
+    >
+  | {
+      [Name in 'measure' | 'measureInWindow' | 'setNativeProps']: [Web.HostInstance[Name]] extends [
+        Native.HostInstance[Name],
+      ]
+        ? never
+        : Name
+    }['measure' | 'measureInWindow' | 'setNativeProps']
+
+export type HostInstanceParity = [None<HostMethodMismatches>]
+
 export type TypeParity = [
   None<Diff<keyof typeof Native, keyof typeof Web, ExportGaps>>,
   None<PropDiff<Native.ViewProps, Web.ViewProps, ViewGaps>>,

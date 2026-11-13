@@ -80,4 +80,4 @@ As on native, only a `Pressable` whose `style` or `children` is a function rende
 
 ## Ref
 
-The ref is the DOM element.
+The ref is the DOM element. It has the measure methods of [`View`](/view#ref). The type is `PressableInstance`.

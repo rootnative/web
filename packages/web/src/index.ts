@@ -101,6 +101,7 @@ export type {
 export { Image } from './components/Image'
 export type {
   ImageErrorEvent,
+  ImageInstance,
   ImageLoadEvent,
   ImageLoadEventData,
   ImageProgressEvent,
@@ -149,7 +150,7 @@ export type {
 export { Switch } from './components/Switch'
 export type { SwitchChangeEvent, SwitchChangeEventData, SwitchProps } from './components/Switch'
 export { Text, TextAncestorContext } from './components/Text'
-export type { PressEvent, TextProps } from './components/Text'
+export type { PressEvent, TextInstance, TextProps } from './components/Text'
 export { TextInput } from './components/TextInput'
 export type {
   EnterKeyHint,
@@ -187,8 +188,12 @@ export type {
   AccessibilityValue,
   DOMEventHandlers,
   HostInstance,
+  HostMethods,
   LayoutChangeEvent,
   LayoutRectangle,
+  MeasureInWindowOnSuccessCallback,
+  MeasureLayoutOnSuccessCallback,
+  MeasureOnSuccessCallback,
   Role,
   ViewInstance,
   ViewProps,

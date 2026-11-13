@@ -5,6 +5,7 @@ import { StyleSheet } from '../../apis/StyleSheet'
 import { ScrollView, type ScrollViewInstance } from '../ScrollView'
 import { cleanup, render } from '../../test/render'
 import { View } from './index'
+import type { HostInstance } from './types'
 
 afterEach(cleanup)
 
@@ -91,7 +92,7 @@ describe('View', () => {
 
   describe('ref', () => {
     test('is the DOM element', () => {
-      const ref = createRef<HTMLElement>()
+      const ref = createRef<HostInstance>()
       const { container } = render(<View ref={ref} />)
       expect(ref.current).toBe(first(container))
     })

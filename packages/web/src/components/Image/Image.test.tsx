@@ -3,6 +3,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { cleanup, render } from '../../test/render'
 import { Image } from './index'
+import type { HostInstance } from '../View/types'
 
 afterEach(() => {
   cleanup()
@@ -369,7 +370,7 @@ describe('Image', () => {
     })
 
     test('ref and testID are on the box', () => {
-      const ref = createRef<HTMLElement>()
+      const ref = createRef<HostInstance>()
       const { container } = render(<Image source={{ uri: png(1, 1) }} ref={ref} testID="hero" />)
       expect(ref.current).toBe(box(container))
       expect(box(container).getAttribute('data-testid')).toBe('hero')

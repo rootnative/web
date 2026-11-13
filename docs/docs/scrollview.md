@@ -60,7 +60,7 @@ These native-only props are accepted and ignored: `bounces`, `alwaysBounceHorizo
 
 ## Ref
 
-The ref is the scroll element with the React Native methods added:
+The ref is the scroll element with the React Native methods added, and the measure methods of [`View`](/view#ref):
 
 | Method                                                                | On the web                                                                                                          |
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |

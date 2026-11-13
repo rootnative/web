@@ -91,8 +91,13 @@ NOT IMPLEMENTED, do not import:
 
 Out of scope: Expo, Metro, React 18, CommonJS, Flow.
 
-A component ref is the DOM element. View has no measure, measureInWindow,
-measureLayout, or setNativeProps: use onLayout or getBoundingClientRect().
+A component ref is the DOM element, typed HostInstance (ViewInstance,
+TextInstance, ImageInstance, PressableInstance). It has measure(callback),
+measureInWindow(callback), measureLayout(ancestor, onSuccess, onFail), and
+setNativeProps({ style }). Each one calls its callback at once, with CSS
+pixels from getBoundingClientRect(). The window is the visible area.
+setNativeProps writes an inline style, and any other prop has no effect.
+Type a ref as useRef<ViewInstance>(null), not useRef<HTMLElement>(null).
 ScrollView, FlatList, and TextInput add the methods listed below.
 
 ## Semantic HTML
@@ -345,7 +350,7 @@ TextInput
   values map (name-given to given-name, sms-otp to one-time-code).
 - A value with no change handler stays fixed, with no React warning.
 - Ref: the element plus clear(), isFocused(), getNativeRef(),
-  setNativeProps({ text }). TextInput.State has currentlyFocusedInput(),
+  setNativeProps({ text, style }). TextInput.State has currentlyFocusedInput(),
   focusTextInput(element), blurTextInput(element).
 
 Switch

@@ -7,6 +7,7 @@ import { ScrollView } from '../ScrollView'
 import { View } from '../View'
 import { RefreshControl } from './index'
 import type { RefreshControlProps } from './types'
+import type { HostInstance } from '../View/types'
 
 afterEach(() => {
   cleanup()
@@ -81,7 +82,7 @@ describe('RefreshControl', () => {
   })
 
   test('the View props and the ref go to the wrapper', () => {
-    const ref = createRef<HTMLElement>()
+    const ref = createRef<HostInstance>()
     const { container } = render(<RefreshControl ref={ref} refreshing={false} testID="area" />)
     expect(ref.current).toBe(container.firstElementChild)
     expect(ref.current?.getAttribute('data-testid')).toBe('area')

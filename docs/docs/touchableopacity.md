@@ -53,4 +53,4 @@ The fade uses the Web Animations API, so a press doesn't render the component ag
 
 ## Ref
 
-The ref is the DOM element.
+The ref is the DOM element. It has the measure methods of [`View`](/view#ref).

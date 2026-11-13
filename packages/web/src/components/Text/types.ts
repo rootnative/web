@@ -4,7 +4,14 @@ import type { TextStyle } from '../../apis/StyleSheet/types'
 import type { RectOrSize } from '../../events/press/types'
 import type { GestureResponderEvent } from '../../events/types'
 import type { StyleProp } from '../../style/types'
-import type { AccessibilityProps, DOMEventHandlers, LayoutChangeEvent } from '../View/types'
+import type {
+  AccessibilityProps,
+  DOMEventHandlers,
+  HostInstance,
+  LayoutChangeEvent,
+} from '../View/types'
+
+export type TextInstance = HostInstance
 
 /** @deprecated Use `GestureResponderEvent`, the type that React Native gives `onPress`. */
 export type PressEvent = GestureResponderEvent
@@ -13,7 +20,7 @@ export type TextProps = AccessibilityProps &
   DOMEventHandlers<HTMLElement> & {
     children?: ReactNode
     style?: StyleProp<TextStyle> | undefined
-    ref?: Ref<HTMLElement> | undefined
+    ref?: Ref<TextInstance> | undefined
     id?: string | undefined
     nativeID?: string | undefined
     testID?: string | undefined

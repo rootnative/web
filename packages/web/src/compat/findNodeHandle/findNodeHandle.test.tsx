@@ -5,6 +5,7 @@ import { ScrollView, type ScrollViewInstance } from '../../components/ScrollView
 import { View } from '../../components/View'
 import { cleanup, render } from '../../test/render'
 import { findNodeHandle } from './index'
+import type { HostInstance } from '../../components/View/types'
 
 afterEach(cleanup)
 
@@ -17,7 +18,7 @@ describe('findNodeHandle', () => {
   })
 
   test('returns the element of a ref and of an element', () => {
-    const ref = createRef<HTMLElement>()
+    const ref = createRef<HostInstance>()
     const { container } = render(<View ref={ref} />)
     const element = container.firstElementChild
     expect(findNodeHandle(ref)).toBe(element)

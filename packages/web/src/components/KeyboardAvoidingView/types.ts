@@ -1,4 +1,4 @@
-import type { ViewProps } from '../View/types'
+import type { HostInstance, ViewProps } from '../View/types'
 
 export type KeyboardAvoidingViewProps = ViewProps & {
   /** How the view moves out of the way of the keyboard. With no value, it doesn't. */
@@ -12,4 +12,4 @@ export type KeyboardAvoidingViewProps = ViewProps & {
 }
 
 /** The element of the outer view. */
-export type KeyboardAvoidingViewInstance = HTMLElement
+export type KeyboardAvoidingViewInstance = HostInstance

@@ -6,6 +6,7 @@ import { nextFrame, stubKeyboard, type KeyboardStub } from '../../test/keyboard'
 import { cleanup, render } from '../../test/render'
 import { View } from '../View'
 import { KeyboardAvoidingView, type KeyboardAvoidingViewProps } from './index'
+import type { HostInstance } from '../View/types'
 
 const root = document.documentElement
 let stub: KeyboardStub
@@ -22,7 +23,7 @@ afterEach(() => {
 
 // A full-height view at the top of a positioned box, so its onLayout `y` is 0.
 const renderView = (props: KeyboardAvoidingViewProps = {}) => {
-  const ref = createRef<HTMLElement>()
+  const ref = createRef<HostInstance>()
   const rendered = render(
     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: root.clientHeight }}>
       <KeyboardAvoidingView ref={ref} style={{ flex: 1 }} {...props}>

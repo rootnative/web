@@ -16,6 +16,7 @@ import { flattenStyle } from '../../style/compile'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import type { StyleProp } from '../../style/types'
 import { useViewElement } from '../View'
+import type { HostInstance } from '../View/types'
 import type { TouchableOpacityProps } from './types'
 
 export type { TouchableOpacityProps } from './types'
@@ -64,7 +65,7 @@ export function TouchableOpacity(props: TouchableOpacityProps): ReactElement {
     ...rest
   } = props
 
-  const element = useRef<HTMLElement | null>(null)
+  const element = useRef<HostInstance | null>(null)
   const animation = useRef<Animation | null>(null)
   const resting = restingOpacity(style)
   const resolvedDisabled =
@@ -171,6 +172,6 @@ export function TouchableOpacity(props: TouchableOpacityProps): ReactElement {
     hitSlopClass(registry, hitSlop),
   )
   // After useViewElement, which fills `element` in its own imperative handle.
-  useImperativeHandle(ref, () => element.current as HTMLElement, [])
+  useImperativeHandle(ref, () => element.current as HostInstance, [])
   return view
 }

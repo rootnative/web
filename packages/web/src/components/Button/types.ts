@@ -2,7 +2,7 @@ import type { Ref } from 'react'
 
 import type { GestureResponderEvent } from '../../events/types'
 import type { TouchableTVProps } from '../TouchableWithoutFeedback/types'
-import type { AccessibilityState } from '../View/types'
+import type { AccessibilityState, HostInstance } from '../View/types'
 
 export type ButtonProps = TouchableTVProps & {
   // The text of the button. React Native needs a string, and so does the web.
@@ -12,7 +12,7 @@ export type ButtonProps = TouchableTVProps & {
   color?: string | undefined
   disabled?: boolean | undefined
   testID?: string | undefined
-  ref?: Ref<HTMLElement> | undefined
+  ref?: Ref<HostInstance> | undefined
   accessible?: boolean | undefined
   accessibilityLabel?: string | undefined
   accessibilityHint?: string | undefined

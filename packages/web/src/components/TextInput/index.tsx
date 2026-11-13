@@ -15,6 +15,7 @@ import {
 } from 'react'
 
 import { toDOMProps } from '../../render/domProps'
+import { applyNativeProps, withHostMethods } from '../../render/hostMethods'
 import { useElementLayout } from '../../render/useElementLayout'
 import { toCSSColor } from '../../style/color'
 import { compileReset, compileStyle, flattenStyle, joinClassNames } from '../../style/compile'
@@ -362,14 +363,13 @@ function TextInputComponent(props: TextInputProps): ReactElement {
       },
       isFocused: () => document.activeElement === element,
       getNativeRef: () => element,
-      setNativeProps: (nativeProps: { text?: string | undefined }) => {
-        if (nativeProps.text !== undefined) {
-          element.value = nativeProps.text
-          grow(element)
-        }
+      setNativeProps: ({ text, ...others }: Parameters<TextInputInstance['setNativeProps']>[0]) => {
+        if (text !== undefined) element.value = text
+        applyNativeProps(element, others)
+        grow(element)
       },
     }
-    return Object.assign(element, methods) as TextInputInstance
+    return Object.assign(withHostMethods(element), methods) as TextInputInstance
   }, [grow])
 
   const flat = flattenStyle(style)

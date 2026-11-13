@@ -54,4 +54,4 @@ Inside a `View`, the button takes the full width, as on native. To make it as wi
 
 ## Ref
 
-The ref is the `<button>` element.
+The ref is the `<button>` element. It has the measure methods of [`View`](/view#ref).

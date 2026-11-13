@@ -44,4 +44,19 @@ Any other prop that isn't a React Native prop is dropped.
 
 ## Ref
 
-The ref is the DOM element. The native methods `measure`, `measureInWindow`, `measureLayout`, and `setNativeProps` aren't there. Use `onLayout`, or call `getBoundingClientRect()` on the element.
+The ref is the DOM element, with the measure methods of a native host instance added. Each one calls its callback at once, with CSS pixels.
+
+| Method                                       | On the web                                                                                                                                    |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `measure(callback)`                          | `x` and `y` in the parent element, `width`, `height`, then `pageX` and `pageY` in the window.                                                 |
+| `measureInWindow(callback)`                  | `x` and `y` in the window, `width`, `height`. The window is the visible area, so the values change when the page scrolls.                     |
+| `measureLayout(ancestor, onSuccess, onFail)` | `left` and `top` in the ancestor element, `width`, `height`. It calls `onFail` when the other node isn't an ancestor that is in the document. |
+| `setNativeProps({ style })`                  | Writes the style as an inline style, so it beats the `style` prop until you set it again. Any other prop has no effect and logs a warning.    |
+
+The sizes come from `getBoundingClientRect()`, so they include a transform, as `measure` does on native. The types are `HostInstance` and `ViewInstance`.
+
+:::note
+
+A ref typed as `useRef<HTMLElement>(null)` no longer fits the `ref` prop. Use `useRef<ViewInstance>(null)`, as on native.
+
+:::

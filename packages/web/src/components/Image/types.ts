@@ -2,7 +2,14 @@ import type { HTMLAttributeReferrerPolicy, Ref } from 'react'
 
 import type { ImageResizeMode, ImageStyle } from '../../apis/StyleSheet/types'
 import type { StyleProp } from '../../style/types'
-import type { AccessibilityProps, DOMEventHandlers, LayoutChangeEvent } from '../View/types'
+import type {
+  AccessibilityProps,
+  DOMEventHandlers,
+  HostInstance,
+  LayoutChangeEvent,
+} from '../View/types'
+
+export type ImageInstance = HostInstance
 
 export type { ImageResizeMode } from '../../apis/StyleSheet/types'
 
@@ -60,7 +67,7 @@ export type ImageProps = AccessibilityProps &
     progressiveRenderingEnabled?: boolean | undefined
     loadingIndicatorSource?: ImageURISource | number | undefined
     style?: StyleProp<ImageStyle> | undefined
-    ref?: Ref<HTMLElement> | undefined
+    ref?: Ref<ImageInstance> | undefined
     id?: string | undefined
     nativeID?: string | undefined
     testID?: string | undefined

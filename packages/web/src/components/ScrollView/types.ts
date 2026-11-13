@@ -3,7 +3,7 @@ import type { ReactElement, Ref } from 'react'
 import type { ViewStyle } from '../../apis/StyleSheet/types'
 import type { NativeSyntheticEvent } from '../../events/types'
 import type { StyleProp } from '../../style/types'
-import type { ViewProps } from '../View/types'
+import type { HostInstance, ViewProps } from '../View/types'
 
 export type NativeScrollPoint = { x: number; y: number }
 export type NativeScrollSize = { width: number; height: number }
@@ -25,7 +25,7 @@ export type ScrollToOptions = {
   animated?: boolean | undefined
 }
 
-export type ScrollViewInstance = HTMLElement & {
+export type ScrollViewInstance = HostInstance & {
   // The React Native form. The DOM forms `scrollTo(x, y)` and
   // `scrollTo({ left, top, behavior })` still work.
   scrollTo: {

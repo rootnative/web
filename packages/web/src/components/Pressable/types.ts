@@ -4,7 +4,7 @@ import type { ViewStyle } from '../../apis/StyleSheet/types'
 import type { RectOrSize } from '../../events/press/types'
 import type { BlurEvent, FocusEvent, GestureResponderEvent, MouseEvent } from '../../events/types'
 import type { StyleProp } from '../../style/types'
-import type { ViewProps } from '../View/types'
+import type { HostInstance, ViewProps } from '../View/types'
 
 export interface PressableStateCallbackType {
   readonly pressed: boolean
@@ -23,7 +23,7 @@ export type PressableAndroidRippleConfig = {
   foreground?: boolean | undefined
 }
 
-export type PressableInstance = HTMLElement
+export type PressableInstance = HostInstance
 
 export type PressableProps = Omit<ViewProps, 'children' | 'style' | 'onBlur' | 'onFocus'> & {
   children?: ReactNode | ((state: PressableStateCallbackType) => ReactNode) | undefined

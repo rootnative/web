@@ -83,4 +83,4 @@ With `resizeMode="repeat"` or a `tintColor`, the box paints the image as a CSS b
 
 ## Ref
 
-The ref is the box element.
+The ref is the box element. It has the measure methods of [`View`](/view#ref). The type is `ImageInstance`.

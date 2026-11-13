@@ -4,6 +4,7 @@ import { userEvent } from 'vitest/browser'
 
 import { cleanup, render } from '../../test/render'
 import { TouchableOpacity } from './index'
+import type { HostInstance } from '../View/types'
 
 afterEach(cleanup)
 
@@ -46,7 +47,7 @@ const finish = (element: HTMLElement): void => {
 
 describe('TouchableOpacity', () => {
   test('renders a div, and ref is the element', () => {
-    const ref = createRef<HTMLElement>()
+    const ref = createRef<HostInstance>()
     render(<TouchableOpacity ref={ref} testID="t" style={box} onPress={() => {}} />)
     const element = byTestId('t')
     expect(element.tagName).toBe('DIV')

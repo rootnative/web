@@ -10,6 +10,7 @@ import {
 } from 'react'
 
 import { toDOMProps } from '../../render/domProps'
+import { withHostMethods } from '../../render/hostMethods'
 import { resolveTag } from '../../render/resolveTag'
 import { useElementLayout } from '../../render/useElementLayout'
 import { compileReset, compileStyle, flattenStyle, joinClassNames } from '../../style/compile'
@@ -20,6 +21,7 @@ import type { ImageProps, ImageResizeMode, ImageSize, ImageStatics } from './typ
 
 export type {
   ImageErrorEvent,
+  ImageInstance,
   ImageLoadEvent,
   ImageLoadEventData,
   ImageProgressEvent,
@@ -190,7 +192,7 @@ function ImageComponent(props: ImageProps): ReactElement {
 
   const element = useRef<HTMLElement | null>(null)
   const img = useRef<ImgElement | null>(null)
-  useImperativeHandle(ref, () => element.current as HTMLElement, [])
+  useImperativeHandle(ref, () => withHostMethods(element.current as HTMLElement), [])
   useElementLayout(element, onLayout)
   const registry = useStyleRegistry()
 

@@ -6,6 +6,7 @@ import { cleanup, render } from '../../test/render'
 import { Text } from '../Text'
 import { View } from '../View'
 import { Pressable } from './index'
+import type { HostInstance } from '../View/types'
 
 afterEach(() => {
   cleanup()
@@ -43,7 +44,7 @@ const user = async (action: () => Promise<void>): Promise<void> => {
 
 describe('Pressable', () => {
   test('renders a focusable div, and ref is the element', () => {
-    const ref = createRef<HTMLElement>()
+    const ref = createRef<HostInstance>()
     render(<Pressable ref={ref} testID="p" style={box} />)
     const element = byTestId('p')
     expect(element.tagName).toBe('DIV')

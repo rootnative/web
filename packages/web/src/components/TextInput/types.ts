@@ -4,7 +4,12 @@ import type { TextStyle } from '../../apis/StyleSheet/types'
 import type { NativeSyntheticEvent } from '../../events/types'
 import type { StyleProp } from '../../style/types'
 import type { NativeScrollEvent } from '../ScrollView/types'
-import type { AccessibilityProps, DOMEventHandlers, LayoutChangeEvent } from '../View/types'
+import type {
+  AccessibilityProps,
+  DOMEventHandlers,
+  HostMethods,
+  LayoutChangeEvent,
+} from '../View/types'
 
 export type TextInputSelection = { start: number; end: number }
 
@@ -62,11 +67,15 @@ export type EnterKeyHint = 'enter' | 'done' | 'go' | 'next' | 'previous' | 'sear
 export type SubmitBehavior = 'submit' | 'blurAndSubmit' | 'newline'
 
 export type TextInputInstance = HTMLInputElement &
-  HTMLTextAreaElement & {
+  HTMLTextAreaElement &
+  Omit<HostMethods, 'setNativeProps'> & {
     clear: () => void
     isFocused: () => boolean
     getNativeRef: () => HTMLInputElement | HTMLTextAreaElement
-    setNativeProps: (props: { text?: string | undefined }) => void
+    setNativeProps: (props: {
+      text?: string | undefined
+      style?: StyleProp<TextStyle> | undefined
+    }) => void
   }
 
 type ReservedDOMHandlers =

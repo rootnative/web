@@ -68,6 +68,6 @@ These native-only props are accepted and ignored: `clearButtonMode`, `keyboardAp
 
 ## Ref
 
-The ref is the `<input>` or `<textarea>` element, with `clear()`, `isFocused()`, `getNativeRef()`, and `setNativeProps({ text })` added.
+The ref is the `<input>` or `<textarea>` element, with `clear()`, `isFocused()`, `getNativeRef()`, and `setNativeProps({ text, style })` added. It also has the measure methods of [`View`](/view#ref).
 
 `TextInput.State` has `currentlyFocusedInput()`, `focusTextInput(element)`, and `blurTextInput(element)`.

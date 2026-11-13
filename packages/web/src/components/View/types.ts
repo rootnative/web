@@ -4,8 +4,43 @@ import type { ViewStyle } from '../../apis/StyleSheet/types'
 import type { NativeSyntheticEvent } from '../../events/types'
 import type { StyleProp } from '../../style/types'
 
-// React Native 0.88's host instance is a DOM-like element. Here it's the DOM element.
-export type HostInstance = HTMLElement
+export type MeasureOnSuccessCallback = (
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  pageX: number,
+  pageY: number,
+) => void
+
+export type MeasureInWindowOnSuccessCallback = (
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+) => void
+
+export type MeasureLayoutOnSuccessCallback = (
+  left: number,
+  top: number,
+  width: number,
+  height: number,
+) => void
+
+export type HostMethods = {
+  measure: (callback: MeasureOnSuccessCallback) => void
+  measureInWindow: (callback: MeasureInWindowOnSuccessCallback) => void
+  measureLayout: (
+    relativeToNativeNode: Element | number,
+    onSuccess: MeasureLayoutOnSuccessCallback,
+    onFail?: () => void,
+  ) => void
+  setNativeProps: (nativeProps: object) => void
+}
+
+// React Native 0.88's host instance is a DOM-like element. Here it's the DOM element, with the
+// measure methods of the native one.
+export type HostInstance = HTMLElement & HostMethods
 
 export type ViewInstance = HostInstance
 

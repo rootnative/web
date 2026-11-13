@@ -5,6 +5,7 @@ import { userEvent } from 'vitest/browser'
 import { cleanup, render } from '../../test/render'
 import { View } from '../View'
 import { TouchableHighlight } from './index'
+import type { HostInstance } from '../View/types'
 
 afterEach(() => {
   cleanup()
@@ -43,7 +44,7 @@ const opacity = (id: string): string => getComputedStyle(byTestId(id)).opacity
 
 describe('TouchableHighlight', () => {
   test('renders a div around its child, and ref is the element', () => {
-    const ref = createRef<HTMLElement>()
+    const ref = createRef<HostInstance>()
     render(
       <TouchableHighlight ref={ref} testID="t" onPress={() => {}}>
         <View testID="child" style={box} />

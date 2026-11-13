@@ -11,6 +11,7 @@ import { usePressability } from '../../events/press'
 import { mergeHandlers } from '../../events/press/mergeHandlers'
 import type { PressabilityConfig } from '../../events/press/types'
 import { toDOMProps } from '../../render/domProps'
+import { withHostMethods } from '../../render/hostMethods'
 import { resolveTag } from '../../render/resolveTag'
 import { useElementLayout } from '../../render/useElementLayout'
 import { toCSSColor } from '../../style/color'
@@ -21,7 +22,7 @@ import { TextAncestorContext } from './TextAncestorContext'
 import type { TextProps } from './types'
 
 export { TextAncestorContext } from './TextAncestorContext'
-export type { PressEvent, TextProps } from './types'
+export type { PressEvent, TextInstance, TextProps } from './types'
 
 // What a native Text looks like before any style is applied.
 const resetStyle = Object.freeze({
@@ -96,7 +97,7 @@ export function Text(props: TextProps): ReactElement {
 
   const nested = useContext(TextAncestorContext)
   const element = useRef<HTMLElement | null>(null)
-  useImperativeHandle(ref, () => element.current as HTMLElement, [])
+  useImperativeHandle(ref, () => withHostMethods(element.current as HTMLElement), [])
   useElementLayout(element, onLayout)
   const registry = useStyleRegistry()
 

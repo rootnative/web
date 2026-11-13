@@ -23,6 +23,7 @@ import { hasDOM } from '../../utils/env'
 import { useViewElement, View } from '../View'
 import type { LayoutChangeEvent } from '../View/types'
 import { snapTarget } from './snap'
+import type { HostInstance } from '../View/types'
 import type {
   NativeScrollEvent,
   ScrollEvent,
@@ -183,8 +184,8 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
   } = props
 
   const registry = useStyleRegistry()
-  const scroller = useRef<HTMLElement | null>(null)
-  const content = useRef<HTMLElement | null>(null)
+  const scroller = useRef<HostInstance | null>(null)
+  const content = useRef<HostInstance | null>(null)
 
   // The latest handlers, for the listeners an effect owns.
   const handlers = useRef<ScrollHandlers>({})

@@ -12,6 +12,7 @@ import {
   type AccessibilityActionEvent,
   type DimensionValue,
   type ImageStyle,
+  type MeasureInWindowOnSuccessCallback,
   type NativeSyntheticEvent,
   type PointerEvent,
   type ScrollViewInstance,
@@ -35,6 +36,14 @@ export function Card({ style, labelStyle, imageStyle, width = '100%', onFocus }:
   const view = useRef<ViewInstance>(null)
   const scroller = useRef<ScrollViewInstance>(null)
   const input = useRef<TextInputInstance>(null)
+  const place: MeasureInWindowOnSuccessCallback = (x, y, boxWidth, boxHeight) => {
+    input.current?.setNativeProps({ text: `${x},${y},${boxWidth},${boxHeight}` })
+  }
+  const measure = () => {
+    view.current?.measureInWindow(place)
+    scroller.current?.measure((_x, _y, _width, _height, pageX, pageY) => place(pageX, pageY, 0, 0))
+    if (view.current !== null) scroller.current?.measureLayout(view.current, place)
+  }
   const handlePointerEnter = (event: PointerEvent) => {
     if (event.nativeEvent.pointerType !== 'touch') view.current?.focus()
   }
@@ -44,7 +53,7 @@ export function Card({ style, labelStyle, imageStyle, width = '100%', onFocus }:
         <Text style={[styles.label, labelStyle]}>Card</Text>
         <Image source={{ uri: '/card.png' }} style={[styles.image, imageStyle]} />
         <TextInput ref={input} onFocus={onFocus} onBlur={onFocus} />
-        <Pressable onFocus={onFocus} onPointerEnter={handlePointerEnter} />
+        <Pressable onFocus={onFocus} onPointerEnter={handlePointerEnter} onPress={measure} />
       </ScrollView>
     </View>
   )

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, test } from 'vitest'
 
 import { cleanup, render } from '../../test/render'
 import { ActivityIndicator } from './index'
+import type { HostInstance } from '../View/types'
 
 afterEach(cleanup)
 
@@ -65,7 +66,7 @@ describe('ActivityIndicator', () => {
   })
 
   test('the ref and the other props go to the indicator', () => {
-    const ref = createRef<HTMLElement>()
+    const ref = createRef<HostInstance>()
     render(<ActivityIndicator ref={ref} testID="spinner" accessibilityLabel="Loading" />)
     expect(ref.current).toBe(indicator())
     expect(indicator().getAttribute('data-testid')).toBe('spinner')
