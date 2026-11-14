@@ -1,7 +1,7 @@
 ---
 id: libraries
 title: Libraries
-description: What a React Native library needs to run on @rootnative/web: the worklets option for Reanimated, the font of an icon set, and the TypeScript setting for library types.
+description: What a React Native library needs to run on @rootnative/web. The worklets option for Reanimated, the font of an icon set, and the TypeScript setting for library types.
 ---
 
 # Libraries
