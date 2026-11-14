@@ -520,8 +520,10 @@ StatusBar
 - processColor: an unsigned 32-bit ARGB integer, as on iOS. null for a color
   it can't parse.
 - PanResponder: runs on pointer events. panHandlers are six pointer handlers;
-  spread them on a View. Set touchAction: 'none' in the style (or 'pan-y' for
-  a horizontal drag in a vertical scroll), or the browser scrolls instead.
+  spread them on a View. While a responder holds the gesture, the page
+  doesn't scroll (onShouldBlockNativeResponder false lets it scroll). A
+  responder that takes the gesture on a move needs touchAction: 'none' in
+  the style (or 'pan-y' for a horizontal drag in a vertical scroll).
   The element captures the pointer at the grant. Negotiation works as on
   native. dx and dy are CSS pixels; vx and vy are pixels per millisecond.
   onShouldBlockNativeResponder is ignored. getInteractionHandle() is null.

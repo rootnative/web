@@ -348,6 +348,38 @@ describe('PanResponder', () => {
     expect(onPress).not.toHaveBeenCalled()
   })
 
+  test('stops the browser scroll while it holds the gesture', () => {
+    const config = spyConfig({ onStartShouldSetPanResponder: vi.fn(yes) })
+    const { container } = render(
+      <View style={style} {...PanResponder.create(config).panHandlers} />,
+    )
+    const element = box(container)
+    const touchMove = (): boolean =>
+      !element.dispatchEvent(new Event('touchmove', { bubbles: true, cancelable: true }))
+
+    expect(touchMove()).toBe(false)
+    pointer(element, 'pointerdown', 10, 10)
+    expect(config.onShouldBlockNativeResponder).toHaveBeenCalledTimes(1)
+    expect(touchMove()).toBe(true)
+    pointer(element, 'pointerup', 10, 10)
+    expect(touchMove()).toBe(false)
+  })
+
+  test('lets the browser scroll when onShouldBlockNativeResponder returns false', () => {
+    const config = spyConfig({
+      onStartShouldSetPanResponder: vi.fn(yes),
+      onShouldBlockNativeResponder: vi.fn(no),
+    })
+    const { container } = render(
+      <View style={style} {...PanResponder.create(config).panHandlers} />,
+    )
+    const element = box(container)
+    pointer(element, 'pointerdown', 10, 10)
+    expect(element.dispatchEvent(new Event('touchmove', { bubbles: true, cancelable: true }))).toBe(
+      true,
+    )
+  })
+
   test('a new gesture gets a new stateID', () => {
     const config = spyConfig({ onStartShouldSetPanResponder: vi.fn(yes) })
     const { container } = render(

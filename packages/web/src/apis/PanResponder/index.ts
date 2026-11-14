@@ -61,6 +61,7 @@ type Responder = {
   pointers: Map<number, Pointer>
   element: HTMLElement | null
   last: { x: number; y: number; time: number } | null
+  blocksNative: boolean
 }
 
 // One responder at a time, as in React Native's responder system.
@@ -70,6 +71,22 @@ let current: Responder | null = null
 let grantEvent: Event | null = null
 
 let nextStateID = 1
+
+// React Native stops the native scroll while a responder holds the gesture. A browser does
+// that only when the page cancels `touchmove`. Else it scrolls, and the responder gets
+// `pointercancel`. The browser decides at the touch start if a `touchmove` can be canceled,
+// so the listener can't wait for the grant: it goes on the document with the first responder.
+let listening = false
+
+const blockNativeScroll = (event: TouchEvent): void => {
+  if (current !== null && current.blocksNative && event.cancelable) event.preventDefault()
+}
+
+const listenForTouchMove = (): void => {
+  if (listening || typeof document === 'undefined') return
+  listening = true
+  document.addEventListener('touchmove', blockNativeScroll, { passive: false })
+}
 
 const newGestureState = (): PanResponderGestureState => ({
   stateID: nextStateID++,
@@ -196,6 +213,8 @@ const grant = (
     }
   }
   responder.config.onPanResponderGrant?.(responderEvent, state)
+  responder.blocksNative =
+    responder.config.onShouldBlockNativeResponder?.(responderEvent, state) !== false
   responder.config.onPanResponderStart?.(responderEvent, state)
 }
 
@@ -334,7 +353,9 @@ export const PanResponder: {
       pointers: new Map(),
       element: null,
       last: null,
+      blocksNative: true,
     }
+    listenForTouchMove()
     return {
       panHandlers: createHandlers(responder),
       // No interaction manager on the web.

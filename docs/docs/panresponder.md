@@ -1,7 +1,7 @@
 ---
 id: panresponder
 title: PanResponder
-description: PanResponder on pointer events, with the React Native gesture state and responder negotiation, and the touch-action rule for touch screens.
+description: PanResponder on pointer events, with the React Native gesture state and responder negotiation, and the scroll rule for touch screens.
 ---
 
 # `PanResponder`
@@ -22,13 +22,17 @@ export function Draggable() {
     }),
   ).current
 
-  return <View {...pan.panHandlers} style={{ width: 80, height: 80, touchAction: 'none' }} />
+  return <View {...pan.panHandlers} style={{ width: 80, height: 80 }} />
 }
 ```
 
-:::warning Set `touchAction` on a touch screen
+## Scroll on a touch screen
 
-Put `touchAction: 'none'` in the style of the element, or `'pan-y'` for a horizontal drag inside a vertical scroll. Without it, the browser scrolls the page instead of giving your responder the gesture. The responder can't set it for you: the browser reads it before the gesture starts.
+While a responder holds the gesture, the page doesn't scroll, as on native. Return `false` from `onShouldBlockNativeResponder` to let the page scroll during the gesture.
+
+:::warning A responder that takes the gesture on a move
+
+A responder with only `onMoveShouldSetPanResponder` gets the gesture after the finger moves. The browser can start to scroll first, and then it ends the gesture. Put `touchAction: 'none'` in the style of the element, or `'pan-y'` for a horizontal drag inside a vertical scroll.
 
 :::
 
@@ -59,5 +63,4 @@ A pointer that joins or leaves doesn't move the gesture. The event's `nativeEven
 
 ## Not on the web
 
-- `onShouldBlockNativeResponder` is ignored. The web has no native responder to block.
 - `getInteractionHandle()` returns `null`.
