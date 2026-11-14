@@ -9,4 +9,5 @@ coverage/
 .tsbuild/
 .vitest/
 .docusaurus/
+.expo/
 docs/build/

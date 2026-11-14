@@ -3,4 +3,5 @@ dist/
 coverage/
 pnpm-lock.yaml
 .docusaurus/
+.expo/
 docs/build/

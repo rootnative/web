@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": ".tsbuild",
+    "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo",
+    "emitDeclarationOnly": true,
+    "isolatedDeclarations": false,
+    "paths": {
+      "react-native": ["../web/src/index.ts"]
+    }
+  },
+  "include": ["App.tsx"],
+  "references": [{ "path": "../web" }]
+}

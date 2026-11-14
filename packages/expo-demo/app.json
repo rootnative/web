@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Root Native Web on Expo",
+    "slug": "rootnative-web-expo-demo",
+    "version": "0.0.0",
+    "platforms": ["web"],
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    }
+  }
+}

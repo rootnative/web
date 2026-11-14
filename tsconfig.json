@@ -3,6 +3,7 @@
   "references": [
     { "path": "packages/web" },
     { "path": "packages/web/parity" },
-    { "path": "packages/playground" }
+    { "path": "packages/playground" },
+    { "path": "packages/expo-demo" }
   ]
 }
