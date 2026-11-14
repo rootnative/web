@@ -13,6 +13,7 @@ import {
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 
 import logo from './assets/logo.png'
+import { Gallery } from './Gallery'
 
 // An Expo app with no router. Expo's bundler sends each `react-native` import to the
 // `react-native-web` package, which is `@rootnative/web-expo` in this app.
@@ -53,6 +54,7 @@ export default function App(): ReactElement {
         <Text style={styles.buttonLabel}>{moved ? 'Move back' : 'Move'}</Text>
       </Pressable>
       <Animated.View testID="reanimated" style={[styles.box, slide]} />
+      <Gallery />
       <Motion.View
         testID="inertia"
         animate={{ translateX: moved ? 160 : 0 }}

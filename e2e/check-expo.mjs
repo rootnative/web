@@ -167,6 +167,32 @@ async function checkPage(url) {
         .catch(() => problems.push(`The ${testID} box did not move 160 px after the press.`))
     }
 
+    // `@rootnative/components`, with the pointer and the keyboard.
+    await page.getByTestId('save').click()
+    expectEqual('The count of the components Button', await text('saves'), '1')
+    await page.getByTestId('switch').click()
+    expectEqual('The components Switch', await text('on'), 'on')
+    await page.getByTestId('checkbox').click()
+    expectEqual('The components Checkbox', await text('checked'), 'checked')
+    await page.getByTestId('email').fill('a@b.c')
+    expectEqual('The text of the components TextField', await text('typed'), 'a@b.c')
+    const slider = await page.getByTestId('slider').boundingBox()
+    if (slider === null) {
+      problems.push('The components Slider has no box.')
+    } else {
+      const y = slider.y + slider.height / 2
+      await page.mouse.move(slider.x + slider.width * 0.3, y)
+      await page.mouse.down()
+      await page.mouse.move(slider.x + slider.width * 0.7, y, { steps: 8 })
+      await page.mouse.up()
+      expectEqual('The components Slider after a drag from 30 to 70', await text('volume'), '70')
+    }
+    expectEqual(
+      'The count of svg elements (CircularProgress)',
+      String(await page.locator('svg').count()),
+      '1',
+    )
+
     for (const message of errors) problems.push(`The page logged: ${message}`)
   } finally {
     await browser.close()
