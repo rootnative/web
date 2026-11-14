@@ -4,7 +4,8 @@ import type { GestureResponderEvent } from '../../events/types'
 import type { TouchableTVProps } from '../TouchableWithoutFeedback/types'
 import type { AccessibilityState, HostInstance } from '../View/types'
 
-export type ButtonProps = TouchableTVProps & {
+// An interface, as in React Native, so a library can add props with a module augmentation.
+export interface ButtonProps extends TouchableTVProps {
   // The text of the button. React Native needs a string, and so does the web.
   title: string
   onPress?: ((event: GestureResponderEvent) => unknown) | undefined

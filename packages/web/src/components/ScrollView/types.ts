@@ -44,7 +44,8 @@ export type ScrollViewInstance = HostInstance & {
 
 type ReservedViewProps = 'ref' | 'onScroll' | 'onScrollEnd'
 
-export type ScrollViewProps = Omit<ViewProps, ReservedViewProps> & {
+// An interface, as in React Native, so a library can add props with a module augmentation.
+export interface ScrollViewProps extends Omit<ViewProps, ReservedViewProps> {
   ref?: Ref<ScrollViewInstance> | undefined
   contentContainerStyle?: StyleProp<ViewStyle> | undefined
   horizontal?: boolean | undefined

@@ -9,7 +9,8 @@ export type SwitchChangeEventData = {
 }
 export type SwitchChangeEvent = NativeSyntheticEvent<SwitchChangeEventData>
 
-export type SwitchProps = Omit<ViewProps, 'children' | 'onChange' | 'ref'> & {
+// An interface, as in React Native, so a library can add props with a module augmentation.
+export interface SwitchProps extends Omit<ViewProps, 'children' | 'onChange' | 'ref'> {
   ref?: Ref<HTMLInputElement> | undefined
   // Only `true` turns the switch on. The switch shows this value, also after a press.
   value?: boolean | undefined

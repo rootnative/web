@@ -1,6 +1,7 @@
 import type { ViewProps } from '../View/types'
 
-export type RefreshControlProps = ViewProps & {
+// An interface, as in React Native, so a library can add props with a module augmentation.
+export interface RefreshControlProps extends ViewProps {
   // Shows the indicator. The app sets it, also after a pull.
   refreshing: boolean
   // Called after a pull past the target.

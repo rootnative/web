@@ -1,6 +1,7 @@
 import type { ViewProps } from '../View/types'
 
-export type ActivityIndicatorProps = ViewProps & {
+// An interface, as in React Native, so a library can add props with a module augmentation.
+export interface ActivityIndicatorProps extends ViewProps {
   // `false` stops the indicator. The default is `true`.
   animating?: boolean | undefined
   // The default is `#999999`, the default of iOS.

@@ -100,7 +100,8 @@ export type FlatListInstance<ItemT = unknown> = {
 
 type ReservedScrollViewProps = 'ref' | 'children'
 
-export type FlatListProps<ItemT> = Omit<ScrollViewProps, ReservedScrollViewProps> & {
+// An interface, as in React Native, so a library can add props with a module augmentation.
+export interface FlatListProps<ItemT> extends Omit<ScrollViewProps, ReservedScrollViewProps> {
   ref?: Ref<FlatListInstance<ItemT>> | undefined
   data: Readonly<ArrayLike<ItemT>> | null | undefined
   renderItem?: ListRenderItem<ItemT> | null | undefined

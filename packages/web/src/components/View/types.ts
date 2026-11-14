@@ -136,7 +136,8 @@ export type Role =
 // Every DOM handler react-dom accepts, minus the two that are not events.
 export type DOMEventHandlers<T> = Omit<DOMAttributes<T>, 'children' | 'dangerouslySetInnerHTML'>
 
-export type AccessibilityProps = {
+// An interface, as in React Native, so a library can add props with a module augmentation.
+export interface AccessibilityProps {
   // Web only. Any other ARIA or data attribute passes through to the element.
   [key: `aria-${string}`]: string | number | boolean | undefined
   [key: `data-${string}`]: string | number | boolean | undefined

@@ -48,40 +48,41 @@ export type ImageSize = { width: number; height: number }
 
 type ReservedDOMHandlers = 'onLoad' | 'onLoadStart' | 'onError' | 'onProgress'
 
-export type ImageProps = AccessibilityProps &
-  Omit<DOMEventHandlers<HTMLElement>, ReservedDOMHandlers> & {
-    source?: ImageSource | undefined
-    src?: string | undefined
-    srcSet?: string | undefined
-    alt?: string | undefined
-    defaultSource?: ImageURISource | number | string | undefined
-    resizeMode?: ImageResizeMode | undefined
-    resizeMethod?: 'auto' | 'resize' | 'scale' | 'none' | undefined
-    blurRadius?: number | undefined
-    tintColor?: unknown
-    width?: number | undefined
-    height?: number | undefined
-    crossOrigin?: 'anonymous' | 'use-credentials' | undefined
-    referrerPolicy?: HTMLAttributeReferrerPolicy | undefined
-    fadeDuration?: number | undefined
-    progressiveRenderingEnabled?: boolean | undefined
-    loadingIndicatorSource?: ImageURISource | number | undefined
-    style?: StyleProp<ImageStyle> | undefined
-    ref?: Ref<ImageInstance> | undefined
-    id?: string | undefined
-    nativeID?: string | undefined
-    testID?: string | undefined
-    onLayout?: ((event: LayoutChangeEvent) => void) | undefined
-    onLoad?: ((event: ImageLoadEvent) => void) | undefined
-    onLoadStart?: (() => void) | undefined
-    onLoadEnd?: (() => void) | undefined
-    onError?: ((event: ImageErrorEvent) => void) | undefined
-    onProgress?: ((event: ImageProgressEvent) => void) | undefined
-    // Web only. The three `<img>` loading hints.
-    loading?: 'eager' | 'lazy' | undefined
-    fetchPriority?: 'high' | 'low' | 'auto' | undefined
-    decoding?: 'sync' | 'async' | 'auto' | undefined
-  }
+// An interface, as in React Native, so a library can add props with a module augmentation.
+export interface ImageProps
+  extends AccessibilityProps, Omit<DOMEventHandlers<HTMLElement>, ReservedDOMHandlers> {
+  source?: ImageSource | undefined
+  src?: string | undefined
+  srcSet?: string | undefined
+  alt?: string | undefined
+  defaultSource?: ImageURISource | number | string | undefined
+  resizeMode?: ImageResizeMode | undefined
+  resizeMethod?: 'auto' | 'resize' | 'scale' | 'none' | undefined
+  blurRadius?: number | undefined
+  tintColor?: unknown
+  width?: number | undefined
+  height?: number | undefined
+  crossOrigin?: 'anonymous' | 'use-credentials' | undefined
+  referrerPolicy?: HTMLAttributeReferrerPolicy | undefined
+  fadeDuration?: number | undefined
+  progressiveRenderingEnabled?: boolean | undefined
+  loadingIndicatorSource?: ImageURISource | number | undefined
+  style?: StyleProp<ImageStyle> | undefined
+  ref?: Ref<ImageInstance> | undefined
+  id?: string | undefined
+  nativeID?: string | undefined
+  testID?: string | undefined
+  onLayout?: ((event: LayoutChangeEvent) => void) | undefined
+  onLoad?: ((event: ImageLoadEvent) => void) | undefined
+  onLoadStart?: (() => void) | undefined
+  onLoadEnd?: (() => void) | undefined
+  onError?: ((event: ImageErrorEvent) => void) | undefined
+  onProgress?: ((event: ImageProgressEvent) => void) | undefined
+  // Web only. The three `<img>` loading hints.
+  loading?: 'eager' | 'lazy' | undefined
+  fetchPriority?: 'high' | 'low' | 'auto' | undefined
+  decoding?: 'sync' | 'async' | 'auto' | undefined
+}
 
 export type ImageStatics = {
   getSize: {

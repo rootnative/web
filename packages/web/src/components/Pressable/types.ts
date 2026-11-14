@@ -25,7 +25,11 @@ export type PressableAndroidRippleConfig = {
 
 export type PressableInstance = HostInstance
 
-export type PressableProps = Omit<ViewProps, 'children' | 'style' | 'onBlur' | 'onFocus'> & {
+// An interface, as in React Native, so a library can add props with a module augmentation.
+export interface PressableProps extends Omit<
+  ViewProps,
+  'children' | 'style' | 'onBlur' | 'onFocus'
+> {
   children?: ReactNode | ((state: PressableStateCallbackType) => ReactNode) | undefined
   style?:
     StyleProp<ViewStyle> | ((state: PressableStateCallbackType) => StyleProp<ViewStyle>) | undefined

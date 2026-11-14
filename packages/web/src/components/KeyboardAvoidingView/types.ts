@@ -1,6 +1,7 @@
 import type { HostInstance, ViewProps } from '../View/types'
 
-export type KeyboardAvoidingViewProps = ViewProps & {
+// An interface, as in React Native, so a library can add props with a module augmentation.
+export interface KeyboardAvoidingViewProps extends ViewProps {
   /** How the view moves out of the way of the keyboard. With no value, it doesn't. */
   behavior?: 'height' | 'position' | 'padding' | undefined
   /** The style of the inner view, with the `position` behavior. */

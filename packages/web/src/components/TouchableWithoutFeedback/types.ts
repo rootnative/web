@@ -35,14 +35,14 @@ export type TouchableTVProps = {
   nextFocusUp?: number | undefined
 }
 
-export type TouchableWithoutFeedbackProps = AccessibilityProps &
-  TouchablePressProps & {
-    children?: ReactNode | undefined
-    focusable?: boolean | undefined
-    id?: string | undefined
-    nativeID?: string | undefined
-    testID?: string | undefined
-    onLayout?: ((event: LayoutChangeEvent) => unknown) | undefined
-    // React Native doesn't pass it to the child, and neither does the web.
-    style?: StyleProp<ViewStyle> | undefined
-  }
+// An interface, as in React Native, so a library can add props with a module augmentation.
+export interface TouchableWithoutFeedbackProps extends AccessibilityProps, TouchablePressProps {
+  children?: ReactNode | undefined
+  focusable?: boolean | undefined
+  id?: string | undefined
+  nativeID?: string | undefined
+  testID?: string | undefined
+  onLayout?: ((event: LayoutChangeEvent) => unknown) | undefined
+  // React Native doesn't pass it to the child, and neither does the web.
+  style?: StyleProp<ViewStyle> | undefined
+}
