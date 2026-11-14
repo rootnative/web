@@ -135,6 +135,14 @@ async function checkPage(url) {
     )
     expectEqual('The style sheets of @rootnative/web', sheets.join(' '), 'reset shorthand longhand')
 
+    // An image import: Expo gives it a URL, and `Image` loads it.
+    const imageWidth = await page
+      .getByTestId('logo')
+      .locator('img')
+      .evaluate((image) => image.decode().then(() => image.naturalWidth))
+      .catch((error) => `not loaded (${error})`)
+    expectEqual('The natural width of the imported image', String(imageWidth), '180')
+
     await page.getByTestId('add').click()
     await page.getByTestId('add').click()
     expectEqual('The count after two presses', await text('count'), '2')

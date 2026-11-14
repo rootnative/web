@@ -1,5 +1,16 @@
 import { useState, type ReactElement } from 'react'
-import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import {
+  Image,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native'
+
+import logo from './assets/logo.png'
 
 // An Expo app with no router. Expo's bundler sends each `react-native` import to the
 // `react-native-web` package, which is `@rootnative/web-expo` in this app.
@@ -9,6 +20,7 @@ export default function App(): ReactElement {
 
   return (
     <ScrollView testID="page" contentContainerStyle={styles.page}>
+      <Image testID="logo" source={logo} alt="The logo of Root Native Web" style={styles.logo} />
       <Text role="heading" aria-level={1} style={styles.title}>
         Root Native Web on Expo
       </Text>
@@ -33,6 +45,7 @@ export default function App(): ReactElement {
 
 const styles = StyleSheet.create({
   page: { padding: 24, gap: 16 },
+  logo: { width: 48, height: 48 },
   title: { fontSize: 24, fontWeight: '600' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   button: {
