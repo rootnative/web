@@ -252,6 +252,12 @@ describe('resolveStyle', () => {
     })
   })
 
+  test('leaves the box values of pointerEvents to the compiler', () => {
+    expect(resolveStyle({ pointerEvents: 'box-none' })).toEqual({})
+    expect(resolveStyle({ pointerEvents: 'box-only' })).toEqual({})
+    expect(resolveStyle({ pointerEvents: 'auto' })).toEqual({ pointerEvents: 'auto' })
+  })
+
   describe('pass-through properties', () => {
     test('keeps modern CSS values', () => {
       expect(

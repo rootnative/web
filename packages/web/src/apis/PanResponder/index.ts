@@ -1,5 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from 'react'
 
+import { claimPress, isPressClaimed, terminatePress } from '../../events/press/Pressability'
 import type { GestureResponderEvent, NativeTouchEvent } from '../../events/types'
 
 export type PanResponderGestureState = {
@@ -183,6 +184,10 @@ const grant = (
   responder.element = event.currentTarget
   current = responder
   grantEvent = event.nativeEvent
+  // The responder owns the pointer now: a pressable above it doesn't start a press, and a
+  // pressable that holds the pointer ends its press.
+  claimPress(event.nativeEvent)
+  terminatePress(event)
   for (const pointer of responder.pointers.values()) {
     try {
       responder.element.setPointerCapture(pointer.id)
@@ -255,6 +260,8 @@ const createHandlers = (responder: Responder): GestureResponderHandlers => {
       if (capture) config.onPanResponderStart?.(responderEvent, responder.gestureState)
       return
     }
+    // A pressable below took the start, as the deepest responder does on native.
+    if (!capture && isPressClaimed(event.nativeEvent)) return
     negotiate(
       responder,
       event,

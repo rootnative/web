@@ -4,8 +4,7 @@ import { toDOMProps } from '../../render/domProps'
 import { withHostMethods } from '../../render/hostMethods'
 import { resolveTag } from '../../render/resolveTag'
 import { useElementLayout } from '../../render/useElementLayout'
-import { compileReset, compileStyle, joinClassNames } from '../../style/compile'
-import type { StyleRegistry } from '../../style/registry'
+import { compileReset, compileStyle, joinClassNames, pointerEventsStyle } from '../../style/compile'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import type { ViewProps } from './types'
 
@@ -47,14 +46,6 @@ const resetStyle = Object.freeze({
   zIndex: 0,
 })
 
-const pointerEventsClass = (registry: StyleRegistry, value: 'box-none' | 'box-only'): string =>
-  registry.staticClass(
-    `rn-pe-${value}`,
-    value === 'box-none'
-      ? ['.rn-pe-box-none{pointer-events:none}', '.rn-pe-box-none>*{pointer-events:auto}']
-      : ['.rn-pe-box-only{pointer-events:auto}', '.rn-pe-box-only>*{pointer-events:none}'],
-  )
-
 export function View(props: ViewProps): ReactElement {
   return useViewElement(props)
 }
@@ -70,15 +61,13 @@ export function useViewElement(props: ViewProps, extraClassName?: string): React
 
   const { tag, role } = resolveTag(rest, 'div', children != null)
 
-  const pointerStyle =
-    pointerEvents === 'none' || pointerEvents === 'auto' ? { pointerEvents } : undefined
   let className = joinClassNames(
     compileReset('rn-view', resetStyle, registry),
-    compileStyle([style, pointerStyle], registry),
+    compileStyle(
+      pointerEvents === undefined ? style : [style, pointerEventsStyle[pointerEvents]],
+      registry,
+    ),
   )
-  if (pointerEvents === 'box-none' || pointerEvents === 'box-only') {
-    className = `${className} ${pointerEventsClass(registry, pointerEvents)}`
-  }
   if (extraClassName !== undefined) className = `${className} ${extraClassName}`
 
   const domProps = toDOMProps(rest)

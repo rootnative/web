@@ -275,6 +275,53 @@ describe('View', () => {
       expect(getComputedStyle(boxOnly as Element).pointerEvents).toBe('auto')
       expect(getComputedStyle(boxOnly?.firstElementChild as Element).pointerEvents).toBe('none')
     })
+
+    test('the style key takes the four values', () => {
+      const styles = StyleSheet.create({
+        none: { pointerEvents: 'none' },
+        boxNone: { pointerEvents: 'box-none' },
+        boxOnly: { pointerEvents: 'box-only' },
+      })
+      const { container } = render(
+        <View>
+          <View style={styles.none} />
+          <View style={styles.boxNone}>
+            <View />
+          </View>
+          <View style={styles.boxOnly}>
+            <View style={{ pointerEvents: 'auto' }} />
+          </View>
+        </View>,
+      )
+      const [none, boxNone, boxOnly] = Array.from(first(container).children)
+      expect(getComputedStyle(none as Element).pointerEvents).toBe('none')
+      expect(getComputedStyle(boxNone as Element).pointerEvents).toBe('none')
+      expect(getComputedStyle(boxNone?.firstElementChild as Element).pointerEvents).toBe('auto')
+      expect(getComputedStyle(boxOnly as Element).pointerEvents).toBe('auto')
+      expect(getComputedStyle(boxOnly?.firstElementChild as Element).pointerEvents).toBe('none')
+    })
+
+    test('a child of a box-none view keeps its own value', () => {
+      const { container } = render(
+        <View style={{ pointerEvents: 'box-none' }}>
+          <View style={{ pointerEvents: 'box-none' }}>
+            <View />
+          </View>
+          <View pointerEvents="none" />
+        </View>,
+      )
+      const [nested, none] = Array.from(first(container).children)
+      expect(getComputedStyle(nested as Element).pointerEvents).toBe('none')
+      expect(getComputedStyle(nested?.firstElementChild as Element).pointerEvents).toBe('auto')
+      expect(getComputedStyle(none as Element).pointerEvents).toBe('none')
+    })
+
+    test('the prop wins over the style key', () => {
+      const { container } = render(
+        <View pointerEvents="box-none" style={{ pointerEvents: 'auto' }} />,
+      )
+      expect(getComputedStyle(first(container)).pointerEvents).toBe('none')
+    })
   })
 
   describe('onLayout', () => {

@@ -15,7 +15,7 @@ import { withHostMethods } from '../../render/hostMethods'
 import { resolveTag } from '../../render/resolveTag'
 import { useElementLayout } from '../../render/useElementLayout'
 import { toCSSColor } from '../../style/color'
-import { compileReset, compileStyle, joinClassNames } from '../../style/compile'
+import { compileReset, compileStyle, joinClassNames, pointerEventsStyle } from '../../style/compile'
 import type { StyleRegistry } from '../../style/registry'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { TextAncestorContext } from './TextAncestorContext'
@@ -136,8 +136,7 @@ export function Text(props: TextProps): ReactElement {
         : multiLineStyle(numberOfLines)
   const clipStyle = ellipsizeMode === 'clip' ? { textOverflow: 'clip' } : undefined
   const selectStyle = selectable === false ? { userSelect: 'none' } : undefined
-  const pointerStyle =
-    pointerEvents === 'none' || pointerEvents === 'auto' ? { pointerEvents } : undefined
+  const pointerStyle = pointerEvents === undefined ? undefined : pointerEventsStyle[pointerEvents]
 
   let className = joinClassNames(
     nested

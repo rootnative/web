@@ -38,6 +38,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 - The server renders three `<style>` elements now: the defaults of the components come first. Render all three with `renderStyleTags` or `styleTagsHTML`.
 - The Vite plugin now gives the dependency optimizer the `.web` extensions too. Before, a pre-bundled library loaded its native file where it had a `.web.js` file, and the dev server stopped on `react-native-safe-area-context`.
 - A tap that put a new pressable under the finger, for example in a modal that it opened, pressed that pressable too in Chrome on Android. The click of the tap now stops when it lands outside the pressed element.
+- `pointerEvents: 'box-none'` and `'box-only'` now work in a `style`, as the prop does. Before, they became CSS with no effect, so a full-size layer of a library took every click of the page under it. A child of a `box-none` view keeps its own `pointerEvents`.
+- A `PanResponder` inside a `Pressable` keeps the pointer now. Before, the `Pressable` took the pointer capture, so the responder got the grant but no move and no release. A responder that takes the pointer on a move ends the press of a `Pressable` inside it, as on native, and a `Pressable` that takes the start isn't followed by a start of the responder around it.
 
 ## [0.0.0-alpha.2] - 2026-11-11
 

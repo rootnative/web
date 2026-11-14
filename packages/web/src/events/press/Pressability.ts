@@ -1,4 +1,4 @@
-import type { SyntheticEvent } from 'react'
+import type { PointerEvent as ReactPointerEvent, SyntheticEvent } from 'react'
 
 import { toGestureResponderEvent, toMouseEvent } from '../responderEvent'
 import type { GestureResponderEvent } from '../types'
@@ -105,6 +105,17 @@ export const claimPress = (event: Event): void => {
   claimed.add(event)
 }
 
+// The pressable that holds each pointer.
+const pressing = new Map<number, Pressability>()
+
+// Ends the press of a pointer that another responder takes, as a native responder that takes
+// over terminates the pressable. The click of that pointer doesn't press.
+export const terminatePress = (event: ReactPointerEvent<HTMLElement>): void => {
+  pressing.get(event.pointerId)?.terminate(event, true)
+}
+
+export const isPressClaimed = (event: Event): boolean => claimed.has(event)
+
 const isActivationKey = (key: string): boolean => key === 'Enter' || key === ' '
 
 // The browser turns a key press on these elements into a click, which calls onPress.
@@ -206,11 +217,22 @@ export class Pressability {
     this.longPressTimer = clear(this.longPressTimer)
     this.pressDelayTimer = clear(this.pressDelayTimer)
     this.pressOutTimer = clear(this.pressOutTimer)
+    if (this.pointerId !== null) pressing.delete(this.pointerId)
     this.config = Object.freeze({})
   }
 
   getEventHandlers(): PressabilityEventHandlers {
     return this.handlers
+  }
+
+  // A canceled pointer sends no click. A pointer that another responder took still does.
+  terminate(event: ReactPointerEvent<HTMLElement>, clickFollows: boolean): void {
+    const element = this.element
+    if (event.pointerId !== this.pointerId || element === null) return
+    this.pointerId = null
+    pressing.delete(event.pointerId)
+    this.pointerClickPending = clickFollows
+    this.receiveSignal('RESPONDER_TERMINATED', toGestureResponderEvent(event, element))
   }
 
   static setLongPressDeactivationDistance(distance: number): void {
@@ -228,6 +250,7 @@ export class Pressability {
 
         const element = event.currentTarget
         this.pointerId = event.pointerId
+        pressing.set(event.pointerId, this)
         this.pointerClickPending = true
         // Keeps move and up events on this element when the pointer leaves it.
         try {
@@ -267,17 +290,14 @@ export class Pressability {
         const element = this.element
         if (event.pointerId !== this.pointerId || element === null) return
         this.pointerId = null
+        pressing.delete(event.pointerId)
         this.receiveSignal('RESPONDER_RELEASE', toGestureResponderEvent(event, element))
         // A mouse click goes to the pressed element, but a tap's click can go elsewhere.
         if (event.pointerType !== 'mouse') stopRetargetedClick(element, event.timeStamp)
       },
 
       onPointerCancel: (event) => {
-        const element = this.element
-        if (event.pointerId !== this.pointerId || element === null) return
-        this.pointerId = null
-        this.pointerClickPending = false
-        this.receiveSignal('RESPONDER_TERMINATED', toGestureResponderEvent(event, element))
+        this.terminate(event, false)
       },
 
       onClick: (event) => {

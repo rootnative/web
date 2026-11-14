@@ -176,6 +176,10 @@ const resolveProperty = (name: string, value: unknown, out: CSSDeclarations): vo
     case 'backgroundImage':
       if (typeof value === 'string') out['backgroundImage'] = value
       return
+    case 'pointerEvents':
+      // `box-none` and `box-only` need a child selector. `compileStyle` adds their class.
+      if (value === 'auto' || value === 'none') out['pointerEvents'] = value
+      return
   }
 
   if (colorProperties.has(name)) {

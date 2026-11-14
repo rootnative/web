@@ -15,6 +15,34 @@ export const flattenStyle = <T extends object>(style: StyleProp<T>): T | undefin
   return result as T | undefined
 }
 
+// A child selector can't be an atomic class. The child rule of `box-none` has no specificity, so
+// a child with its own `pointerEvents` keeps it. The children of `box-only` are never a target.
+const boxPointerEventsClass = (value: unknown, registry: StyleRegistry): string | undefined => {
+  if (value === 'box-none') {
+    return registry.staticClass('rn-pe-box-none', [
+      '.rn-pe-box-none{pointer-events:none}',
+      ':where(.rn-pe-box-none)>*{pointer-events:auto}',
+    ])
+  }
+  if (value === 'box-only') {
+    return registry.staticClass('rn-pe-box-only', [
+      '.rn-pe-box-only{pointer-events:auto}',
+      '.rn-pe-box-only>*{pointer-events:none!important}',
+    ])
+  }
+  return undefined
+}
+
+// The `pointerEvents` prop as a style. The prop wins over the same key of `style`.
+export const pointerEventsStyle: Readonly<
+  Record<'auto' | 'none' | 'box-none' | 'box-only', FlatStyle>
+> = Object.freeze({
+  auto: Object.freeze({ pointerEvents: 'auto' }),
+  none: Object.freeze({ pointerEvents: 'none' }),
+  'box-none': Object.freeze({ pointerEvents: 'box-none' }),
+  'box-only': Object.freeze({ pointerEvents: 'box-only' }),
+})
+
 const cache = new WeakMap<StyleRegistry, WeakMap<FlatStyle, string>>()
 
 export const compileStyle = (
@@ -32,7 +60,10 @@ export const compileStyle = (
     if (cached !== undefined) return cached
   }
 
-  const classes = registry.classesFor(resolveStyle(flat))
+  const classes = joinClassNames(
+    registry.classesFor(resolveStyle(flat)),
+    boxPointerEventsClass(flat['pointerEvents'], registry),
+  )
   if (cacheable) {
     if (perRegistry === undefined) {
       perRegistry = new WeakMap()

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test, vi, type Mock } from 'vitest'
 
+import { Pressable } from '../../components/Pressable'
 import { View } from '../../components/View'
 import type { GestureResponderEvent } from '../../events/types'
 import { cleanup, render } from '../../test/render'
@@ -294,6 +295,57 @@ describe('PanResponder', () => {
     expect(config.onPanResponderRelease).not.toHaveBeenCalled()
     pointer(element, 'pointerup', 0, 0, 1)
     expect(config.onPanResponderRelease).toHaveBeenCalledTimes(1)
+  })
+
+  test('a responder inside a pressable takes the start, and the pressable gets no press', () => {
+    const config = spyConfig({ onStartShouldSetPanResponder: vi.fn(yes) })
+    const onPressIn = vi.fn()
+    const onPress = vi.fn()
+    const { container } = render(
+      <Pressable onPressIn={onPressIn} onPress={onPress} style={style}>
+        <View {...PanResponder.create(config).panHandlers} style={style} />
+      </Pressable>,
+    )
+    const pressable = box(container)
+    const inner = box(pressable)
+    pointer(inner, 'pointerdown', 10, 10)
+    pointer(inner, 'pointermove', 40, 10)
+    pointer(inner, 'pointerup', 40, 10)
+    expect(config.onPanResponderGrant).toHaveBeenCalledTimes(1)
+    expect(config.onPanResponderMove).toHaveBeenCalledTimes(1)
+    expect(config.onPanResponderRelease).toHaveBeenCalledTimes(1)
+    expect(onPressIn).not.toHaveBeenCalled()
+    expect(onPress).not.toHaveBeenCalled()
+  })
+
+  test('a pressable inside a responder takes the start, and a move can end its press', async () => {
+    const config = spyConfig({
+      onStartShouldSetPanResponder: vi.fn(yes),
+      onMoveShouldSetPanResponder: vi.fn(byDx(5)),
+    })
+    const onPressIn = vi.fn()
+    const onPressOut = vi.fn()
+    const onPress = vi.fn()
+    const { container } = render(
+      <View {...PanResponder.create(config).panHandlers} style={style}>
+        <Pressable onPressIn={onPressIn} onPressOut={onPressOut} onPress={onPress} style={style} />
+      </View>,
+    )
+    const inner = box(box(container))
+    pointer(inner, 'pointerdown', 10, 10)
+    expect(onPressIn).toHaveBeenCalledTimes(1)
+    expect(config.onStartShouldSetPanResponder).not.toHaveBeenCalled()
+    expect(config.onPanResponderGrant).not.toHaveBeenCalled()
+
+    pointer(inner, 'pointermove', 40, 10)
+    expect(config.onPanResponderGrant).toHaveBeenCalledTimes(1)
+    // The press-out waits for the minimum press time.
+    await expect.poll(() => onPressOut.mock.calls.length).toBe(1)
+
+    pointer(inner, 'pointerup', 40, 10)
+    inner.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }))
+    expect(config.onPanResponderRelease).toHaveBeenCalledTimes(1)
+    expect(onPress).not.toHaveBeenCalled()
   })
 
   test('a new gesture gets a new stateID', () => {
