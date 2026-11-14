@@ -1,4 +1,5 @@
-import { createElement } from 'react'
+import { createStyleRegistry, renderStyleTags, StyleRegistryProvider } from '@rootnative/web/server'
+import { Children, cloneElement, createElement } from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 
 const providers = new Map()
@@ -20,10 +21,23 @@ export const AppRegistry = {
     providers.set(appKey, componentProvider)
     return appKey
   },
+  // For a render on a server. The styles of this render go into a registry of its own, so two
+  // requests never share CSS. Expo Router renders `element` first and then asks for the style
+  // element, which it puts in `<head>`. The runtime has three style sheets, so the "element" is
+  // a fragment of three, and the browser adopts them by their ids on hydration.
   getApplication(appKey, parameters) {
+    const registry = createStyleRegistry()
     return {
-      element: elementOf(appKey, parameters),
-      getStyleElement: (props) => createElement('style', props),
+      element: createElement(StyleRegistryProvider, { registry }, elementOf(appKey, parameters)),
+      getStyleElement: (props) => {
+        const tags = renderStyleTags(registry)
+        if (props === undefined) return tags
+        return cloneElement(
+          tags,
+          undefined,
+          ...Children.map(tags.props.children, (tag) => cloneElement(tag, props)),
+        )
+      },
     }
   },
   runApplication(appKey, parameters) {
