@@ -31,6 +31,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 - **Breaking:** the `ref` of a host component has the type `HostInstance`, which is the element plus the measure methods. A ref typed as `useRef<HTMLElement>(null)` is now a type error. Use `useRef<ViewInstance>(null)`, as on native.
 - **Breaking:** the `style` props take React Native's style types, not any object, and `StyleSheet.create` checks each key and value, as on native. A CSS property that React Native doesn't have is now a type error, except `touchAction`. It still works at runtime. See [Styles](https://rootnative.github.io/web/styles#types).
 - A `ScrollView` with `refreshControl` gives the control the style props that place the box, and the scroller fills it, as on Android. Before, the scroller kept the whole style.
+- `ViewProps` and `TextInputProps` are interfaces now, as in React Native, so a library can add a prop with `declare module 'react-native'`. Before, such a library replaced the whole type, and `style` and `testID` were missing from the props of every library.
 
 ### Fixed
 

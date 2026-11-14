@@ -168,21 +168,24 @@ export type AccessibilityProps = {
   'aria-valuetext'?: string | undefined
 }
 
-export type ViewProps = AccessibilityProps &
-  DOMEventHandlers<HTMLElement> & {
-    children?: ReactNode
-    style?: StyleProp<ViewStyle> | undefined
-    ref?: Ref<ViewInstance> | undefined
-    id?: string | undefined
-    nativeID?: string | undefined
-    testID?: string | undefined
-    tabIndex?: 0 | -1 | undefined
-    focusable?: boolean | undefined
-    pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only' | undefined
-    collapsable?: boolean | undefined
-    onLayout?: ((event: LayoutChangeEvent) => void) | undefined
-    // Web only. The level of a `heading` role, 1 to 6.
-    'aria-level'?: number | undefined
-    // Web only. Renders an anchor.
-    href?: string | undefined
-  }
+// An interface, as in React Native, so a library can add props with a module augmentation.
+export interface ViewProps extends AccessibilityProps, DOMEventHandlers<HTMLElement> {
+  children?: ReactNode
+  style?: StyleProp<ViewStyle> | undefined
+  ref?: Ref<ViewInstance> | undefined
+  id?: string | undefined
+  nativeID?: string | undefined
+  testID?: string | undefined
+  tabIndex?: 0 | -1 | undefined
+  focusable?: boolean | undefined
+  pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only' | undefined
+  collapsable?: boolean | undefined
+  onLayout?: ((event: LayoutChangeEvent) => void) | undefined
+  // Declared here too, so the DOM type wins when a library adds its own `onKeyDown` to this
+  // interface with a module augmentation.
+  onKeyDown?: DOMEventHandlers<HTMLElement>['onKeyDown']
+  // Web only. The level of a `heading` role, 1 to 6.
+  'aria-level'?: number | undefined
+  // Web only. Renders an anchor.
+  href?: string | undefined
+}

@@ -21,7 +21,7 @@ const babel = createRequire(require.resolve('react-native-worklets/package.json'
   ) => { code?: string | null; map?: unknown } | null
 }
 const WORKLET_ID =
-  /node_modules\/(@rootnative\/inertia|react-native-reanimated|react-native-worklets)\/.*\.[cm]?[jt]sx?$|\/playground\/src\/.*\.tsx?$/
+  /node_modules\/(@rootnative\/(?:inertia|core|components)|react-native-reanimated|react-native-worklets)\/.*\.[cm]?[jt]sx?$|\/playground\/src\/.*\.tsx?$/
 const workletize = (code: string, id: string): { code: string; map: unknown } | null => {
   const file = id.split('?')[0] as string
   if (!WORKLET_ID.test(file)) return null

@@ -8,5 +8,7 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - '@rootnative/inertia@0.0.29'
+  - '@rootnative/components@0.0.0-alpha.37'
+  - '@rootnative/core@0.0.0-alpha.37'
 
 strictPeerDependencies: true

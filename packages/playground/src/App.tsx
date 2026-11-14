@@ -7,6 +7,7 @@ import { ApisRoute } from './routes/ApisRoute'
 import { AppearanceRoute } from './routes/AppearanceRoute'
 import { ButtonRoute } from './routes/ButtonRoute'
 import { CompatRoute } from './routes/CompatRoute'
+import { ComponentsRoute } from './routes/ComponentsRoute'
 import { DimensionsRoute } from './routes/DimensionsRoute'
 import { FlatListRoute } from './routes/FlatListRoute'
 import { HeadRoute } from './routes/HeadRoute'
@@ -51,6 +52,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'compat', title: 'Compat exports', Component: CompatRoute },
   { path: 'reanimated', title: 'Reanimated', Component: ReanimatedRoute },
   { path: 'inertia', title: 'Inertia', Component: InertiaRoute },
+  { path: 'components', title: 'Components', Component: ComponentsRoute },
 ]
 
 const subscribe = (onChange: () => void): (() => void) => {
