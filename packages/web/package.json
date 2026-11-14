@@ -1,6 +1,6 @@
 {
   "name": "@rootnative/web",
-  "version": "0.0.0-alpha.2",
+  "version": "0.0.0-alpha.3",
   "description": "A standalone web runtime for React Native apps",
   "license": "MIT",
   "homepage": "https://rootnative.github.io/web/",
