@@ -2,7 +2,8 @@
 // - each import in the tarball's JavaScript names a dependency or a peer dependency,
 // - the tarball's JavaScript still reads `process.env.NODE_ENV`,
 // - the app in ./consumer passes `tsc` with the types of the tarball and no `skipLibCheck`,
-// - the app builds with the Vite plugin, and the built page works in Chromium.
+// - the app builds with the Vite plugin, and the built page works in Chromium,
+// - a library that imports `react-native` works in that build.
 // The app follows the Installation page of the docs, so a failure here is also a docs problem.
 //
 // The tarball goes into ./consumer/node_modules, so the app can't see the source of the package.
@@ -132,6 +133,11 @@ async function checkPage() {
     expectEqual('Platform.OS', await page.getByTestId('platform').textContent(), 'web')
     expectEqual('__DEV__ in a build', await page.getByTestId('dev').textContent(), 'false')
     expectEqual('The label', await page.getByTestId('label').textContent(), 'web file')
+    expectEqual(
+      'The insets from react-native-safe-area-context',
+      await page.getByTestId('insets').textContent(),
+      'Insets 0 0',
+    )
     await page.getByTestId('press').click()
     await page
       .getByText('Pressed 1')
