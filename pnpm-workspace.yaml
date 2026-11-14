@@ -12,3 +12,20 @@ minimumReleaseAgeExclude:
   - '@rootnative/core@0.0.0-alpha.37'
 
 strictPeerDependencies: true
+
+# pnpm lets each installed package import every other one, through `.pnpm/node_modules`. A
+# library that loads an Expo module when it finds one (the icon sets load `expo-font`) then finds
+# the modules of the Expo demo, and the Vite build of the playground fails on them. The Expo
+# packages stay out of that folder, so only a package that lists one can import it.
+hoistPattern:
+  - '*'
+  - '!expo'
+  - '!expo-*'
+  - '!@expo/*'
+
+# The same libraries name Expo packages as optional peers, and pnpm fills an optional peer with
+# a version from another project of the workspace.
+overrides:
+  '@react-native-vector-icons/common>expo-font': '-'
+  '@react-native-vector-icons/material-design-icons>expo-font': '-'
+  '@react-native-vector-icons/material-design-icons>@expo/config-plugins': '-'
