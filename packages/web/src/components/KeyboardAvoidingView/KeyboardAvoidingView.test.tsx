@@ -135,7 +135,7 @@ describe('KeyboardAvoidingView', () => {
   test('stops listening when it unmounts', async () => {
     const { unmount } = renderView({ behavior: 'padding' })
     await settle()
-    expect(stub.listenerCount()).toBe(1)
+    expect(stub.listenerCount()).toBe(2)
     unmount()
     expect(stub.listenerCount()).toBe(0)
   })

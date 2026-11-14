@@ -58,6 +58,20 @@ describe('Keyboard with no listener', () => {
     expect(Keyboard.isVisible()).toBe(true)
   })
 
+  test('moves the keyboard down the page with the visual viewport', () => {
+    field().focus()
+    stub.setKeyboard(300)
+    stub.setOffsetTop(120)
+    expect(Keyboard.metrics()).toEqual({
+      screenX: 0,
+      screenY: root.clientHeight - 180,
+      width: root.clientWidth,
+      height: 300,
+    })
+    stub.setOffsetTop(400)
+    expect(Keyboard.metrics()?.screenY).toBe(root.clientHeight)
+  })
+
   test('counts a pinch zoom as no keyboard, and a keyboard under a zoom at its height', () => {
     field().focus()
     stub.setScale(2)
@@ -122,6 +136,20 @@ describe('Keyboard events', () => {
     stub.setKeyboard(280)
     await nextFrame()
     expect(heights).toEqual([200, 280])
+  })
+
+  test('fire keyboardDidShow again when the visual viewport moves', async () => {
+    const tops: number[] = []
+    Keyboard.addListener('keyboardDidShow', (event) => tops.push(event.endCoordinates.screenY))
+    field().focus()
+
+    stub.setKeyboard(300)
+    await nextFrame()
+    stub.setOffsetTop(300)
+    await nextFrame()
+    stub.setOffsetTop(0)
+    await nextFrame()
+    expect(tops).toEqual([root.clientHeight - 300, root.clientHeight, root.clientHeight - 300])
   })
 
   test('never fire the Will and ChangeFrame events', async () => {

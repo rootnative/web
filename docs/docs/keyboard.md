@@ -56,7 +56,7 @@ Each event has the shape of Android's event:
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `duration`       | `0`.                                                                                                                                                                                                                                          |
 | `easing`         | `'keyboard'`.                                                                                                                                                                                                                                 |
-| `endCoordinates` | `screenY` is the top of the keyboard, from the top of the window. `height` is the part that it covers. `screenX` is 0, and `width` is the width of the window. In `keyboardDidHide`, `height` is 0 and `screenY` is the height of the window. |
+| `endCoordinates` | `screenY` is the top of the keyboard, from the top of the window. When the browser moves the page up to show the field, `screenY` moves down by the same distance. `height` is the height of the keyboard. `screenX` is 0, and `width` is the width of the window. In `keyboardDidHide`, `height` is 0 and `screenY` is the height of the window. |
 
 The values are CSS pixels. While the keyboard moves, the browser can resize the viewport on each frame. `Keyboard` reads it once for each frame, so `keyboardDidShow` can fire a few times with a growing height.
 

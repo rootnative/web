@@ -1,12 +1,19 @@
 import { keyboardSources } from '../apis/Keyboard'
 
-type FakeViewport = EventTarget & { width: number; height: number; scale: number }
+type FakeViewport = EventTarget & {
+  width: number
+  height: number
+  scale: number
+  offsetTop: number
+}
 
 export type KeyboardStub = {
   /** Shows a keyboard of this height, or hides it with 0, and fires `resize`. */
   setKeyboard: (height: number) => void
   setScale: (scale: number) => void
-  /** The number of `resize` listeners on the viewport. */
+  /** Moves the viewport down the page, as a browser does to show a field, and fires `scroll`. */
+  setOffsetTop: (offsetTop: number) => void
+  /** The number of listeners on the viewport. */
   listenerCount: () => number
   restore: () => void
 }
@@ -18,6 +25,7 @@ export const stubKeyboard = (): KeyboardStub => {
     width: root.clientWidth,
     height: root.clientHeight,
     scale: 1,
+    offsetTop: 0,
   }) as FakeViewport
   let listeners = 0
   const add = viewport.addEventListener.bind(viewport)
@@ -45,6 +53,10 @@ export const stubKeyboard = (): KeyboardStub => {
     setScale: (scale) => {
       viewport.scale = scale
       apply()
+    },
+    setOffsetTop: (offsetTop) => {
+      viewport.offsetTop = offsetTop
+      viewport.dispatchEvent(new Event('scroll'))
     },
     listenerCount: () => listeners,
     restore: () => {

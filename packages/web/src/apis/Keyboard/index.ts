@@ -100,7 +100,13 @@ const read = (): KeyboardMetrics | null => {
   if (viewport === null || !isEditable(document.activeElement)) return null
   const height = Math.round(root.clientHeight - viewport.height * viewport.scale)
   if (height <= 0) return null
-  return { screenX: 0, screenY: root.clientHeight - height, width: root.clientWidth, height }
+  // A browser can also move the visual viewport down the page to show the focused field. The
+  // keyboard then starts lower on the page, and covers less of it, or nothing.
+  const screenY = Math.min(
+    root.clientHeight - height + Math.round(viewport.offsetTop),
+    root.clientHeight,
+  )
+  return { screenX: 0, screenY, width: root.clientWidth, height }
 }
 
 const hiddenMetrics = (): KeyboardMetrics => ({
@@ -155,6 +161,7 @@ const startObserving = (): void => {
   }
   current = read()
   observed.viewport?.addEventListener('resize', schedule)
+  observed.viewport?.addEventListener('scroll', schedule)
   observed.virtualKeyboard?.addEventListener('geometrychange', schedule)
   window.addEventListener('resize', schedule)
 }
@@ -163,6 +170,7 @@ const stopObserving = (): void => {
   if (observed === null) return
   for (const set of listeners.values()) if (set.size > 0) return
   observed.viewport?.removeEventListener('resize', schedule)
+  observed.viewport?.removeEventListener('scroll', schedule)
   observed.virtualKeyboard?.removeEventListener('geometrychange', schedule)
   window.removeEventListener('resize', schedule)
   observed = null
