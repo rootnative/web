@@ -1,3 +1,4 @@
+import { getLeftAndRightSwap, setLeftAndRightSwap } from '../../style/direction'
 import { hasDOM } from '../../utils/env'
 
 export type I18nManagerConstants = {
@@ -8,7 +9,6 @@ export type I18nManagerConstants = {
 
 let allowed = true
 let forced = false
-let swapLeftAndRight = true
 
 // The document direction, which the page sets with `dir` or with CSS.
 const documentIsRTL = (): boolean =>
@@ -29,12 +29,12 @@ export const I18nManager: {
   },
 
   get doLeftAndRightSwapInRTL() {
-    return swapLeftAndRight
+    return getLeftAndRightSwap()
   },
 
   getConstants: () => ({
     isRTL: isRTL(),
-    doLeftAndRightSwapInRTL: swapLeftAndRight,
+    doLeftAndRightSwapInRTL: getLeftAndRightSwap(),
     localeIdentifier: hasDOM() ? navigator.language : undefined,
   }),
 
@@ -49,8 +49,10 @@ export const I18nManager: {
     if (hasDOM()) document.documentElement.dir = force ? 'rtl' : ''
   },
 
+  // Call it before the first render. A style that a component compiled before keeps its
+  // classes until the component renders again.
   swapLeftAndRightInRTL: (swap) => {
-    swapLeftAndRight = swap
+    setLeftAndRightSwap(swap)
   },
 }
 
@@ -58,6 +60,6 @@ export const I18nManager: {
 export const resetI18nManager = (): void => {
   allowed = true
   forced = false
-  swapLeftAndRight = true
+  setLeftAndRightSwap(true)
   if (hasDOM()) document.documentElement.dir = ''
 }

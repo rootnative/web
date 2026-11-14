@@ -1,4 +1,5 @@
 import { toCSSColor } from './color'
+import { getLeftAndRightSwap, swappedProperties } from './direction'
 import { legacyBoxShadow, toCSSBoxShadow, toCSSFilter, toCSSTextShadow } from './shadow'
 import { toCSSTransform, toCSSTransformOrigin } from './transform'
 import type { CSSDeclarations, FlatStyle } from './types'
@@ -97,10 +98,25 @@ const textAlignVerticalToVerticalAlign: Record<string, string> = {
 
 export const resolveStyle = (style: FlatStyle): CSSDeclarations => {
   const out: CSSDeclarations = {}
+  const swap = getLeftAndRightSwap()
+  // A swapped left or right style and a start or end style can name the same CSS property.
+  // The start or end style wins in any key order, as Yoga reads the start edge first.
+  let swapped: CSSDeclarations | undefined
 
   for (const [name, value] of Object.entries(style)) {
     if (value === undefined || value === null || ignoredProperties.has(name)) continue
-    resolveProperty(name, value, out)
+    if (swap && isPhysical(name)) {
+      swapped ??= {}
+      resolveProperty(name, value, swapped)
+    } else {
+      resolveProperty(name, value, out)
+    }
+  }
+  if (swapped !== undefined) {
+    for (const name in swapped) {
+      const target = swappedProperties[name] ?? name
+      if (out[target] === undefined) out[target] = swapped[name] as string
+    }
   }
 
   if (out['boxShadow'] === undefined && hasLegacyShadow(style)) {
@@ -114,6 +130,11 @@ export const resolveStyle = (style: FlatStyle): CSSDeclarations => {
 
   return out
 }
+
+const isPhysical = (name: string): boolean =>
+  swappedProperties[name] !== undefined ||
+  name === 'marginHorizontal' ||
+  name === 'paddingHorizontal'
 
 const resolveProperty = (name: string, value: unknown, out: CSSDeclarations): void => {
   switch (name) {

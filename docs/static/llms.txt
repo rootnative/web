@@ -149,9 +149,11 @@ only). Any other prop that isn't a React Native prop is dropped.
   longhand wins over a shorthand, whatever the key order.
 - Start and end props (marginStart, paddingEnd, start, end, borderStartWidth,
   borderTopStartRadius, ...) become logical CSS and flip in right-to-left.
-- marginLeft, paddingLeft, left, and their right partners stay physical in a
-  right-to-left layout. Native swaps them by default. Use start and end props
-  for anything that must follow the direction.
+- marginLeft, paddingLeft, left, the left and right borders and corners, and
+  their right partners swap sides in a right-to-left layout, as on native.
+  They compile to logical CSS. I18nManager.swapLeftAndRightInRTL(false)
+  before the first render keeps them physical. A start or end style wins
+  over a left or right style of the same side.
 - transform, boxShadow, and filter take the React Native array or a CSS
   string. shadow* props become box-shadow when boxShadow isn't set.
   textShadow* props become text-shadow.
@@ -500,7 +502,7 @@ StatusBar
   tabIndex={-1} so that it can take focus.
 - I18nManager: isRTL reads the dir of <html> each time. forceRTL sets dir on
   <html> at once. allowRTL(false) changes only what isRTL reports.
-  swapLeftAndRightInRTL stores the flag and has no effect on styles. isRTL is
+  swapLeftAndRightInRTL(false) keeps left and right styles physical. isRTL is
   false on the server.
 - BackHandler: listeners register and never fire. exitApp() does nothing. Use
   the history API of your router.

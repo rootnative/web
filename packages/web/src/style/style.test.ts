@@ -67,7 +67,7 @@ describe('createReactDOMStyle', () => {
       padding: 1,
     })
     const names = Object.keys(declarations)
-    expect(names.indexOf('margin')).toBeLessThan(names.indexOf('marginLeft'))
+    expect(names.indexOf('margin')).toBeLessThan(names.indexOf('marginInlineStart'))
     expect(names.indexOf('padding')).toBeLessThan(names.indexOf('paddingTop'))
     const computed = applyInline(declarations)
     expect(computed.marginLeft).toBe('8px')

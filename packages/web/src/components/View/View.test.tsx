@@ -1,6 +1,7 @@
 import { createRef } from 'react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
+import { I18nManager, resetI18nManager } from '../../apis/I18nManager'
 import { StyleSheet } from '../../apis/StyleSheet'
 import { ScrollView, type ScrollViewInstance } from '../ScrollView'
 import { cleanup, render } from '../../test/render'
@@ -10,6 +11,13 @@ import type { HostInstance } from './types'
 afterEach(cleanup)
 
 const first = (container: HTMLElement): HTMLElement => container.firstElementChild as HTMLElement
+
+// The distance of an element from the left and the right edge of its parent.
+const edges = (element: Element, parent: Element): { left: number; right: number } => {
+  const rect = element.getBoundingClientRect()
+  const outer = parent.getBoundingClientRect()
+  return { left: rect.left - outer.left, right: outer.right - rect.right }
+}
 
 describe('View', () => {
   test('renders a div with the native reset', () => {
@@ -321,6 +329,49 @@ describe('View', () => {
         <View pointerEvents="box-none" style={{ pointerEvents: 'auto' }} />,
       )
       expect(getComputedStyle(first(container)).pointerEvents).toBe('none')
+    })
+  })
+
+  describe('left and right in a right-to-left document', () => {
+    afterEach(resetI18nManager)
+
+    const tree = (
+      <View style={{ width: 200, height: 40 }}>
+        <View style={{ position: 'absolute', left: 10, width: 20, height: 20 }} />
+        <View style={{ marginLeft: 30, width: 20, height: 20, alignSelf: 'flex-start' }} />
+        <View style={{ position: 'absolute', start: 10, width: 20, height: 20 }} />
+      </View>
+    )
+
+    test('left is the left edge in a left-to-right document', () => {
+      const { container } = render(tree)
+      const parent = first(container)
+      const [positioned, margin] = Array.from(parent.children)
+      expect(edges(positioned as Element, parent).left).toBe(10)
+      expect(edges(margin as Element, parent).left).toBe(30)
+    })
+
+    test('left goes to the start edge, which is the right, as Fabric swaps it', () => {
+      I18nManager.forceRTL(true)
+      const { container } = render(tree)
+      const parent = first(container)
+      const [positioned, margin, start] = Array.from(parent.children)
+      expect(edges(positioned as Element, parent).right).toBe(10)
+      expect(edges(margin as Element, parent).right).toBe(30)
+      expect(edges(start as Element, parent).right).toBe(10)
+    })
+
+    test('left stays the left edge when the swap is off', () => {
+      I18nManager.forceRTL(true)
+      I18nManager.swapLeftAndRightInRTL(false)
+      const { container } = render(tree)
+      const parent = first(container)
+      const [positioned, margin, start] = Array.from(parent.children)
+      expect(edges(positioned as Element, parent).left).toBe(10)
+      // A flex-start child of a right-to-left column sits at the right, and its left margin
+      // has no effect on that side.
+      expect(edges(margin as Element, parent).right).toBe(0)
+      expect(edges(start as Element, parent).right).toBe(10)
     })
   })
 

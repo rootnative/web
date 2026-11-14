@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { resolveStyle } from './resolveStyle'
+import { setLeftAndRightSwap } from './direction'
 
 describe('resolveStyle', () => {
   test('skips undefined and null values', () => {
@@ -73,11 +74,59 @@ describe('resolveStyle', () => {
   describe('shorthands and renames', () => {
     test('expands horizontal and vertical margin and padding', () => {
       expect(resolveStyle({ marginHorizontal: 8, paddingVertical: '1em' })).toEqual({
-        marginLeft: '8px',
-        marginRight: '8px',
+        marginInlineStart: '8px',
+        marginInlineEnd: '8px',
         paddingTop: '1em',
         paddingBottom: '1em',
       })
+    })
+
+    test('maps left and right to logical properties, as Fabric swaps them in RTL', () => {
+      expect(
+        resolveStyle({
+          left: 1,
+          right: 2,
+          marginLeft: 3,
+          paddingRight: 4,
+          borderLeftWidth: 5,
+          borderRightColor: 'red',
+          borderTopLeftRadius: 6,
+          borderBottomRightRadius: 7,
+          top: 8,
+        }),
+      ).toEqual({
+        insetInlineStart: '1px',
+        insetInlineEnd: '2px',
+        marginInlineStart: '3px',
+        paddingInlineEnd: '4px',
+        borderInlineStartWidth: '5px',
+        borderInlineEndColor: 'rgb(255,0,0)',
+        borderStartStartRadius: '6px',
+        borderEndEndRadius: '7px',
+        top: '8px',
+      })
+    })
+
+    test('a start or end style wins over left or right, in any key order', () => {
+      expect(resolveStyle({ start: 1, left: 2 })).toEqual({ insetInlineStart: '1px' })
+      expect(resolveStyle({ marginRight: 2, marginEnd: 1 })).toEqual({ marginInlineEnd: '1px' })
+      expect(resolveStyle({ paddingStart: 1, paddingHorizontal: 2 })).toEqual({
+        paddingInlineStart: '1px',
+        paddingInlineEnd: '2px',
+      })
+    })
+
+    test('keeps left and right physical when the swap is off', () => {
+      setLeftAndRightSwap(false)
+      try {
+        expect(resolveStyle({ left: 1, marginRight: 2, borderTopLeftRadius: 3 })).toEqual({
+          left: '1px',
+          marginRight: '2px',
+          borderTopLeftRadius: '3px',
+        })
+      } finally {
+        setLeftAndRightSwap(true)
+      }
     })
 
     test('maps start and end to logical properties', () => {

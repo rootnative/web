@@ -1,3 +1,4 @@
+import { getLeftAndRightSwap } from './direction'
 import { getStyleRegistry, type StyleRegistry } from './registry'
 import { resolveStyle } from './resolveStyle'
 import type { FlatStyle, StyleProp } from './types'
@@ -43,7 +44,11 @@ export const pointerEventsStyle: Readonly<
   'box-only': Object.freeze({ pointerEvents: 'box-only' }),
 })
 
-const cache = new WeakMap<StyleRegistry, WeakMap<FlatStyle, string>>()
+// One cache for each value of the left and right swap, because the classes of a style differ.
+const caches = [
+  new WeakMap<StyleRegistry, WeakMap<FlatStyle, string>>(),
+  new WeakMap<StyleRegistry, WeakMap<FlatStyle, string>>(),
+] as const
 
 export const compileStyle = (
   style: StyleProp<object>,
@@ -54,6 +59,7 @@ export const compileStyle = (
 
   // Static objects from StyleSheet.create are frozen, so they can be cached by identity.
   const cacheable = Object.isFrozen(flat)
+  const cache = caches[getLeftAndRightSwap() ? 1 : 0]
   let perRegistry = cache.get(registry)
   if (cacheable) {
     const cached = perRegistry?.get(flat)

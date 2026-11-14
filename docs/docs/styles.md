@@ -64,7 +64,7 @@ The start and end props map to CSS logical properties, so the browser flips them
 
 `marginHorizontal` and `paddingHorizontal` set the left and right sides, as on native.
 
-`marginLeft`, `paddingLeft`, `left`, and their right partners stay on the physical side in a right-to-left layout. On native they swap by default. Use the start and end props for anything that must follow the direction. See [`I18nManager`](/i18nmanager#left-and-right-styles).
+`marginLeft`, `paddingLeft`, `left`, and their right partners swap sides in a right-to-left layout, as on native. `I18nManager.swapLeftAndRightInRTL(false)` keeps them on the physical side. See [`I18nManager`](/i18nmanager#left-and-right-styles).
 
 ## Transforms, shadows, and filters
 
