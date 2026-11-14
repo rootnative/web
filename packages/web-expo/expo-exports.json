@@ -16,6 +16,7 @@
     "Dimensions",
     "Easing",
     "FlatList",
+    "I18nManager",
     "Image",
     "ImageBackground",
     "InputAccessoryView",

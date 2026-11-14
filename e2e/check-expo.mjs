@@ -44,7 +44,7 @@ function checkNames() {
   }
   const source = readFileSync(pluginPath, 'utf8')
   const list = source.slice(source.indexOf('new Set(['), source.indexOf('])'))
-  const expoNames = [...list.matchAll(/'([A-Za-z_]+)'/g)].map((match) => match[1])
+  const expoNames = [...list.matchAll(/'([\w$]+)'/g)].map((match) => match[1])
   if (expoNames.length === 0) {
     problems.push(`No name found in ${pluginPath}. Its format changed: change this check.`)
     return
