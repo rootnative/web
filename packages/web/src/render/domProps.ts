@@ -18,17 +18,48 @@ export const isNativeHandler = (name: string): boolean => nativeHandler.test(nam
 
 const passThrough = new Set(['lang', 'dir', 'target', 'rel', 'download'])
 
+// The events that React DOM 19 registers. Each has a handler prop and its `Capture` form. A
+// library can spread its own callback, such as `onValueChange`, onto a View: React Native and
+// react-native-web drop it, and React DOM logs an error for an `on*` prop that it doesn't know.
+const reactDOMEvents =
+  'abort animationEnd animationIteration animationStart auxClick beforeInput beforeToggle blur ' +
+  'cancel canPlay canPlayThrough change click close compositionEnd compositionStart ' +
+  'compositionUpdate contextMenu copy cut doubleClick drag dragEnd dragEnter dragExit dragLeave ' +
+  'dragOver dragStart drop durationChange emptied encrypted ended error focus fullscreenChange ' +
+  'fullscreenError gotPointerCapture input invalid keyDown keyPress keyUp load loadedData ' +
+  'loadedMetadata loadStart lostPointerCapture mouseDown mouseMove mouseOut mouseOver mouseUp ' +
+  'paste pause play playing pointerCancel pointerDown pointerMove pointerOut pointerOver ' +
+  'pointerUp progress rateChange reset resize scroll scrollEnd seeked seeking select stalled ' +
+  'submit suspend timeUpdate toggle touchCancel touchEnd touchMove touchStart transitionCancel ' +
+  'transitionEnd transitionRun transitionStart volumeChange waiting wheel'
+
+export const domEventHandlers: ReadonlySet<string> = new Set([
+  ...reactDOMEvents.split(' ').flatMap((event) => {
+    const name = `on${event.charAt(0).toUpperCase()}${event.slice(1)}`
+    return [name, `${name}Capture`]
+  }),
+  // These four have no capture phase.
+  'onMouseEnter',
+  'onMouseLeave',
+  'onPointerEnter',
+  'onPointerLeave',
+])
+
 // Maps React Native props to DOM attributes. Unknown props are dropped, so they never
-// reach the element. `aria-*`, `data-*`, and `on*` props pass through as they are.
+// reach the element. `aria-*` and `data-*` props, and the event handlers of React DOM, pass
+// through as they are.
 export const toDOMProps = (props: Input): DOMProps => {
   const out: DOMProps = {}
 
   for (const name in props) {
     const value = props[name]
     if (value === undefined) continue
-    if (name.startsWith('aria-') || name.startsWith('data-') || passThrough.has(name)) {
-      out[name] = value
-    } else if (name.startsWith('on') && name.length > 2 && !nativeHandler.test(name)) {
+    if (
+      name.startsWith('aria-') ||
+      name.startsWith('data-') ||
+      passThrough.has(name) ||
+      domEventHandlers.has(name)
+    ) {
       out[name] = value
     }
   }

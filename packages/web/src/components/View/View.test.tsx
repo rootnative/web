@@ -3,6 +3,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { I18nManager, resetI18nManager } from '../../apis/I18nManager'
 import { StyleSheet } from '../../apis/StyleSheet'
+import { domEventHandlers } from '../../render/domProps'
 import { ScrollView, type ScrollViewInstance } from '../ScrollView'
 import { cleanup, render } from '../../test/render'
 import { View } from './index'
@@ -250,6 +251,22 @@ describe('View', () => {
       first(container).dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
       expect(onClick).toHaveBeenCalledTimes(1)
       expect(onPointerDown).toHaveBeenCalledTimes(1)
+    })
+
+    test('each event handler of React DOM passes through, and React knows each one', () => {
+      // The setup fails the test when React logs an unknown event handler.
+      const handlers = Object.fromEntries([...domEventHandlers].map((name) => [name, vi.fn()]))
+      const { container } = render(<View {...handlers} />)
+      first(container).dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
+      expect(handlers['onDoubleClick']).toHaveBeenCalledTimes(1)
+    })
+
+    test('an on* prop that React DOM does not know never reaches the element', () => {
+      // A library can spread its own callbacks onto its root View. React Native ignores them.
+      const errors = vi.spyOn(console, 'error')
+      const libraryProps: object = { onValueChange: vi.fn(), onHoverIn: vi.fn() }
+      render(<View {...libraryProps} />)
+      expect(errors).not.toHaveBeenCalled()
     })
   })
 

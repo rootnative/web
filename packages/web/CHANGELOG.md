@@ -4,6 +4,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Fixed
+
+- **An `on*` prop that React DOM doesn't know** no longer reaches the element. A library can spread its own callback, such as `onValueChange`, onto a `View`. React Native ignores it, and React logged `Unknown event handler property` for it. `View`, `Text`, `Image`, `TextInput`, `Switch`, and `Modal` now pass only the event handlers of React DOM, such as `onClick` and `onKeyDown`.
+
 ## [0.0.0-alpha.3] - 2026-11-14
 
 ### Added
