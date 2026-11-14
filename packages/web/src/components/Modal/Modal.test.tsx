@@ -208,6 +208,34 @@ describe('Modal', () => {
     expect(document.documentElement.style.overflow).toBe('')
   })
 
+  test('brings the visual viewport back when the browser moves it for the keyboard', async () => {
+    const viewport = window.visualViewport as VisualViewport
+    let offsetTop = 0
+    Object.defineProperty(viewport, 'offsetTop', { configurable: true, get: () => offsetTop })
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const move = (top: number): void => {
+      offsetTop = top
+      viewport.dispatchEvent(new Event('scroll'))
+    }
+    try {
+      render(<Screen />)
+      move(271)
+      expect(scrollTo).not.toHaveBeenCalled()
+
+      await open()
+      move(271)
+      expect(scrollTo).toHaveBeenCalledWith(window.scrollX, window.scrollY)
+
+      await user(() => userEvent.click(byTestId('close')))
+      scrollTo.mockClear()
+      move(271)
+      expect(scrollTo).not.toHaveBeenCalled()
+    } finally {
+      scrollTo.mockRestore()
+      delete (viewport as { offsetTop?: number }).offsetTop
+    }
+  })
+
   test('a press inside does not reach a pressable around the Modal', async () => {
     const outer = vi.fn()
     const inner = vi.fn()

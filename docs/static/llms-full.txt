@@ -1666,6 +1666,7 @@ export function Terms() {
 - `showModal()` makes the rest of the page inert. A click, the Tab key, and a screen reader stay inside the modal.
 - The focus moves into the modal: to the first element that can take it, or to the dialog itself. Chrome on Android picks the dialog when a touch opened the modal. When the modal hides, the focus goes back to the element that had it before, for example the button that opened the modal.
 - The page under the modal doesn't scroll.
+- When the keyboard opens, the modal stays in place. Safari on iOS moves the page up to show the focused field, and the modal moves it back. Use a [`KeyboardAvoidingView`](https://rootnative.github.io/web/keyboardavoidingview) in the modal to keep the field above the keyboard.
 - A press inside the modal doesn't reach a `Pressable` around the `Modal`, as on native.
 - A modal inside a modal goes on top of it. Escape closes the top one first.
 

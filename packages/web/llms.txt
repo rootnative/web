@@ -403,6 +403,9 @@ Modal
   after visible becomes false and the exit animation ends, not on unmount.
 - The focus moves into the modal (the first control, or the dialog itself),
   and back to the opener when it hides.
+- The modal stays in place when the keyboard opens: it undoes the move of the
+  page that Safari on iOS makes for a focused field. Use a
+  KeyboardAvoidingView inside it.
 - A press inside doesn't reach a Pressable around the Modal. A nested modal
   goes on top, and Escape closes the top one first.
 - The children go in a box that fills the viewport: white, backdropColor, or
