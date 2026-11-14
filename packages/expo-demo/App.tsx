@@ -1,3 +1,4 @@
+import { Motion } from '@rootnative/inertia'
 import { useState, type ReactElement } from 'react'
 import {
   Image,
@@ -9,6 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native'
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 
 import logo from './assets/logo.png'
 
@@ -17,6 +19,14 @@ import logo from './assets/logo.png'
 export default function App(): ReactElement {
   const [count, setCount] = useState(0)
   const [name, setName] = useState('')
+  const [moved, setMoved] = useState(false)
+
+  const offset = useSharedValue(0)
+  const slide = useAnimatedStyle(() => ({ transform: [{ translateX: offset.get() }] }))
+  const move = (): void => {
+    offset.set(withTiming(moved ? 0 : 160, { duration: 200 }))
+    setMoved(!moved)
+  }
 
   return (
     <ScrollView testID="page" contentContainerStyle={styles.page}>
@@ -39,6 +49,16 @@ export default function App(): ReactElement {
         style={styles.field}
       />
       <Text testID="greeting">{name === '' ? 'No name yet.' : `Hello, ${name}.`}</Text>
+      <Pressable testID="move" onPress={move} style={styles.button}>
+        <Text style={styles.buttonLabel}>{moved ? 'Move back' : 'Move'}</Text>
+      </Pressable>
+      <Animated.View testID="reanimated" style={[styles.box, slide]} />
+      <Motion.View
+        testID="inertia"
+        animate={{ translateX: moved ? 160 : 0 }}
+        transition={{ type: 'timing', duration: 200 }}
+        style={styles.box}
+      />
     </ScrollView>
   )
 }
@@ -55,6 +75,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e11d48',
   },
   buttonLabel: { color: '#ffffff' },
+  box: { width: 48, height: 48, borderRadius: 8, backgroundColor: '#e11d48' },
   field: {
     fontSize: 16,
     paddingHorizontal: 12,

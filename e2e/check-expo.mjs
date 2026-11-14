@@ -109,7 +109,10 @@ async function checkPage(url) {
     })
     page.on('pageerror', (error) => errors.push(String(error)))
     // The first request to a dev server starts the bundle.
-    await page.goto(url, { timeout: 180_000 })
+    const loaded = await page.goto(url, { timeout: 180_000 }).catch((error) => {
+      problems.push(`The page at ${url} did not load: ${error.message.split('\n')[0]}`)
+    })
+    if (!loaded) return
 
     const expectEqual = (what, actual, expected) => {
       if (actual !== expected) problems.push(`${what} is "${actual}". It must be "${expected}".`)
@@ -148,6 +151,21 @@ async function checkPage(url) {
     expectEqual('The count after two presses', await text('count'), '2')
     await page.getByTestId('name').fill('Ada')
     expectEqual('The greeting after the text input', await text('greeting'), 'Hello, Ada.')
+
+    // Reanimated, and a library that is built on it, each move a box 160 px to the right.
+    await page.getByTestId('move').click()
+    for (const testID of ['reanimated', 'inertia']) {
+      await page
+        .waitForFunction(
+          (id) => {
+            const box = document.querySelector(`[data-testid="${id}"]`)
+            return box !== null && new DOMMatrix(getComputedStyle(box).transform).m41 === 160
+          },
+          testID,
+          { timeout: 5000 },
+        )
+        .catch(() => problems.push(`The ${testID} box did not move 160 px after the press.`))
+    }
 
     for (const message of errors) problems.push(`The page logged: ${message}`)
   } finally {

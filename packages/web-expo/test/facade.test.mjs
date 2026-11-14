@@ -47,8 +47,14 @@ describe('the list of names', () => {
 describe('the generated files', () => {
   const files = facadeFiles()
 
-  test('has one file for each name, and the index', () => {
-    expect(files.size).toBe(names.length + 1)
+  test('has one file for each name, the index, and the two style files of Reanimated', () => {
+    expect(files.size).toBe(names.length + 3)
+    for (const path of [
+      'cjs/exports/StyleSheet/compiler/createReactDOMStyle.js',
+      'cjs/exports/StyleSheet/preprocess.js',
+    ]) {
+      expect(files.get(path)).toContain(`export { default } from '@rootnative/web/style'`)
+    }
     for (const name of names) expect(files.has(`exports/${name}/index.js`)).toBe(true)
   })
 

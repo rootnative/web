@@ -25,11 +25,21 @@ const exportFile = (name, missing) => {
   return `export { ${runtimeName(name)} as default } from '@rootnative/web'\n`
 }
 
+// Reanimated 4 reads its web style helpers from these two internal files of react-native-web.
+// The first has the function as its default export, and the second has named exports. The style
+// entry of the runtime has both shapes.
+const STYLE_FILES = [
+  'cjs/exports/StyleSheet/compiler/createReactDOMStyle.js',
+  'cjs/exports/StyleSheet/preprocess.js',
+]
+const styleFile = `export * from '@rootnative/web/style'\nexport { default } from '@rootnative/web/style'\n`
+
 // The path of each generated file, from `dist/`, and its text.
 export const facadeFiles = ({ names, missing } = readExports()) => {
   const gaps = new Set(missing)
   const files = new Map()
   for (const name of names) files.set(`exports/${name}/index.js`, exportFile(name, gaps))
+  for (const path of STYLE_FILES) files.set(path, styleFile)
   const index = [
     `export * from '@rootnative/web'`,
     `export { unstable_createElement as createElement } from '@rootnative/web'`,
