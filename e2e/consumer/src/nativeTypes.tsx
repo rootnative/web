@@ -11,6 +11,7 @@ import {
   View,
   type AccessibilityActionEvent,
   type DimensionValue,
+  type HostComponent,
   type ImageStyle,
   type MeasureInWindowOnSuccessCallback,
   type NativeSyntheticEvent,
@@ -20,7 +21,9 @@ import {
   type TargetedEvent,
   type TextInputInstance,
   type TextStyle,
+  type TurboModule,
   type ViewInstance,
+  type ViewProps,
   type ViewStyle,
 } from 'react-native'
 
@@ -72,3 +75,10 @@ const styles = StyleSheet.create({
   label: { fontWeight: '600', textAlign: 'center' },
   image: { width: 40, height: 40, resizeMode: 'cover' },
 })
+
+// The two types that a native module spec and a native component spec of a library use.
+export interface NativeModuleSpec extends TurboModule {
+  getValue: () => number
+}
+
+export type NativeViewComponent = HostComponent<ViewProps>

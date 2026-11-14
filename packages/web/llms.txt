@@ -70,6 +70,14 @@ ReferenceError. Add it to ssr.noExternal.
   renderStyleTags, styleTagsHTML, StyleRegistry.
 - @rootnative/web/vite: rootnative(), the Vite plugin. Only in vite.config.ts.
 
+Libraries: react-native-svg, react-native-safe-area-context, and
+@react-native-async-storage/async-storage need nothing more. Reanimated and
+libraries on it need rootnative({ worklets: true }). An icon set of
+@react-native-vector-icons needs its font from the app: import the .ttf of
+the package with ?url, then document.fonts.add(new FontFace(name, url)).
+Set skipLibCheck: true, because the type files of a native library import
+the real react-native types.
+
 Import /dom and /server only in code that runs on the web.
 
 ## What ships

@@ -10,7 +10,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Guides',
       collapsed: false,
-      items: ['semantic-html', 'styles', 'server-rendering', 'seo'],
+      items: ['semantic-html', 'styles', 'server-rendering', 'seo', 'libraries'],
     },
     {
       type: 'category',

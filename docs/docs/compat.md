@@ -55,6 +55,15 @@ A browser has no native modules.
 
 A library that reads its native module when it loads gets `null`, and then takes its JavaScript path.
 
+## Types
+
+Two types that the type files of a library import from `react-native`:
+
+| Type                    | What it is                                                                          |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| `TurboModule`           | The base type of a native module spec.                                              |
+| `HostComponent<Config>` | The type of a component from a native component spec. Its `ref` is a host instance. |
+
 ## `@rootnative/web/assets-registry`
 
 An entry with `registerAsset` and `getAssetByID`, the two functions of `@react-native/assets-registry/registry`. The [Vite plugin](/vite-plugin) points that module name at this entry, because `react-native-svg` imports it on the web. A web bundler gives an image import a URL, not a number, so the registry stays empty.

@@ -44,6 +44,14 @@ export type HostInstance = HTMLElement & HostMethods
 
 export type ViewInstance = HostInstance
 
+/**
+ * Compat type. The type of a component that a library gets from a native component spec. Its
+ * `ref` is the host instance.
+ */
+export type HostComponent<Config extends object> = (
+  props: Omit<Config, 'ref'> & { ref?: Ref<HostInstance> | undefined },
+) => ReactNode
+
 // The event of `onAccessibilityAction` on native. The web has no accessibility actions yet.
 export type AccessibilityActionEvent = NativeSyntheticEvent<Readonly<{ actionName: string }>>
 

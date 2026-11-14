@@ -14,6 +14,7 @@ export type {
   AccessibilityState,
   AccessibilityValue,
   DOMEventHandlers,
+  HostComponent,
   HostInstance,
   HostMethods,
   LayoutChangeEvent,

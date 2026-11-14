@@ -26,6 +26,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 - **Event and instance types**: `TargetedEvent`, `PointerEvent`, `AccessibilityActionEvent`, `HostInstance`, and `ViewInstance`. A focus handler typed with `NativeSyntheticEvent<TargetedEvent>` fits the `onFocus` of each component.
 - **Host methods** on the ref of `View`, `Text`, `Image`, `TextInput`, `ScrollView`, `Pressable`, and the touchables: `measure`, `measureInWindow`, `measureLayout`, and `setNativeProps({ style })`. Each one calls its callback at once, with the box from `getBoundingClientRect()`. The new types are `HostMethods`, `TextInstance`, `ImageInstance`, `MeasureOnSuccessCallback`, `MeasureInWindowOnSuccessCallback`, and `MeasureLayoutOnSuccessCallback`.
 - **`rootnative({ worklets: true })`**: the Vite plugin runs the Babel plugin of `react-native-worklets` on your code and on the libraries that have worklets, also in the dependency optimizer. Reanimated needs it, and so does a library built on Reanimated. The app needs `react-native-worklets` and `@babel/core`, which are optional peer dependencies now.
+- **Compat types** `TurboModule` and `HostComponent`, which the type files of libraries import from `react-native`.
 
 ### Changed
 
