@@ -8,6 +8,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "3.1.1",
+    "@react-native-vector-icons/material-design-icons": "13.1.4",
     "@rootnative/components": "0.0.0-alpha.37",
     "@rootnative/core": "0.0.0-alpha.37",
     "@rootnative/inertia": "0.0.29",

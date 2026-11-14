@@ -11,6 +11,7 @@ import { ComponentsRoute } from './routes/ComponentsRoute'
 import { DimensionsRoute } from './routes/DimensionsRoute'
 import { FlatListRoute } from './routes/FlatListRoute'
 import { HeadRoute } from './routes/HeadRoute'
+import { IconsStorageRoute } from './routes/IconsStorageRoute'
 import { ImageRoute } from './routes/ImageRoute'
 import { InertiaRoute } from './routes/InertiaRoute'
 import { KeyboardRoute } from './routes/KeyboardRoute'
@@ -53,6 +54,7 @@ const routes: ReadonlyArray<{ path: string; title: string; Component: () => Reac
   { path: 'reanimated', title: 'Reanimated', Component: ReanimatedRoute },
   { path: 'inertia', title: 'Inertia', Component: InertiaRoute },
   { path: 'components', title: 'Components', Component: ComponentsRoute },
+  { path: 'icons', title: 'Icons and storage', Component: IconsStorageRoute },
 ]
 
 const subscribe = (onChange: () => void): (() => void) => {
