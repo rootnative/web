@@ -47,8 +47,8 @@ describe('the list of names', () => {
 describe('the generated files', () => {
   const files = facadeFiles()
 
-  test('has one file for each name, the index, and the two style files of Reanimated', () => {
-    expect(files.size).toBe(names.length + 3)
+  test('has one file for each name, the index, the two style files of Reanimated, and the sheet file', () => {
+    expect(files.size).toBe(names.length + 4)
     for (const path of [
       'cjs/exports/StyleSheet/compiler/createReactDOMStyle.js',
       'cjs/exports/StyleSheet/preprocess.js',
@@ -64,6 +64,12 @@ describe('the generated files', () => {
     )
     expect(files.get('exports/createElement/index.js')).toBe(
       `export { unstable_createElement as default } from '@rootnative/web'\n`,
+    )
+  })
+
+  test('gives Expo the createSheet function where react-native-web has it', () => {
+    expect(files.get('exports/StyleSheet/dom/index.js')).toBe(
+      `export { createSheet } from '../../../createSheet.js'\n`,
     )
   })
 

@@ -138,6 +138,10 @@ async function checkPage(url) {
     )
     expectEqual('The style sheets of @rootnative/web', sheets.join(' '), 'reset shorthand longhand')
 
+    // Expo's default index.html relies on the reset of react-native-web, which web-expo gives.
+    const bodyMargin = await page.evaluate(() => getComputedStyle(document.body).margin)
+    expectEqual('The margin of body', bodyMargin, '0px')
+
     // An image import: Expo gives it a URL, and `Image` loads it.
     const imageWidth = await page
       .getByTestId('logo')

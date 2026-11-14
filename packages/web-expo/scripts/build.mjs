@@ -34,12 +34,19 @@ const STYLE_FILES = [
 ]
 const styleFile = `export * from '@rootnative/web/style'\nexport { default } from '@rootnative/web/style'\n`
 
+// Expo's `AppRegistry` for the web reads `createSheet` from this file of react-native-web.
+const SHEET_FILE = 'exports/StyleSheet/dom/index.js'
+
+// The files of `src/` that go into `dist/` as they are.
+const SOURCE_FILES = ['AppRegistry.js', 'createSheet.js', 'missing.js']
+
 // The path of each generated file, from `dist/`, and its text.
 export const facadeFiles = ({ names, missing } = readExports()) => {
   const gaps = new Set(missing)
   const files = new Map()
   for (const name of names) files.set(`exports/${name}/index.js`, exportFile(name, gaps))
   for (const path of STYLE_FILES) files.set(path, styleFile)
+  files.set(SHEET_FILE, `export { createSheet } from '../../../createSheet.js'\n`)
   const index = [
     `export * from '@rootnative/web'`,
     `export { unstable_createElement as createElement } from '@rootnative/web'`,
@@ -58,8 +65,6 @@ if (isMain) {
     mkdirSync(dirname(join(distDir, path)), { recursive: true })
     writeFileSync(join(distDir, path), text)
   }
-  for (const file of ['AppRegistry.js', 'missing.js']) {
-    cpSync(join(packageDir, 'src', file), join(distDir, file))
-  }
-  console.log(`Wrote ${facadeFiles().size + 2} files to dist/.`)
+  for (const file of SOURCE_FILES) cpSync(join(packageDir, 'src', file), join(distDir, file))
+  console.log(`Wrote ${facadeFiles().size + SOURCE_FILES.length} files to dist/.`)
 }
