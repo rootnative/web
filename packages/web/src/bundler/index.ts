@@ -1,4 +1,10 @@
 export { inlinePlatformOS } from './inlinePlatformOS'
+export {
+  createWorkletTransform,
+  WORKLET_CODE,
+  type WorkletTransform,
+  type WorkletTransformResult,
+} from './worklets'
 
 /** Module names that resolve to this package. Each one matches the exact name only. */
 export const ALIASES: Readonly<Record<string, string>> = {

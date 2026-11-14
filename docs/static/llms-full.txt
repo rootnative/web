@@ -161,7 +161,7 @@ See [Status](https://rootnative.github.io/web/status) for what ships today and h
 
 # Vite plugin
 
-`rootnative()` from `@rootnative/web/vite` sets up Vite 8 for a React Native app. It takes no options.
+`rootnative()` from `@rootnative/web/vite` sets up Vite 8 for a React Native app. It has one option, [`worklets`](#worklets), for an app that uses Reanimated.
 
 ```ts title="vite.config.ts"
 import { rootnative } from '@rootnative/web/vite'
@@ -188,6 +188,32 @@ export default defineConfig({
 Your own config wins. A `react-native` alias, or a `__DEV__` or `global` define in your config, keeps its value. A `resolve.extensions` list of your own gets the `.web` variants in front.
 
 TypeScript doesn't read the Vite config. For `.web` files, add `moduleSuffixes` to `tsconfig.json`, as [Installation](https://rootnative.github.io/web/installation#add-the-types) shows.
+
+## `worklets`
+
+Reanimated needs the Babel plugin of `react-native-worklets`. Without it, the first Reanimated hook throws. A library built on Reanimated, such as `@rootnative/inertia`, needs it too. Metro runs that plugin through the Babel preset of the app. Vite doesn't run Babel, so set the option:
+
+```ts title="vite.config.ts"
+export default defineConfig({
+  plugins: [react(), rootnative({ worklets: true })],
+})
+```
+
+Your app must have `react-native-worklets`, which Reanimated needs anyway, and `@babel/core`:
+
+```bash npm2yarn
+npm install --save-dev @babel/core
+```
+
+A package manager that installs peer dependencies, such as pnpm or npm, has `@babel/core` already, because it's a peer of `react-native-worklets`.
+
+| What                 | Behavior                                                                                                                                                                                      |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Which files          | Your code and the libraries. The plugin runs Babel only on a file that has a `'worklet'` directive, imports Reanimated or Worklets, or calls a Reanimated hook. Every other file skips Babel. |
+| Pre-bundled packages | The dependency optimizer gets the same step, so a library with worklets works on the dev server.                                                                                              |
+| Your Babel config    | Not read. The step runs only the Worklets plugin. Don't add `react-native-worklets/plugin` to a Babel config of your own for the same files.                                                  |
+| A missing package    | The first file with a worklet stops the build with an error that names the package.                                                                                                           |
+| Default              | `false`. An app with no Reanimated doesn't need Babel.                                                                                                                                        |
 
 ## `Platform.OS`
 

@@ -190,3 +190,56 @@ describe('rootnative() in the dev server', () => {
     expect(code).not.toContain(': string')
   })
 })
+
+describe('rootnative({ worklets: true })', () => {
+  const packageStub: Plugin = {
+    name: 'package-stub',
+    enforce: 'pre',
+    resolveId: (id) => (id === '@rootnative/web' ? '\0@rootnative/web' : null),
+  }
+
+  const transform = async (plugin: Plugin, file: string): Promise<string> => {
+    const server = await createServer(
+      baseConfig({
+        appType: 'custom',
+        plugins: [packageStub, plugin],
+        optimizeDeps: { noDiscovery: true },
+        server: { middlewareMode: true, ws: false, watch: null, preTransformRequests: false },
+      }),
+    )
+    try {
+      return (await server.transformRequest(file))?.code ?? ''
+    } finally {
+      await server.close()
+    }
+  }
+
+  test('makes a worklet from a function with the directive, and still replaces Platform.OS', async () => {
+    const code = await transform(rootnative({ worklets: true }), '/worklet.ts')
+    expect(code).toContain('__workletHash')
+    expect(code).not.toContain('Platform.OS')
+  })
+
+  test('leaves the function as it is without the option', async () => {
+    const code = await transform(rootnative(), '/worklet.ts')
+    expect(code).not.toContain('__workletHash')
+    expect(code).not.toContain('Platform.OS')
+  })
+
+  test('leaves a file with no worklet as it is', async () => {
+    const code = await transform(rootnative({ worklets: true }), '/label.ts')
+    expect(code).not.toContain('__workletHash')
+  })
+
+  test('gives the dependency optimizer the same step', async () => {
+    const config = await resolveConfig(
+      baseConfig({ plugins: [rootnative({ worklets: true })] }),
+      'serve',
+    )
+    const plugins = [config.optimizeDeps.rolldownOptions?.plugins].flat(3)
+    expect(plugins).toContainEqual(expect.objectContaining({ name: '@rootnative/web:worklets' }))
+
+    const off = await resolveConfig(baseConfig({ plugins: [rootnative()] }), 'serve')
+    expect(off.optimizeDeps.rolldownOptions?.plugins).toBeUndefined()
+  })
+})
