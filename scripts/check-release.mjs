@@ -4,7 +4,8 @@
 //   node scripts/check-release.mjs --version 0.0.0-alpha.1 --dist-tag latest
 //
 // - npm is new enough for `npm stage publish` with trusted publishing.
-// - packages/web/package.json and packages/web-expo/package.json have the version asked for.
+// - packages/web/package.json and packages/web-expo/package.json have the version asked for, and
+//   web-expo isn't private.
 // - packages/web-expo/CHANGELOG.md has a dated section for it. check-versions.mjs lets that file
 //   have only Unreleased before the first release, so this is where a missing note stops.
 // - The tag web@<version> doesn't exist yet. A CI checkout needs `fetch-depth: 0` for this.
@@ -62,11 +63,14 @@ if (version !== requested) {
 }
 
 // @rootnative/web-expo releases in the same run, at the same version.
-const expoVersion = JSON.parse(read('packages/web-expo/package.json')).version
-if (expoVersion !== requested) {
+const expo = JSON.parse(read('packages/web-expo/package.json'))
+if (expo.version !== requested) {
   problems.push(
-    `You asked for ${requested}, but packages/web-expo/package.json has ${expoVersion}.`,
+    `You asked for ${requested}, but packages/web-expo/package.json has ${expo.version}.`,
   )
+}
+if (expo.private === true) {
+  problems.push(`packages/web-expo/package.json is private, so npm won't publish it.`)
 }
 const expoSection = new RegExp(
   `^## \\[${requested.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\] - \\d{4}-\\d{2}-\\d{2}$`,
