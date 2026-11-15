@@ -9,7 +9,7 @@ import {
   type ReactElement,
 } from 'react'
 
-import { usePressability } from '../../events/press'
+import { pointerCursorStyle, usePressability } from '../../events/press'
 import { mergeHandlers } from '../../events/press/mergeHandlers'
 import type { PressabilityConfig } from '../../events/press/types'
 import { hitSlopClass } from '../../render/hitSlop'
@@ -166,6 +166,7 @@ export function TouchableHighlight(props: TouchableHighlightProps): ReactElement
       ...mergeHandlers(rest, handlers),
       focusable: focusable !== false && onPress !== undefined && disabled !== true,
       style: [
+        resolvedDisabled !== true && pointerCursorStyle,
         style,
         pressed && { backgroundColor: underlayColor ?? DEFAULT_UNDERLAY_COLOR },
         rejectResponderTermination === true && notCancelableStyle,

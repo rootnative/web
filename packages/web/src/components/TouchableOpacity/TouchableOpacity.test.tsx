@@ -55,6 +55,19 @@ describe('TouchableOpacity', () => {
     expect(ref.current).toBe(element)
   })
 
+  test('shows the pointer while enabled, and a cursor in style wins', () => {
+    render(
+      <>
+        <TouchableOpacity testID="on" style={box} onPress={() => {}} />
+        <TouchableOpacity testID="off" style={box} onPress={() => {}} disabled />
+        <TouchableOpacity testID="own" style={[box, { cursor: 'auto' }]} onPress={() => {}} />
+      </>,
+    )
+    expect(getComputedStyle(byTestId('on')).cursor).toBe('pointer')
+    expect(getComputedStyle(byTestId('off')).cursor).toBe('auto')
+    expect(getComputedStyle(byTestId('own')).cursor).toBe('auto')
+  })
+
   test('a press calls onPressIn, onPress, and onPressOut', async () => {
     const onPressIn = vi.fn()
     const onPress = vi.fn()

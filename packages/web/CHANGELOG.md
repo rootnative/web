@@ -4,6 +4,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Added
+
+- **The `pointer` cursor** on a `Pressable`, `TouchableOpacity`, `TouchableHighlight`, and `Button` that isn't `disabled`, and on a pressable `Text`, as on react-native-web. A `cursor` in your style wins.
+
 ### Changed
 
 - **The package has one file for each module**, in place of one bundled file. Metro has no tree shaking, so an Expo app loaded every component, also the ones it never imports. Through `@rootnative/web-expo`, an app now loads only the modules that it uses. Vite already dropped the unused code, so a Vite app doesn't change.

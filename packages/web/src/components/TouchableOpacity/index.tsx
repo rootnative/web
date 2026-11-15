@@ -8,7 +8,7 @@ import {
 } from 'react'
 
 import type { ViewStyle } from '../../apis/StyleSheet/types'
-import { usePressability } from '../../events/press'
+import { pointerCursorStyle, usePressability } from '../../events/press'
 import { mergeHandlers } from '../../events/press/mergeHandlers'
 import type { PressabilityConfig } from '../../events/press/types'
 import { hitSlopClass } from '../../render/hitSlop'
@@ -165,7 +165,11 @@ export function TouchableOpacity(props: TouchableOpacityProps): ReactElement {
       ...mergeHandlers(rest, handlers),
       ref: element,
       focusable: focusable !== false && onPress !== undefined && disabled !== true,
-      style: [style, rejectResponderTermination === true && notCancelableStyle],
+      style: [
+        resolvedDisabled !== true && pointerCursorStyle,
+        style,
+        rejectResponderTermination === true && notCancelableStyle,
+      ],
       children,
       ...(resolvedDisabled === true && { 'aria-disabled': true }),
     },

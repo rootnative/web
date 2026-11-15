@@ -32,6 +32,7 @@ As on `Pressable`, give an action `role="button"`, so it renders a `<button type
 - When the pointer leaves the press area, the opacity goes back over 250 ms. When it comes back, the opacity goes to `activeOpacity` over 150 ms.
 - When the press ends, the opacity goes back to the opacity of `style` over 250 ms.
 - A change of `disabled` or of the style's opacity also fades to the style's opacity over 250 ms.
+- While it isn't `disabled`, it shows the `pointer` cursor. A `cursor` in `style` wins.
 
 The fade uses the Web Animations API, so a press doesn't render the component again. The curve is React Native's `Easing.inOut(Easing.quad)`, as `cubic-bezier(0.455, 0.03, 0.515, 0.955)`.
 

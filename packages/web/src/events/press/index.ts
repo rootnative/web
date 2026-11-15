@@ -1,3 +1,4 @@
+export { pointerCursorStyle } from './cursorStyle'
 export { Pressability } from './Pressability'
 export type {
   Insets,

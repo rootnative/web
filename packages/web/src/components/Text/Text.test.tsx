@@ -175,6 +175,24 @@ describe('Text', () => {
   })
 
   describe('press', () => {
+    test('a pressable Text shows the pointer, unless it is disabled', () => {
+      const { container } = render(
+        <>
+          <Text>Plain</Text>
+          <Text onPress={() => {}}>Pressable</Text>
+          <Text onLongPress={() => {}}>Long press</Text>
+          <Text onPress={() => {}} disabled>
+            Disabled
+          </Text>
+          <Text onPress={() => {}} style={{ cursor: 'auto' }}>
+            Own cursor
+          </Text>
+        </>,
+      )
+      const cursors = Array.from(container.children).map((el) => getComputedStyle(el).cursor)
+      expect(cursors).toEqual(['auto', 'pointer', 'pointer', 'auto', 'auto'])
+    })
+
     test('onPress runs on a click with no pointer press', () => {
       const onPress = vi.fn()
       const { container } = render(<Text onPress={onPress}>Hello</Text>)

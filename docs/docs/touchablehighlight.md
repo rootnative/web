@@ -34,6 +34,7 @@ The child must be one element that takes a `style`, for example a `View`. Give t
 - When the press ends, the underlay goes away. After `onPress`, it stays for `delayPressOut` milliseconds, so a short tap still shows it.
 - With no press handler (`onPress`, `onPressIn`, `onPressOut`, or `onLongPress`), there's no underlay.
 - The underlay changes render the component again, as on native.
+- While it isn't `disabled`, it shows the `pointer` cursor. A `cursor` in `style` wins.
 
 ## Props
 

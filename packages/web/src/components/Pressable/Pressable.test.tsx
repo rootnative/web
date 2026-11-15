@@ -52,6 +52,19 @@ describe('Pressable', () => {
     expect(ref.current).toBe(element)
   })
 
+  test('shows the pointer while enabled, and a cursor in style wins', () => {
+    render(
+      <>
+        <Pressable testID="on" style={box} />
+        <Pressable testID="off" style={box} disabled />
+        <Pressable testID="own" style={[box, { cursor: 'auto' }]} />
+      </>,
+    )
+    expect(getComputedStyle(byTestId('on')).cursor).toBe('pointer')
+    expect(getComputedStyle(byTestId('off')).cursor).toBe('auto')
+    expect(getComputedStyle(byTestId('own')).cursor).toBe('auto')
+  })
+
   test('a click calls onPressIn, onPress, and onPressOut', async () => {
     const onPressIn = vi.fn()
     const onPress = vi.fn()

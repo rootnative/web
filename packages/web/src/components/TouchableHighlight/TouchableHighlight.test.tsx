@@ -57,6 +57,25 @@ describe('TouchableHighlight', () => {
     expect(ref.current).toBe(element)
   })
 
+  test('shows the pointer while enabled, and a cursor in style wins', () => {
+    render(
+      <>
+        <TouchableHighlight testID="on" onPress={() => {}}>
+          <View style={box} />
+        </TouchableHighlight>
+        <TouchableHighlight testID="off" onPress={() => {}} disabled>
+          <View style={box} />
+        </TouchableHighlight>
+        <TouchableHighlight testID="own" style={{ cursor: 'auto' }} onPress={() => {}}>
+          <View style={box} />
+        </TouchableHighlight>
+      </>,
+    )
+    expect(getComputedStyle(byTestId('on')).cursor).toBe('pointer')
+    expect(getComputedStyle(byTestId('off')).cursor).toBe('auto')
+    expect(getComputedStyle(byTestId('own')).cursor).toBe('auto')
+  })
+
   test('shows the underlay while pressed, and flashes it after the press', () => {
     const onPress = vi.fn()
     render(

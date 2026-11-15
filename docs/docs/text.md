@@ -45,7 +45,7 @@ A `Text` starts at 14 px, black, in the system font, and keeps its spaces and li
 | `aria-level`                         | **Web only.** The heading level of `role="heading"`, 1 to 6.                                                                      |
 | `onClick` and the other DOM handlers | **Web only.** Pass to the element. On a pressable `Text`, they run before the press handlers, and both run.                       |
 
-As on native, only `onPress` or `onLongPress` makes a `Text` pressable. A `Text` with only `onPressIn` or `onPressOut` doesn't respond.
+As on native, only `onPress` or `onLongPress` makes a `Text` pressable. A `Text` with only `onPressIn` or `onPressOut` doesn't respond. A pressable `Text` that isn't `disabled` shows the `pointer` cursor, and a `cursor` in `style` wins.
 
 :::note A pressable text is a link
 

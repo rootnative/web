@@ -1,6 +1,6 @@
 import { memo, useMemo, useState, type NamedExoticComponent, type ReactElement } from 'react'
 
-import { usePressability } from '../../events/press'
+import { pointerCursorStyle, usePressability } from '../../events/press'
 import { mergeHandlers } from '../../events/press/mergeHandlers'
 import type { PressabilityConfig } from '../../events/press/types'
 import { hitSlopClass } from '../../render/hitSlop'
@@ -143,6 +143,7 @@ export const Pressable: NamedExoticComponent<PressableProps> = memo(function Pre
     ...mergeHandlers(rest, handlers),
     focusable: disabled !== true && focusable !== false,
     style: [
+      disabled !== true && pointerCursorStyle,
       typeof style === 'function' ? style(state) : style,
       cancelable === false && notCancelableStyle,
     ],

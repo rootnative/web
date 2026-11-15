@@ -30,6 +30,11 @@ describe('Button', () => {
     expect(ref.current).toBe(button())
   })
 
+  test('shows the pointer', () => {
+    render(<Button title="Save" onPress={() => {}} />)
+    expect(getComputedStyle(button()).cursor).toBe('pointer')
+  })
+
   test('has the default colors, and the title keeps its case', () => {
     render(<Button title="Save" onPress={() => {}} />)
     expect(getComputedStyle(button()).backgroundColor).toBe('rgb(33, 150, 243)')

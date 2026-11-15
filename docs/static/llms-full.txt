@@ -821,7 +821,7 @@ A `Text` starts at 14 px, black, in the system font, and keeps its spaces and li
 | `aria-level`                         | **Web only.** The heading level of `role="heading"`, 1 to 6.                                                                      |
 | `onClick` and the other DOM handlers | **Web only.** Pass to the element. On a pressable `Text`, they run before the press handlers, and both run.                       |
 
-As on native, only `onPress` or `onLongPress` makes a `Text` pressable. A `Text` with only `onPressIn` or `onPressOut` doesn't respond.
+As on native, only `onPress` or `onLongPress` makes a `Text` pressable. A `Text` with only `onPressIn` or `onPressOut` doesn't respond. A pressable `Text` that isn't `disabled` shows the `pointer` cursor, and a `cursor` in `style` wins.
 
 > **NOTE: A pressable text is a link**
 >
@@ -958,6 +958,7 @@ Give an action `role="button"`. It renders a `<button type="button">`, so screen
 - **Long press.** `onLongPress` fires after `delayLongPress`, 500 ms by default. On a touch screen, a long press with `onLongPress` doesn't open the context menu.
 - **Quick taps.** `onPressOut` waits until the press is at least 130 ms long, so a quick tap still shows the pressed style, as on native.
 - **The click after a tap.** A browser sends a click after each tap. When the press put new content under the finger, for example a modal, that click stops, so it presses nothing else. A click on the pressed element goes through, so a link still navigates.
+- **The mouse pointer.** A `Pressable` that isn't `disabled` shows the `pointer` cursor. A `cursor` in `style` wins.
 
 ## State
 
@@ -1026,6 +1027,7 @@ The child must be one element that takes a `style`, for example a `View`. Give t
 - When the press ends, the underlay goes away. After `onPress`, it stays for `delayPressOut` milliseconds, so a short tap still shows it.
 - With no press handler (`onPress`, `onPressIn`, `onPressOut`, or `onLongPress`), there's no underlay.
 - The underlay changes render the component again, as on native.
+- While it isn't `disabled`, it shows the `pointer` cursor. A `cursor` in `style` wins.
 
 ## Props
 
@@ -1125,6 +1127,7 @@ As on `Pressable`, give an action `role="button"`, so it renders a `<button type
 - When the pointer leaves the press area, the opacity goes back over 250 ms. When it comes back, the opacity goes to `activeOpacity` over 150 ms.
 - When the press ends, the opacity goes back to the opacity of `style` over 250 ms.
 - A change of `disabled` or of the style's opacity also fades to the style's opacity over 250 ms.
+- While it isn't `disabled`, it shows the `pointer` cursor. A `cursor` in `style` wins.
 
 The fade uses the Web Animations API, so a press doesn't render the component again. The curve is React Native's `Easing.inOut(Easing.quad)`, as `cubic-bezier(0.455, 0.03, 0.515, 0.955)`.
 

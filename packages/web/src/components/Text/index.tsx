@@ -7,7 +7,7 @@ import {
   type ReactElement,
 } from 'react'
 
-import { usePressability } from '../../events/press'
+import { pointerCursorStyle, usePressability } from '../../events/press'
 import { mergeHandlers } from '../../events/press/mergeHandlers'
 import type { PressabilityConfig } from '../../events/press/types'
 import { toDOMProps } from '../../render/domProps'
@@ -159,6 +159,7 @@ export function Text(props: TextProps): ReactElement {
       : compileReset('rn-text', resetStyle, registry),
     compileStyle(
       [
+        pressable && pointerCursorStyle,
         style,
         lineStyle,
         ellipsizeMode === 'clip' && clipStyle,
