@@ -6,6 +6,12 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.0-alpha.5] - 2026-11-15
+
+### Changed
+
+- **Uses `@rootnative/web` `0.0.0-alpha.5`,** which makes each render after the first one cheaper. This package has no change of its own. See the [changelog of `@rootnative/web`](https://github.com/rootnative/web/blob/main/packages/web/CHANGELOG.md).
+
 ## [0.0.0-alpha.4] - 2026-11-15
 
 ### Added
