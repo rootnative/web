@@ -58,12 +58,24 @@ const singleLineStyle = Object.freeze({
   whiteSpace: 'nowrap',
 })
 
-const multiLineStyle = (lines: number): Record<string, unknown> => ({
-  display: '-webkit-box',
-  WebkitBoxOrient: 'vertical',
-  WebkitLineClamp: lines,
-  overflow: 'hidden',
-})
+// The style objects of Text are frozen and reused, so `compileStyle` caches their classes.
+const multiLineStyles = new Map<number, Readonly<Record<string, unknown>>>()
+const multiLineStyle = (lines: number): Readonly<Record<string, unknown>> => {
+  let style = multiLineStyles.get(lines)
+  if (style === undefined) {
+    style = Object.freeze({
+      display: '-webkit-box',
+      WebkitBoxOrient: 'vertical',
+      WebkitLineClamp: lines,
+      overflow: 'hidden',
+    })
+    multiLineStyles.set(lines, style)
+  }
+  return style
+}
+
+const clipStyle = Object.freeze({ textOverflow: 'clip' })
+const notSelectableStyle = Object.freeze({ userSelect: 'none' })
 
 const selectionClass = (registry: StyleRegistry, color: string): string | undefined => {
   const css = toCSSColor(color)
@@ -134,15 +146,22 @@ export function Text(props: TextProps): ReactElement {
       : numberOfLines === 1
         ? singleLineStyle
         : multiLineStyle(numberOfLines)
-  const clipStyle = ellipsizeMode === 'clip' ? { textOverflow: 'clip' } : undefined
-  const selectStyle = selectable === false ? { userSelect: 'none' } : undefined
   const pointerStyle = pointerEvents === undefined ? undefined : pointerEventsStyle[pointerEvents]
 
   let className = joinClassNames(
     nested
       ? compileReset('rn-text-nested', nestedResetStyle, registry)
       : compileReset('rn-text', resetStyle, registry),
-    compileStyle([style, lineStyle, clipStyle, selectStyle, pointerStyle], registry),
+    compileStyle(
+      [
+        style,
+        lineStyle,
+        ellipsizeMode === 'clip' && clipStyle,
+        selectable === false && notSelectableStyle,
+        pointerStyle,
+      ],
+      registry,
+    ),
   )
   if (selectionColor !== undefined) {
     const extra = selectionClass(registry, selectionColor)

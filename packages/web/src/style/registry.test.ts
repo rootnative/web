@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { compileStyle } from './compile'
 import {
@@ -14,6 +14,9 @@ const domRules = (id: string): string[] => {
   const element = document.getElementById(id) as HTMLStyleElement
   return Array.from((element.sheet as CSSStyleSheet).cssRules).map((r) => r.cssText)
 }
+
+// The order of the classes in an attribute has no effect on the style.
+const classSet = (classes: string): Set<string> => new Set(classes.split(' '))
 
 describe('StyleRegistry', () => {
   beforeEach(resetStyleRegistry)
@@ -162,5 +165,62 @@ describe('compileStyle', () => {
     const frozen = Object.freeze({ width: 10 })
     expect(compileStyle(frozen, registry)).toBe(compileStyle(frozen, registry))
     expect(registry.ruleCount).toBe(1)
+  })
+
+  describe('an array of styles', () => {
+    const a = Object.freeze({ width: 10, color: 'red' })
+    const b = Object.freeze({ color: 'blue' })
+
+    test('compiles once when each object in it is frozen, also in a new array', () => {
+      const registry = new StyleRegistry()
+      const compile = vi.spyOn(registry, 'classesFor')
+      const classes = compileStyle([a, b], registry)
+      expect(compileStyle([a, b], registry)).toBe(classes)
+      expect(compileStyle([a, [null, b], false], registry)).toBe(classes)
+      expect(compile).toHaveBeenCalledTimes(1)
+    })
+
+    test('with one frozen object has the classes of that object, from the same cache', () => {
+      const registry = new StyleRegistry()
+      const compile = vi.spyOn(registry, 'classesFor')
+      const classes = compileStyle(a, registry)
+      expect(compileStyle([undefined, a, false], registry)).toBe(classes)
+      expect(compile).toHaveBeenCalledTimes(1)
+    })
+
+    test('keeps the order: a later object wins', () => {
+      const registry = new StyleRegistry()
+      expect(classSet(compileStyle([a, b], registry))).toEqual(
+        classSet(compileStyle({ width: 10, color: 'blue' })),
+      )
+      expect(classSet(compileStyle([b, a], registry))).toEqual(
+        classSet(compileStyle({ width: 10, color: 'red' })),
+      )
+    })
+
+    test('compiles again on each call when an object in it is not frozen', () => {
+      const registry = new StyleRegistry()
+      const compile = vi.spyOn(registry, 'classesFor')
+      const dynamic = { height: 1 }
+      const first = compileStyle([a, dynamic], registry)
+      dynamic.height = 2
+      expect(compileStyle([a, dynamic], registry)).not.toBe(first)
+      expect(compile).toHaveBeenCalledTimes(2)
+    })
+
+    // `Object.isFrozen(1)` is true, and a WeakMap throws on a number key.
+    test('skips a number in it, as an old registered style ID', () => {
+      expect(compileStyle([a, 1 as never])).toBe(compileStyle(a))
+    })
+
+    test('resolves the flattened style, so a legacy shadow can come from two objects', () => {
+      const registry = new StyleRegistry()
+      const color = Object.freeze({ shadowColor: 'black' })
+      const shape = Object.freeze({ shadowOpacity: 0.5, shadowRadius: 4 })
+      expect(compileStyle([color, shape], registry)).toBe(
+        compileStyle({ shadowColor: 'black', shadowOpacity: 0.5, shadowRadius: 4 }),
+      )
+      expect(registry.cssText().longhand).toContain('box-shadow')
+    })
   })
 })

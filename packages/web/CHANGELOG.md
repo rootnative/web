@@ -8,6 +8,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 - **The package has one file for each module**, in place of one bundled file. Metro has no tree shaking, so an Expo app loaded every component, also the ones it never imports. Through `@rootnative/web-expo`, an app now loads only the modules that it uses. Vite already dropped the unused code, so a Vite app doesn't change.
 - **`@rootnative/web/internal/*.js`**, a new entry for `@rootnative/web-expo`. It has no stable API, so don't import it in your app.
+- **A style array, such as `[styles.row, styles.active]`,** now compiles once when each object in it comes from `StyleSheet.create`. Before, an array compiled again on each render, and `Text` always made an array. An array with an inline object still compiles on each render, as before.
 
 ### Fixed
 
