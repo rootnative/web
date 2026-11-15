@@ -4,12 +4,16 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+## [0.0.0-alpha.4] - 2026-11-15
+
 ### Added
 
+- **`@rootnative/web-expo`**, a new package that runs an Expo app with no router on this runtime, in place of react-native-web. It releases with this package, at the same version. See [Expo](https://rootnative.github.io/web/expo).
 - **The `pointer` cursor** on a `Pressable`, `TouchableOpacity`, `TouchableHighlight`, and `Button` that isn't `disabled`, and on a pressable `Text`, as on react-native-web. A `cursor` in your style wins.
 
 ### Changed
 
+- **Breaking:** a `View` with `flexWrap: 'wrap'` packs its lines at the start, as on native. The `View` reset had no `alignContent`, so the browser's `normal` stretched the lines over the free space. The reset now has `alignContent: 'flex-start'`, the default of React Native. To keep the old layout, set `alignContent: 'stretch'`.
 - **The package has one file for each module**, in place of one bundled file. Metro has no tree shaking, so an Expo app loaded every component, also the ones it never imports. Through `@rootnative/web-expo`, an app now loads only the modules that it uses. Vite already dropped the unused code, so a Vite app doesn't change.
 - **`@rootnative/web/internal/*.js`**, a new entry for `@rootnative/web-expo`. It has no stable API, so don't import it in your app.
 - **A style array, such as `[styles.row, styles.active]`,** now compiles once when each object in it comes from `StyleSheet.create`. Before, an array compiled again on each render, and `Text` always made an array. An array with an inline object still compiles on each render, as before.
@@ -18,7 +22,6 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 - **An `on*` prop that React DOM doesn't know** no longer reaches the element. A library can spread its own callback, such as `onValueChange`, onto a `View`. React Native ignores it, and React logged `Unknown event handler property` for it. `View`, `Text`, `Image`, `TextInput`, `Switch`, and `Modal` now pass only the event handlers of React DOM, such as `onClick` and `onKeyDown`.
 - **A `Text` with `numberOfLines`** is no wider than its parent now, also with `flexShrink: 0`, as on native. Before, a one-line `Text` that couldn't shrink grew past its parent in a row and showed no ellipsis. A one-line `Text` also gets `overflow-wrap: normal` in place of `break-word`, which has no use on one line.
-- **A `View` with `flexWrap: 'wrap'`** packs its lines at the start now, as on native. The `View` reset had no `alignContent`, so the browser's `normal` stretched the lines over the free space. The reset now has `alignContent: 'flex-start'`, the default of React Native.
 
 ## [0.0.0-alpha.3] - 2026-11-14
 

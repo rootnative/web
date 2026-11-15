@@ -6,9 +6,11 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.0-alpha.4] - 2026-11-15
+
 ### Added
 
-- **The first release.** An Expo app runs on `@rootnative/web` in place of react-native-web. Install this package under the name `react-native-web`, with an npm alias.
+- **The first release.** An Expo app with no router runs on `@rootnative/web` in place of react-native-web. Install this package under the name `react-native-web`, with an npm alias. Expo Router needs `Animated`, which isn't there yet. See [Expo](https://rootnative.github.io/web/expo).
 - **The file layout that Expo's web bundler reads:** one file for each name of `react-native` in `dist/exports/<Name>/index.js`, and `dist/index.js` for every name. Each file loads only its own module of `@rootnative/web`, so the app bundles only the components that it imports.
 - **`AppRegistry`** with the three methods that Expo calls: `registerComponent`, `runApplication`, which renders or hydrates the app, and `getApplication`, which gives a server render its element and its style element.
 - **`createSheet`** in `dist/exports/StyleSheet/dom`, where Expo looks for it. It adds the four reset rules of react-native-web, such as `body { margin: 0 }`, once for each document.
