@@ -61,6 +61,26 @@ Server rendering with Vite: the plugin applies to app code on the server. A
 dependency that Vite leaves to Node gets no __DEV__ and throws a
 ReferenceError. Add it to ssr.noExternal.
 
+## Expo
+
+An Expo app (no Expo Router) runs on @rootnative/web through
+@rootnative/web-expo, installed under the name react-native-web:
+  npm install react-native-web@npm:@rootnative/web-expo
+Restart the dev server with --clear. The app code, the Babel preset, and the
+react-native types stay. Expo's Babel preset rewrites each react-native import
+to react-native-web/dist/exports/<Name>; the package has those files, and each
+one loads only its own module of @rootnative/web, so the bundle has only the
+components the app imports. It also gives Expo AppRegistry and the page reset
+(body margin 0). Works: the dev server, expo export --platform web with
+web.output 'single', Reanimated 4 (the preset adds the Worklets plugin), image
+imports, react-native-svg. web-expo depends on the exact same version of
+@rootnative/web: install that version if the app imports @rootnative/web too.
+A name that @rootnative/web lacks (Animated, Easing, LayoutAnimation,
+SectionList, VirtualizedList, ImageBackground, SafeAreaView, and more) loads
+as a stub that throws "<Name> is not in @rootnative/web yet" on use;
+node_modules/react-native-web/expo-exports.json lists them under "missing".
+Expo Router needs Animated, so it doesn't work yet.
+
 ## Entry points
 
 - @rootnative/web: the React Native components and APIs. Import it as

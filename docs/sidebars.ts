@@ -5,6 +5,7 @@ const sidebars: SidebarsConfig = {
     { type: 'doc', id: 'introduction', label: 'Introduction' },
     { type: 'doc', id: 'installation', label: 'Installation' },
     { type: 'doc', id: 'vite-plugin', label: 'Vite plugin' },
+    { type: 'doc', id: 'expo', label: 'Expo' },
     { type: 'doc', id: 'status', label: 'Status' },
     {
       type: 'category',

@@ -24,7 +24,7 @@ The API can still change between releases. Each page lists what ships today and 
 
 ## How it works
 
-Your app imports `react-native`. The [Vite plugin](/vite-plugin) resolves that name to `@rootnative/web`. Your app code uses three entry points:
+Your app imports `react-native`. The [Vite plugin](/vite-plugin) resolves that name to `@rootnative/web`. In an Expo app, [`@rootnative/web-expo`](/expo) does it in place of react-native-web. Your app code uses three entry points:
 
 | Layer  | Import                   | What's in it                                                    |
 | ------ | ------------------------ | --------------------------------------------------------------- |
@@ -37,4 +37,5 @@ Import `@rootnative/web/dom` and `@rootnative/web/server` only in code that runs
 ## Next steps
 
 - [Installation](/installation): set up a Vite app in four steps.
+- [Expo](/expo): run an Expo app with no router.
 - [Status](/status): what ships today, what's planned, and how it's tested.

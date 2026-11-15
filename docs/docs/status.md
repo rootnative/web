@@ -19,7 +19,7 @@ The latest release is [`0.0.0-alpha.3`](https://www.npmjs.com/package/@rootnativ
 | Compat     | [`unstable_createElement`](/compat), [`findNodeHandle`](/compat), [`TurboModuleRegistry`](/compat), and the entries `@rootnative/web/assets-registry` and `@rootnative/web/style`. Libraries import them, your app doesn't.                                                                                                                                                                                                                                                                                                                                                                               |
 | Web layer  | [`Head`](/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Tooling    | [`rootnative()`](/vite-plugin), the Vite plugin, from `@rootnative/web/vite`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Tooling    | [`rootnative()`](/vite-plugin), the Vite plugin, from `@rootnative/web/vite`, and [`@rootnative/web-expo`](/expo), for an Expo app with no router                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 `FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now.
 
@@ -29,11 +29,12 @@ The latest release is [`0.0.0-alpha.3`](https://www.npmjs.com/package/@rootnativ
 
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
+- **Expo Router:** it needs `Animated`.
 
 ## Out of scope
 
-- The `react-native-web` internals and file layout.
-- Expo and Metro. A Metro plugin isn't planned for 1.0.
+- The `react-native-web` internals. Only `@rootnative/web-expo` has its file layout, for Expo's bundler.
+- Metro with no Expo. A Metro plugin isn't planned for 1.0.
 - React 18, CommonJS, and Flow.
 - Props that React Native doesn't have, except a small web-only set. Each page marks a web-only prop.
 
