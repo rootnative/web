@@ -33,6 +33,28 @@ describe('View', () => {
     expect(computed.position).toBe('relative')
     expect(computed.flexShrink).toBe('0')
     expect(computed.minWidth).toBe('0px')
+    expect(computed.alignContent).toBe('flex-start')
+  })
+
+  // CSS `normal` stretches the lines of a wrapped container. Yoga packs them at the start.
+  test('packs wrapped lines at the start, as native does', () => {
+    const { container } = render(
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: 40, height: 100 }}>
+        <View style={{ width: 30, height: 20 }} />
+        <View style={{ width: 30, height: 20 }} />
+        <View style={{ width: 30, height: 20 }} />
+      </View>,
+    )
+    const parent = first(container)
+    const tops = Array.from(parent.children).map(
+      (child) => child.getBoundingClientRect().top - parent.getBoundingClientRect().top,
+    )
+    expect(tops).toEqual([0, 20, 40])
+  })
+
+  test('alignContent in style beats the reset', () => {
+    const { container } = render(<View style={{ alignContent: 'center' }} />)
+    expect(getComputedStyle(first(container)).alignContent).toBe('center')
   })
 
   test('applies style over the reset', () => {

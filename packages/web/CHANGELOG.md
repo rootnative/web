@@ -14,6 +14,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 - **An `on*` prop that React DOM doesn't know** no longer reaches the element. A library can spread its own callback, such as `onValueChange`, onto a `View`. React Native ignores it, and React logged `Unknown event handler property` for it. `View`, `Text`, `Image`, `TextInput`, `Switch`, and `Modal` now pass only the event handlers of React DOM, such as `onClick` and `onKeyDown`.
 - **A `Text` with `numberOfLines`** is no wider than its parent now, also with `flexShrink: 0`, as on native. Before, a one-line `Text` that couldn't shrink grew past its parent in a row and showed no ellipsis. A one-line `Text` also gets `overflow-wrap: normal` in place of `break-word`, which has no use on one line.
+- **A `View` with `flexWrap: 'wrap'`** packs its lines at the start now, as on native. The `View` reset had no `alignContent`, so the browser's `normal` stretched the lines over the free space. The reset now has `alignContent: 'flex-start'`, the default of React Native.
 
 ## [0.0.0-alpha.3] - 2026-11-14
 

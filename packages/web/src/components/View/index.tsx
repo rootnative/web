@@ -29,6 +29,7 @@ export type {
 
 // What a native View looks like before any style is applied.
 const resetStyle = Object.freeze({
+  alignContent: 'flex-start',
   alignItems: 'stretch',
   backgroundColor: 'transparent',
   border: '0 solid black',
