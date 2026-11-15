@@ -44,30 +44,75 @@ export const pointerEventsStyle: Readonly<
   'box-only': Object.freeze({ pointerEvents: 'box-only' }),
 })
 
-// A path through the cache, one frozen style object for each step. The classes of a node are the
-// classes of the objects on its path, flattened in that order.
-type CacheNode = { classes: string | undefined; next: WeakMap<FlatStyle, CacheNode> | undefined }
+// A path through the cache. A frozen object, as from StyleSheet.create, is one step by identity.
+// Any other object is one step for each of its declarations, by name and value: a component
+// that makes a new style object on each render still makes the same declarations. The classes
+// of a node are the classes of the steps on its path, flattened in that order.
+type CacheNode = {
+  classes: string | undefined
+  frozen: WeakMap<FlatStyle, CacheNode> | undefined
+  values: Map<string, Map<unknown, CacheNode>> | undefined
+}
+
+const newNode = (): CacheNode => ({ classes: undefined, frozen: undefined, values: undefined })
 
 // One cache for each value of the left and right swap, because the classes of a style differ.
-const caches = [
-  new WeakMap<StyleRegistry, WeakMap<FlatStyle, CacheNode>>(),
-  new WeakMap<StyleRegistry, WeakMap<FlatStyle, CacheNode>>(),
-] as const
+let caches: readonly [WeakMap<StyleRegistry, CacheNode>, WeakMap<StyleRegistry, CacheNode>] = [
+  new WeakMap(),
+  new WeakMap(),
+]
 
-// Static objects from StyleSheet.create are frozen, so they can be cache keys. Returns false at
-// the first entry that isn't a frozen object. `Object.isFrozen` is true for a number, and a
-// WeakMap throws on it.
-const collectFrozen = (style: StyleProp<object>, out: FlatStyle[]): boolean => {
-  if (style === null || style === undefined || style === false || style === '') return true
+// A value that changes on each render, such as an animated width, makes a new node each time.
+// Past this number of such nodes, the cache starts again.
+export const MAX_VALUE_NODES = 10_000
+let valueNodes = 0
+
+// The node at the end of the path of `style`, from `node`. Undefined for a style with no path:
+// a value that isn't a primitive, such as a transform, or an entry that isn't an object.
+const walk = (style: StyleProp<object>, node: CacheNode): CacheNode | undefined => {
+  if (style === null || style === undefined || style === false || style === '') return node
   if (Array.isArray(style)) {
+    let current: CacheNode | undefined = node
     for (const entry of style as ReadonlyArray<StyleProp<object>>) {
-      if (!collectFrozen(entry, out)) return false
+      current = walk(entry, current)
+      if (current === undefined) return undefined
     }
-    return true
+    return current
   }
-  if (typeof style !== 'object' || !Object.isFrozen(style)) return false
-  out.push(style as FlatStyle)
-  return true
+  // `Object.isFrozen` is true for a number, and a WeakMap throws on it.
+  if (typeof style !== 'object') return undefined
+
+  if (Object.isFrozen(style)) {
+    const frozen = (node.frozen ??= new WeakMap())
+    let next = frozen.get(style as FlatStyle)
+    if (next === undefined) {
+      next = newNode()
+      frozen.set(style as FlatStyle, next)
+    }
+    return next
+  }
+
+  let current = node
+  for (const name in style) {
+    if (!Object.hasOwn(style, name)) continue
+    const value = (style as FlatStyle)[name]
+    const type = typeof value
+    if ((type === 'object' && value !== null) || type === 'function') return undefined
+    const values = (current.values ??= new Map())
+    let byValue = values.get(name)
+    if (byValue === undefined) {
+      byValue = new Map()
+      values.set(name, byValue)
+    }
+    let next = byValue.get(value)
+    if (next === undefined) {
+      next = newNode()
+      byValue.set(value, next)
+      valueNodes += 1
+    }
+    current = next
+  }
+  return current
 }
 
 const compileFlat = (flat: FlatStyle | undefined, registry: StyleRegistry): string =>
@@ -82,32 +127,23 @@ export const compileStyle = (
   style: StyleProp<object>,
   registry: StyleRegistry = getStyleRegistry(),
 ): string => {
-  const frozen: FlatStyle[] = []
-  if (!collectFrozen(style, frozen)) {
-    return compileFlat(flattenStyle(style) as FlatStyle | undefined, registry)
+  if (style === null || style === undefined || style === false || style === '') return ''
+  if (valueNodes > MAX_VALUE_NODES) {
+    caches = [new WeakMap(), new WeakMap()]
+    valueNodes = 0
   }
-  if (frozen.length === 0) return ''
 
   const cache = caches[getLeftAndRightSwap() ? 1 : 0]
-  let level = cache.get(registry)
-  if (level === undefined) {
-    level = new WeakMap()
-    cache.set(registry, level)
+  let root = cache.get(registry)
+  if (root === undefined) {
+    root = newNode()
+    cache.set(registry, root)
   }
-  let node: CacheNode | undefined
-  for (const object of frozen) {
-    if (node !== undefined) level = node.next ??= new WeakMap()
-    node = level.get(object)
-    if (node === undefined) {
-      node = { classes: undefined, next: undefined }
-      level.set(object, node)
-    }
+  const leaf = walk(style, root)
+  if (leaf === undefined) {
+    return compileFlat(flattenStyle(style) as FlatStyle | undefined, registry)
   }
-  const leaf = node as CacheNode
-  leaf.classes ??= compileFlat(
-    frozen.length === 1 ? frozen[0] : flattenStyle<FlatStyle>(frozen),
-    registry,
-  )
+  leaf.classes ??= compileFlat(flattenStyle(style) as FlatStyle | undefined, registry)
   return leaf.classes
 }
 

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { compileReset, compileStyle } from './compile'
+import { compileReset, compileStyle, MAX_VALUE_NODES } from './compile'
 import {
   getStyleRegistry,
   LONGHAND_STYLE_ID,
@@ -198,13 +198,15 @@ describe('compileStyle', () => {
       )
     })
 
-    test('compiles again on each call when an object in it is not frozen', () => {
+    test('reads an object that is not frozen again on each call', () => {
       const registry = new StyleRegistry()
       const compile = vi.spyOn(registry, 'classesFor')
       const dynamic = { height: 1 }
       const first = compileStyle([a, dynamic], registry)
       dynamic.height = 2
       expect(compileStyle([a, dynamic], registry)).not.toBe(first)
+      dynamic.height = 1
+      expect(compileStyle([a, dynamic], registry)).toBe(first)
       expect(compile).toHaveBeenCalledTimes(2)
     })
 
@@ -222,6 +224,73 @@ describe('compileStyle', () => {
       )
       expect(registry.cssText().longhand).toContain('box-shadow')
     })
+  })
+})
+
+describe('compileStyle with an object that is not frozen', () => {
+  const frozen = Object.freeze({ width: 10, color: 'red' })
+
+  test('compiles once for the same declarations in a new object', () => {
+    const registry = new StyleRegistry()
+    const compile = vi.spyOn(registry, 'classesFor')
+    const classes = compileStyle({ height: 4, color: 'blue' }, registry)
+    expect(compileStyle({ height: 4, color: 'blue' }, registry)).toBe(classes)
+    expect(compileStyle([{ height: 4 }, null, [{ color: 'blue' }]], registry)).toBe(classes)
+    expect(compile).toHaveBeenCalledTimes(1)
+    expect(classSet(classes)).toEqual(
+      classSet(compileStyle(Object.freeze({ height: 4, color: 'blue' }), new StyleRegistry())),
+    )
+  })
+
+  test('compiles once in an array with frozen objects, in any position', () => {
+    const registry = new StyleRegistry()
+    const compile = vi.spyOn(registry, 'classesFor')
+    const before = compileStyle([{ color: 'blue' }, frozen], registry)
+    const after = compileStyle([frozen, { color: 'blue' }], registry)
+    expect(compileStyle([{ color: 'blue' }, frozen], registry)).toBe(before)
+    expect(compileStyle([frozen, { color: 'blue' }], registry)).toBe(after)
+    expect(compile).toHaveBeenCalledTimes(2)
+    expect(classSet(before)).toEqual(classSet(compileStyle(frozen, new StyleRegistry())))
+    expect(classSet(after)).toEqual(
+      classSet(compileStyle({ width: 10, color: 'blue' }, new StyleRegistry())),
+    )
+  })
+
+  test('a number and a string with the same text are two values', () => {
+    const registry = new StyleRegistry()
+    expect(compileStyle({ lineHeight: 2 }, registry)).not.toBe(
+      compileStyle({ lineHeight: '2' as never }, registry),
+    )
+    expect(registry.cssText().longhand).toContain('line-height:2px')
+  })
+
+  test('a later undefined takes the declaration out', () => {
+    const registry = new StyleRegistry()
+    expect(compileStyle([{ color: 'blue', height: 4 }, { color: undefined }], registry)).toBe(
+      compileStyle({ height: 4 }, registry),
+    )
+    expect(compileStyle([{ color: 'blue', height: 4 }, { color: undefined }], registry)).not.toBe(
+      compileStyle({ color: 'blue', height: 4 }, registry),
+    )
+  })
+
+  test('compiles a value that is not a primitive on each call, with the right classes', () => {
+    const registry = new StyleRegistry()
+    const compile = vi.spyOn(registry, 'classesFor')
+    expect(compileStyle({ opacity: 0.5, transform: [{ translateX: 4 }] }, registry)).toBe(
+      compileStyle({ opacity: 0.5, transform: [{ translateX: 4 }] }, registry),
+    )
+    expect(compile).toHaveBeenCalledTimes(2)
+    expect(registry.cssText().longhand).toContain('transform:translateX(4px)')
+  })
+
+  test('starts the cache again past the limit, and still compiles the same classes', () => {
+    const registry = new StyleRegistry()
+    const first = compileStyle([frozen, { height: 4 }], registry)
+    for (let i = 0; i <= MAX_VALUE_NODES; i++) compileStyle({ width: i }, registry)
+    const compile = vi.spyOn(registry, 'classesFor')
+    expect(compileStyle([frozen, { height: 4 }], registry)).toBe(first)
+    expect(compile).toHaveBeenCalledTimes(1)
   })
 })
 
