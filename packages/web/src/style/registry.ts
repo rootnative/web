@@ -114,6 +114,11 @@ export class StyleRegistry {
     return className
   }
 
+  // True for a class of `staticClass` or `resetClass` that this registry already has.
+  hasClass(className: string): boolean {
+    return this.classNames.has(className)
+  }
+
   // Inserts the default style of a component as one rule in the reset sheet, once. Its class
   // name is its own, never an atomic one, so a style of the app with the same declaration
   // still gets an atomic class that beats the default.

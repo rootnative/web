@@ -4,6 +4,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Changed
+
+- **A render of `View`, `Text`, `TextInput`, and `Image` is faster.** Each render resolved the default style of the component again, and then didn't use the result. Now it resolves once. On one app, a menu opens 16 % faster and a dialog 8 % faster. The load time doesn't change.
+
 ## [0.0.0-alpha.4] - 2026-11-15
 
 ### Added

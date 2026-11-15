@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { compileStyle } from './compile'
+import { compileReset, compileStyle } from './compile'
 import {
   getStyleRegistry,
   LONGHAND_STYLE_ID,
@@ -222,5 +222,28 @@ describe('compileStyle', () => {
       )
       expect(registry.cssText().longhand).toContain('box-shadow')
     })
+  })
+})
+
+describe('compileReset', () => {
+  test('resolves the style once for each registry, not on each call', () => {
+    let reads = 0
+    const style = {
+      get flexShrink(): number {
+        reads += 1
+        return 0
+      },
+    }
+    const registry = new StyleRegistry()
+    expect(compileReset('rn-box', style, registry)).toBe('rn-box')
+    expect(compileReset('rn-box', style, registry)).toBe('rn-box')
+    expect(compileReset('rn-box', style, registry)).toBe('rn-box')
+    expect(reads).toBe(1)
+    expect(registry.cssText().reset).toBe('.rn-box{flex-shrink:0}')
+
+    const other = new StyleRegistry()
+    expect(compileReset('rn-box', style, other)).toBe('rn-box')
+    expect(reads).toBe(2)
+    expect(other.cssText().reset).toBe('.rn-box{flex-shrink:0}')
   })
 })

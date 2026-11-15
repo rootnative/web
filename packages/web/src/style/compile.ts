@@ -119,7 +119,9 @@ export const compileReset = (
   className: string,
   style: FlatStyle,
   registry: StyleRegistry = getStyleRegistry(),
-): string => registry.resetClass(className, resolveStyle(style))
+): string =>
+  // Each render of each component calls this, so the style resolves only for a new class.
+  registry.hasClass(className) ? className : registry.resetClass(className, resolveStyle(style))
 
 // Joins class names and skips the empty ones.
 export const joinClassNames = (...names: ReadonlyArray<string | false | undefined>): string =>
