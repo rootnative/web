@@ -71,7 +71,7 @@ const styleFile = `export * from '@rootnative/web/style'\nexport { default } fro
 const SHEET_FILE = 'exports/StyleSheet/dom/index.js'
 
 // The files of `src/` that go into `dist/` as they are.
-const SOURCE_FILES = ['AppRegistry.js', 'createSheet.js', 'missing.js']
+export const SOURCE_FILES = ['AppRegistry.js', 'createSheet.js', 'missing.js']
 
 // The path of each generated file, from `dist/`, and its text.
 export const facadeFiles = ({ names, missing } = readExports(), modules = runtimeModules()) => {

@@ -4,7 +4,9 @@
 //   node scripts/check-release.mjs --version 0.0.0-alpha.1 --dist-tag latest
 //
 // - npm is new enough for `npm stage publish` with trusted publishing.
-// - packages/web/package.json has the version asked for.
+// - packages/web/package.json and packages/web-expo/package.json have the version asked for.
+// - packages/web-expo/CHANGELOG.md has a dated section for it. check-versions.mjs lets that file
+//   have only Unreleased before the first release, so this is where a missing note stops.
 // - The tag web@<version> doesn't exist yet. A CI checkout needs `fetch-depth: 0` for this.
 // - A prerelease on `latest` doesn't replace a stable release there.
 
@@ -52,9 +54,28 @@ if (compareCore(npmVersion, minimumNpm) < 0) {
   )
 }
 
-const version = JSON.parse(readFileSync(join(root, 'packages/web/package.json'), 'utf8')).version
+const read = (path) => readFileSync(join(root, path), 'utf8')
+
+const version = JSON.parse(read('packages/web/package.json')).version
 if (version !== requested) {
   problems.push(`You asked for ${requested}, but packages/web/package.json has ${version}.`)
+}
+
+// @rootnative/web-expo releases in the same run, at the same version.
+const expoVersion = JSON.parse(read('packages/web-expo/package.json')).version
+if (expoVersion !== requested) {
+  problems.push(
+    `You asked for ${requested}, but packages/web-expo/package.json has ${expoVersion}.`,
+  )
+}
+const expoSection = new RegExp(
+  `^## \\[${requested.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\] - \\d{4}-\\d{2}-\\d{2}$`,
+  'm',
+)
+if (!expoSection.test(read('packages/web-expo/CHANGELOG.md'))) {
+  problems.push(
+    `packages/web-expo/CHANGELOG.md has no "## [${requested}] - <date>" section. It ships in this release, so write its note too.`,
+  )
 }
 
 const tag = `web@${version}`
