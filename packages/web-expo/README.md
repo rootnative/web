@@ -12,8 +12,10 @@ Expo's web bundler rewrites each `react-native` import to a file of react-native
 }
 ```
 
-It isn't on npm yet.
+This package depends on the same version of `@rootnative/web`, and works only with that version. Don't add a different version of `@rootnative/web` to your app.
 
 ## What works
 
-An Expo app with no router, on the dev server. The names of React Native that `@rootnative/web` doesn't have load as stubs, and a stub throws when your code uses it. `expo-exports.json` lists them under `missing`. Expo Router needs `Animated`, which is one of them.
+An Expo app with no router, on the dev server and in a web export (`expo export --platform web`). Reanimated 4 animates the components, image imports load, and `react-native-svg` renders.
+
+The names of React Native that `@rootnative/web` doesn't have yet load as stubs, and a stub throws when your code uses it. `expo-exports.json` lists them under `missing`. Expo Router needs `Animated`, which is one of them.

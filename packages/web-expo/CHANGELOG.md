@@ -1,0 +1,19 @@
+# Changelog
+
+All notable changes to `@rootnative/web-expo` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Before `1.0.0`, any release can have breaking changes. Each release lists them.
+
+Each version works only with the same version of `@rootnative/web`. The package depends on that exact version.
+
+## [Unreleased]
+
+### Added
+
+- **The first release.** An Expo app runs on `@rootnative/web` in place of react-native-web. Install this package under the name `react-native-web`, with an npm alias.
+- **The file layout that Expo's web bundler reads:** one file for each name of `react-native` in `dist/exports/<Name>/index.js`, and `dist/index.js` for every name. Each file loads only its own module of `@rootnative/web`, so the app bundles only the components that it imports.
+- **`AppRegistry`** with the three methods that Expo calls: `registerComponent`, `runApplication`, which renders or hydrates the app, and `getApplication`, which gives a server render its element and its style element.
+- **`createSheet`** in `dist/exports/StyleSheet/dom`, where Expo looks for it. It adds the four reset rules of react-native-web, such as `body { margin: 0 }`, once for each document.
+- **`asset-registry.js`**, for a library that imports React Native's asset registry, such as `react-native-svg` or `expo-asset`.
+- **The two style files of react-native-web that Reanimated 4 reads**, so Reanimated animates the components of `@rootnative/web`.
+- **A stub for each name that `@rootnative/web` doesn't have yet**, such as `Animated`. The import works, and a use throws an error with the name. `expo-exports.json` lists these names under `missing`.
+
+[unreleased]: https://github.com/rootnative/web/compare/web@0.0.0-alpha.3...HEAD

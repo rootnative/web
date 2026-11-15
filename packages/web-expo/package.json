@@ -10,12 +10,25 @@
     "url": "https://github.com/rootnative/web.git",
     "directory": "packages/web-expo"
   },
+  "bugs": {
+    "url": "https://github.com/rootnative/web/issues"
+  },
+  "keywords": [
+    "react-native",
+    "react-native-web",
+    "expo",
+    "react",
+    "web"
+  ],
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
   "files": [
     "dist",
-    "asset-registry.js"
+    "asset-registry.js",
+    "expo-exports.json",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "node scripts/build.mjs",
