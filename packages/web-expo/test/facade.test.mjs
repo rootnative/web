@@ -1,34 +1,14 @@
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-
 import { describe, expect, test } from 'vitest'
 
-import { facadeFiles, readExports } from '../scripts/build.mjs'
+import { facadeFiles, readExports, runtimeModules } from '../scripts/build.mjs'
 import { missing as missingExport } from '../src/missing.js'
 
 const { names, missing } = readExports()
 
-// The value exports of `@rootnative/web`, from its source. The package has no build here.
-const runtimeExports = () => {
-  const index = readFileSync(
-    fileURLToPath(new URL('../../web/src/index.ts', import.meta.url)),
-    'utf8',
-  )
-  const found = new Set()
-  for (const [, list] of index.matchAll(/^export \{([^}]*)\} from/gm)) {
-    for (const entry of list.split(',')) {
-      const name = entry.trim()
-      if (name === '' || name.startsWith('type ')) continue
-      found.add(name.split(' as ').pop().trim())
-    }
-  }
-  return found
-}
-
 const runtimeName = (name) => (name === 'createElement' ? 'unstable_createElement' : name)
 
 describe('the list of names', () => {
-  const runtime = runtimeExports()
+  const runtime = new Set(runtimeModules().keys())
   const supplied = new Set(['AppRegistry'])
 
   test('each name comes from the runtime, from this package, or is in the missing list', () => {
@@ -58,13 +38,21 @@ describe('the generated files', () => {
     for (const name of names) expect(files.has(`exports/${name}/index.js`)).toBe(true)
   })
 
-  test('re-exports a name of the runtime as the default export', () => {
+  test('re-exports a name of the runtime as the default export, from its own module', () => {
     expect(files.get('exports/View/index.js')).toBe(
-      `export { View as default } from '@rootnative/web'\n`,
+      `export { View as default } from '@rootnative/web/internal/components/View/index.js'\n`,
     )
     expect(files.get('exports/createElement/index.js')).toBe(
-      `export { unstable_createElement as default } from '@rootnative/web'\n`,
+      `export { unstable_createElement as default } from '@rootnative/web/internal/compat/createElement/index.js'\n`,
     )
+  })
+
+  // Metro has no tree shaking. One import of the root entry loads every component into the app.
+  test('no file of a name imports the root entry of the runtime', () => {
+    const rootImports = names.filter((name) =>
+      files.get(`exports/${name}/index.js`).includes(`from '@rootnative/web'`),
+    )
+    expect(rootImports).toEqual([])
   })
 
   test('gives Expo the createSheet function where react-native-web has it', () => {

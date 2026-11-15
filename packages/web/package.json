@@ -37,6 +37,7 @@
     "./server": "./dist/server/index.js",
     "./style": "./dist/style/index.js",
     "./vite": "./dist/vite/index.js",
+    "./internal/*.js": "./dist/*.js",
     "./package.json": "./package.json"
   },
   "scripts": {

@@ -9,6 +9,11 @@ export default defineConfig({
     'src/style/index.ts',
     'src/vite/index.ts',
   ],
+  // One output file for each source file, at the same path under `dist/`. Metro has no tree
+  // shaking, so a single bundled file loads the whole runtime into each Expo app.
+  // `@rootnative/web-expo` imports these files through the `internal/*` export.
+  unbundle: true,
+  root: 'src',
   format: 'esm',
   platform: 'browser',
   target: 'es2021',

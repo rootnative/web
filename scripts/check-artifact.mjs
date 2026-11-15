@@ -30,6 +30,13 @@ for (const [entry, target] of Object.entries(manifest.exports)) {
     continue
   }
   const path = target.replace(/^\.\//, '')
+  if (path.includes('*')) {
+    const [prefix, suffix] = path.split('*')
+    if (![...files].some((file) => file.startsWith(prefix) && file.endsWith(suffix))) {
+      problems.push(`exports "${entry}" matches no file in the tarball. Run pnpm build first.`)
+    }
+    continue
+  }
   const types = path.replace(/\.js$/, '.d.ts')
   if (!files.has(path)) {
     problems.push(

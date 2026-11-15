@@ -4,6 +4,11 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Changed
+
+- **The package has one file for each module**, in place of one bundled file. Metro has no tree shaking, so an Expo app loaded every component, also the ones it never imports. Through `@rootnative/web-expo`, an app now loads only the modules that it uses. Vite already dropped the unused code, so a Vite app doesn't change.
+- **`@rootnative/web/internal/*.js`**, a new entry for `@rootnative/web-expo`. It has no stable API, so don't import it in your app.
+
 ### Fixed
 
 - **An `on*` prop that React DOM doesn't know** no longer reaches the element. A library can spread its own callback, such as `onValueChange`, onto a `View`. React Native ignores it, and React logged `Unknown event handler property` for it. `View`, `Text`, `Image`, `TextInput`, `Switch`, and `Modal` now pass only the event handlers of React DOM, such as `onClick` and `onKeyDown`.
