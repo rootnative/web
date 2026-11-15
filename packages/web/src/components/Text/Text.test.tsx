@@ -123,6 +123,34 @@ describe('Text', () => {
       const text = first(container).firstElementChild as HTMLElement
       expect(text.scrollWidth).toBeGreaterThan(text.clientWidth)
     })
+
+    // Yoga measures a Text at most as wide as its parent, so it truncates also when it can't shrink.
+    test('truncates a long line in a narrow row with flexShrink 0, as native does', () => {
+      const { container } = render(
+        <View style={{ width: 40, flexDirection: 'row' }}>
+          <Text numberOfLines={1} style={{ flexShrink: 0 }}>
+            A very long line of text that cannot fit
+          </Text>
+        </View>,
+      )
+      const text = first(container).firstElementChild as HTMLElement
+      expect(text.getBoundingClientRect().width).toBe(40)
+      expect(text.scrollWidth).toBeGreaterThan(text.clientWidth)
+    })
+
+    test('a clamped Text is no wider than its parent and keeps words whole on one line', () => {
+      const { container } = render(
+        <>
+          <Text numberOfLines={1}>One</Text>
+          <Text numberOfLines={2}>Two</Text>
+        </>,
+      )
+      const [one, two] = Array.from(container.children).map((el) => getComputedStyle(el))
+      expect(one?.maxWidth).toBe('100%')
+      expect(one?.overflowWrap).toBe('normal')
+      expect(two?.maxWidth).toBe('100%')
+      expect(two?.overflowWrap).toBe('break-word')
+    })
   })
 
   describe('selection', () => {

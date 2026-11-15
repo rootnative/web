@@ -52,8 +52,12 @@ const nestedResetStyle = Object.freeze({
   whiteSpace: 'inherit',
 })
 
+// On native, Yoga measures a Text at most as wide as its parent, also with `flexShrink: 0`.
+// `maxWidth` does the same here. The reset's `break-word` has no use on a line that doesn't wrap.
 const singleLineStyle = Object.freeze({
+  maxWidth: '100%',
   overflow: 'hidden',
+  overflowWrap: 'normal',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
 })
@@ -65,6 +69,7 @@ const multiLineStyle = (lines: number): Readonly<Record<string, unknown>> => {
   if (style === undefined) {
     style = Object.freeze({
       display: '-webkit-box',
+      maxWidth: '100%',
       WebkitBoxOrient: 'vertical',
       WebkitLineClamp: lines,
       overflow: 'hidden',
