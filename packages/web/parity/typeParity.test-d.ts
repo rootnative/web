@@ -12,6 +12,11 @@
 
 import type * as Native from 'react-native'
 
+import type {
+  CompositeAnimation,
+  SpringAnimationConfig,
+  TimingAnimationConfig,
+} from '../src/apis/Animated/AnimatedImplementation'
 import type { AnimatedAddition } from '../src/apis/Animated/nodes/AnimatedAddition'
 import type {
   AnimatedInterpolation,
@@ -283,10 +288,20 @@ type HostMethodMismatches =
 
 export type HostInstanceParity = [None<HostMethodMismatches>]
 
-// The nodes of `Animated`, before the package exports `Animated`. The animations come next.
-type AnimatedValueGaps = 'animate' | 'resetAnimation' | 'stopAnimation' | 'stopTracking' | 'track'
+// The parts of `Animated`, before the package exports `Animated`. A value can't track another
+// node yet, so `toValue` takes only a number, and a spring's `velocity` too.
+type AnimatedValueGaps = 'stopTracking' | 'track'
 
 export type AnimatedNodeParity = [
+  None<Mismatch<'CompositeAnimation', Native.Animated.CompositeAnimation, CompositeAnimation>>,
+  None<PropDiff<Native.Animated.TimingAnimationConfig, TimingAnimationConfig, never>>,
+  None<FitDiff<Native.Animated.TimingAnimationConfig, TimingAnimationConfig, 'toValue'>>,
+  None<FitDiff<TimingAnimationConfig, Native.Animated.TimingAnimationConfig, never>>,
+  None<PropDiff<Native.Animated.SpringAnimationConfig, SpringAnimationConfig, never>>,
+  None<
+    FitDiff<Native.Animated.SpringAnimationConfig, SpringAnimationConfig, 'toValue' | 'velocity'>
+  >,
+  None<FitDiff<SpringAnimationConfig, Native.Animated.SpringAnimationConfig, never>>,
   None<PropDiff<Native.Animated.AnimatedNode, AnimatedNode, never>>,
   None<PropDiff<Native.Animated.Value, AnimatedValue, AnimatedValueGaps>>,
   None<PropDiff<Native.Animated.Interpolation<number>, AnimatedInterpolation<number>, never>>,
