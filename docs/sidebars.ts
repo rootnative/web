@@ -60,6 +60,7 @@ const sidebars: SidebarsConfig = {
         'pixelratio',
         'processcolor',
         'panresponder',
+        'easing',
         'usepressability',
         'compat',
       ],

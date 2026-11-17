@@ -75,9 +75,9 @@ components the app imports. It also gives Expo AppRegistry and the page reset
 web.output 'single', Reanimated 4 (the preset adds the Worklets plugin), image
 imports, react-native-svg. web-expo depends on the exact same version of
 @rootnative/web: install that version if the app imports @rootnative/web too.
-A name that @rootnative/web lacks (Animated, Easing, LayoutAnimation,
-SectionList, VirtualizedList, ImageBackground, SafeAreaView, and more) loads
-as a stub that throws "<Name> is not in @rootnative/web yet" on use;
+A name that @rootnative/web lacks (Animated, LayoutAnimation, SectionList,
+VirtualizedList, ImageBackground, SafeAreaView, and more) loads as a stub
+that throws "<Name> is not in @rootnative/web yet" on use;
 node_modules/react-native-web/expo-exports.json lists them under "missing".
 Expo Router needs Animated, so it doesn't work yet.
 
@@ -110,7 +110,7 @@ Modal, KeyboardAvoidingView, StatusBar.
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AppState, Keyboard, Linking, Alert, Share, Vibration, Clipboard,
 AccessibilityInfo, I18nManager, BackHandler, PixelRatio, processColor,
-PanResponder, usePressability.
+PanResponder, Easing, usePressability.
 
 Compat, for libraries only, do not call in app code: unstable_createElement,
 findNodeHandle, TurboModuleRegistry.
@@ -550,6 +550,10 @@ StatusBar
   The element captures the pointer at the grant. Negotiation works as on
   native. dx and dy are CSS pixels; vx and vy are pixels per millisecond.
   onShouldBlockNativeResponder is ignored. getInteractionHandle() is null.
+- Easing: every curve and helper of React Native, with the same math. ease is
+  cubic-bezier(0.42, 0, 1, 1) (CSS ease-in, not CSS ease). bezier throws for
+  an x out of [0, 1]. Type of a curve: EasingFunction. Animated isn't in the
+  package yet: call a curve yourself or pass it to a library.
 - usePressability(config): returns pointer, keyboard, and focus handlers, not
   the native responder handlers. Spread them on a View. Memoize the config.
   A null config returns null. hitSlop doesn't grow the hit area. Set

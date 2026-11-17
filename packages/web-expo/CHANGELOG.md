@@ -6,6 +6,10 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+### Changed
+
+- **`Easing` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
+
 ## [0.0.0-alpha.5] - 2026-11-15
 
 ### Changed

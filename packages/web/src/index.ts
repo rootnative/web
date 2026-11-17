@@ -26,6 +26,8 @@ export type {
   EmitterSubscription,
   ScaledSize,
 } from './apis/Dimensions'
+export { Easing } from './apis/Easing'
+export type { EasingFunction } from './apis/Easing'
 export { I18nManager } from './apis/I18nManager'
 export type { I18nManagerConstants } from './apis/I18nManager'
 export { Keyboard } from './apis/Keyboard'

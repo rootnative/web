@@ -4,6 +4,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Added
+
+- **`Easing`**, with every curve and helper of React Native and the same math: `linear`, `ease`, `quad`, `cubic`, `poly`, `sin`, `circle`, `exp`, `elastic`, `back`, `bounce`, `bezier`, `step0`, `step1`, `in`, `out`, and `inOut`. The type `EasingFunction` comes with it. `Animated` isn't in the package yet, so call a curve yourself or pass it to a library that takes an easing function.
+
 ## [0.0.0-alpha.5] - 2026-11-15
 
 Two changes make each render after the first one cheaper. On one app, the runtime's own script time while a menu or a dialog opens and closes is about half of what it was in `0.0.0-alpha.4`. The first load doesn't change.

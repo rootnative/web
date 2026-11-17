@@ -40,7 +40,6 @@ type Mismatch<Name extends string, NativeType, OurType> = [NativeType] extends [
 type ExportGaps =
   // Not built yet.
   | 'Animated'
-  | 'Easing'
   | 'ImageBackground'
   | 'LayoutAnimation'
   | 'SafeAreaView'
@@ -327,4 +326,7 @@ export type TypeParity = [
   None<PropDiff<typeof Native.Keyboard, typeof Web.Keyboard, never>>,
   // A class on native, a plain object here.
   None<PropDiff<typeof Native.Alert, typeof Web.Alert, 'prototype'>>,
+  None<PropDiff<typeof Native.Easing, typeof Web.Easing, never>>,
+  None<Mismatch<'Easing', typeof Native.Easing, typeof Web.Easing>>,
+  None<Mismatch<'EasingFunction', Native.EasingFunction, Web.EasingFunction>>,
 ]
