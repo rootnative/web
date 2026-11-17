@@ -8,6 +8,7 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ### Added
 
+- **`DeviceEventEmitter` and `NativeEventEmitter`**, as react-native-web has them. Each `NativeEventEmitter` puts its listeners on the shared `DeviceEventEmitter`, and only JavaScript emits events. `@expo/log-box`, the error overlay of Expo Router, makes a `NativeEventEmitter` when it loads, and the stub threw an error there.
 - **`UIManager`, `NativeModules`, and `LogBox`**, as react-native-web has them. `expo-constants` reads `NativeModules` when it loads, and the stub threw an error there. `NativeModules` has no native module, `LogBox` does nothing, and `UIManager` measures and updates an element with the host methods of `@rootnative/web`.
 
 ### Changed

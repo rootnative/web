@@ -314,7 +314,7 @@ On the web, Expo's Babel preset rewrites `import { View } from 'react-native'` t
 
 Expo also calls `AppRegistry` from `react-native-web` to start the app, and asks it for the reset styles of the page. The package gives both: your app renders with React DOM, and `body` gets no margin, as with react-native-web.
 
-Expo's libraries import `UIManager`, `NativeModules`, and `LogBox` on the web too. The package gives them as react-native-web does: `NativeModules` has no native module, `LogBox` does nothing, and `UIManager` measures an element with the host methods of `@rootnative/web`.
+Expo's libraries import `UIManager`, `NativeModules`, `LogBox`, `DeviceEventEmitter`, and `NativeEventEmitter` on the web too. The package gives them as react-native-web does: `NativeModules` has no native module, `LogBox` does nothing, `UIManager` measures an element with the host methods of `@rootnative/web`, and only JavaScript emits events on the two emitters.
 
 ## What works
 

@@ -45,11 +45,13 @@ export const runtimeModules = () => {
 const runtimeName = (name) => (name === 'createElement' ? 'unstable_createElement' : name)
 
 // The names that this package gives itself, and their files in `src/`. `@rootnative/web` doesn't
-// have them: Expo's own launch code calls `AppRegistry`, and the other three are native APIs that
+// have them: Expo's own launch code calls `AppRegistry`, and the others are native APIs that
 // Expo's libraries import on the web too.
 export const SUPPLIED = {
   AppRegistry: 'AppRegistry.js',
+  DeviceEventEmitter: 'DeviceEventEmitter.js',
   LogBox: 'LogBox.js',
+  NativeEventEmitter: 'NativeEventEmitter.js',
   NativeModules: 'NativeModules.js',
   UIManager: 'UIManager.js',
 }

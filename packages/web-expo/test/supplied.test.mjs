@@ -1,8 +1,91 @@
-import { describe, expect, test, vi } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 
+import { DeviceEventEmitter } from '../src/DeviceEventEmitter.js'
 import { LogBox } from '../src/LogBox.js'
+import { NativeEventEmitter } from '../src/NativeEventEmitter.js'
 import { NativeModules } from '../src/NativeModules.js'
 import { UIManager } from '../src/UIManager.js'
+
+afterEach(() => {
+  DeviceEventEmitter.removeAllListeners()
+})
+
+describe('DeviceEventEmitter', () => {
+  test('calls each listener of a type with the arguments and the context', () => {
+    const context = { name: 'context' }
+    const first = vi.fn()
+    const second = vi.fn(function () {
+      return this
+    })
+    DeviceEventEmitter.addListener('ping', first)
+    DeviceEventEmitter.addListener('ping', second, context)
+    DeviceEventEmitter.addListener('other', first)
+
+    DeviceEventEmitter.emit('ping', 1, 'two')
+
+    expect(first).toHaveBeenCalledExactlyOnceWith(1, 'two')
+    expect(second).toHaveBeenCalledExactlyOnceWith(1, 'two')
+    expect(second.mock.results[0]?.value).toBe(context)
+  })
+
+  test('remove, listenerCount, and removeAllListeners', () => {
+    const listener = vi.fn()
+    const subscription = DeviceEventEmitter.addListener('ping', listener)
+    DeviceEventEmitter.addListener('ping', listener)
+    DeviceEventEmitter.addListener('other', listener)
+    expect(DeviceEventEmitter.listenerCount('ping')).toBe(2)
+
+    subscription.remove()
+    expect(DeviceEventEmitter.listenerCount('ping')).toBe(1)
+    DeviceEventEmitter.removeAllListeners('ping')
+    expect(DeviceEventEmitter.listenerCount('ping')).toBe(0)
+    expect(DeviceEventEmitter.listenerCount('other')).toBe(1)
+    DeviceEventEmitter.removeAllListeners()
+    expect(DeviceEventEmitter.listenerCount('other')).toBe(0)
+  })
+
+  test('a listener that an earlier one removes during an emit still runs', () => {
+    const later = vi.fn()
+    let laterSubscription
+    DeviceEventEmitter.addListener('ping', () => laterSubscription.remove())
+    laterSubscription = DeviceEventEmitter.addListener('ping', later)
+
+    DeviceEventEmitter.emit('ping')
+    DeviceEventEmitter.emit('ping')
+
+    expect(later).toHaveBeenCalledOnce()
+  })
+
+  test('throws for a listener that is not a function', () => {
+    expect(() => DeviceEventEmitter.addListener('ping', 'not a function')).toThrow(
+      '2nd argument must be a function',
+    )
+  })
+})
+
+describe('NativeEventEmitter', () => {
+  test('takes a module object, as @expo/log-box gives it, and shares the device emitter', () => {
+    const emitter = new NativeEventEmitter({ addListener() {}, removeListeners() {} })
+    const listener = vi.fn()
+    const subscription = emitter.addListener('change', listener)
+
+    DeviceEventEmitter.emit('change', 'from the device emitter')
+    emitter.emit('change', 'from this emitter')
+    expect(listener.mock.calls).toEqual([['from the device emitter'], ['from this emitter']])
+    expect(emitter.listenerCount('change')).toBe(1)
+
+    subscription.remove()
+    expect(emitter.listenerCount('change')).toBe(0)
+  })
+
+  test('removeAllListeners needs a type', () => {
+    const emitter = new NativeEventEmitter()
+    emitter.addListener('change', vi.fn())
+    expect(() => emitter.removeAllListeners()).toThrow('requires a non-null argument')
+    emitter.removeAllListeners('change')
+    expect(emitter.listenerCount('change')).toBe(0)
+  })
+})
 
 // An element at (10, 20), 30 by 40, in a parent at (4, 5). The tests run in Node, with no DOM.
 const fakeElement = () => ({
