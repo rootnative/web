@@ -7,7 +7,7 @@ Expo's web bundler rewrites each `react-native` import to a file of react-native
 ```json
 {
   "dependencies": {
-    "react-native-web": "npm:@rootnative/web-expo@0.0.0-alpha.5"
+    "react-native-web": "npm:@rootnative/web-expo@0.0.0-alpha.6"
   }
 }
 ```
