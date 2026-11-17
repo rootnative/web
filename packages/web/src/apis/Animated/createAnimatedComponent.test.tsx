@@ -3,7 +3,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { View, type ViewInstance, type ViewProps } from '../../components/View'
 import { cleanup, render } from '../../test/render'
-import { Animated } from './index'
+import * as Animated from './AnimatedExports'
 
 afterEach(cleanup)
 

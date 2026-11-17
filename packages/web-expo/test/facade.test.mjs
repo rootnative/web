@@ -42,6 +42,9 @@ describe('the generated files', () => {
     expect(files.get('exports/View/index.js')).toBe(
       `export { View as default } from '@rootnative/web/internal/components/View/index.js'\n`,
     )
+    expect(files.get('exports/Animated/index.js')).toBe(
+      `export * as default from '@rootnative/web/internal/apis/Animated/AnimatedExports.js'\n`,
+    )
     expect(files.get('exports/createElement/index.js')).toBe(
       `export { unstable_createElement as default } from '@rootnative/web/internal/compat/createElement/index.js'\n`,
     )

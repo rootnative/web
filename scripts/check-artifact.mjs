@@ -7,7 +7,10 @@
 // - each file that its build writes is in the tarball, so each name of expo-exports.json has its
 //   file under dist/exports/,
 // - package.json, LICENSE, README.md, CHANGELOG.md, expo-exports.json, asset-registry.js, and the
-//   `main` file are in it, and nothing from src/, scripts/, or test/.
+//   `main` file are in it, and nothing from src/, scripts/, or test/,
+// - each `@rootnative/web/internal/*.js` file that it imports is in the tarball of packages/web.
+//   The build of the runtime emits no file for a module that only re-exports, so a path can be
+//   in src/ and not in dist/.
 // Both: no test file.
 // It lists the files with `npm pack --dry-run --ignore-scripts`: the same packer as
 // `npm stage publish`, but it builds nothing and writes no tarball.
@@ -22,6 +25,8 @@ import { facadeFiles, SOURCE_FILES } from '../packages/web-expo/scripts/build.mj
 const packagesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'packages')
 const problems = []
 const summaries = []
+
+let webFiles = new Set()
 
 const pack = (name) => {
   const packageDir = join(packagesDir, name)
@@ -78,6 +83,7 @@ const requireFiles = (name, files, required) => {
     }
   }
   requireFiles('web', files, ['package.json', 'LICENSE', 'README.md', 'CHANGELOG.md', 'llms.txt'])
+  webFiles = files
   summaries.push(`${manifest.name}@${manifest.version}: ${files.size} files and every export`)
 }
 
@@ -99,7 +105,21 @@ const requireFiles = (name, files, required) => {
   if (sources.length > 0) {
     problems.push(`The tarball of web-expo has files of the repo: ${sources.join(', ')}.`)
   }
-  summaries.push(`${manifest.name}@${manifest.version}: ${files.size} files and each built file`)
+  const sourceTexts = SOURCE_FILES.map((file) =>
+    readFileSync(join(packagesDir, 'web-expo', 'src', file), 'utf8'),
+  )
+  const imported = [...facadeFiles().values(), ...sourceTexts].flatMap((text) =>
+    [...text.matchAll(/'@rootnative\/web\/internal\/([^']+)'/g)].map((match) => `dist/${match[1]}`),
+  )
+  const lost = [...new Set(imported)].filter((path) => !webFiles.has(path))
+  if (lost.length > 0) {
+    problems.push(
+      `web-expo imports files of @rootnative/web that its tarball doesn't have: ${lost.join(', ')}. Export the name from a module that the build emits.`,
+    )
+  }
+  summaries.push(
+    `${manifest.name}@${manifest.version}: ${files.size} files and each built file and each import of the runtime`,
+  )
 }
 
 const inActions = process.env.GITHUB_ACTIONS === 'true'

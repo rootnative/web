@@ -25,7 +25,8 @@ const moduleFile = (path) => {
 
 // The module of each value export of `@rootnative/web`, read from its source. A file of a name
 // imports its own module and never the root entry: Metro has no tree shaking, so the root entry
-// loads every component into the app.
+// loads every component into the app. A namespace export, `export * as Animated from`, is the
+// whole module.
 export const runtimeModules = () => {
   const index = readFileSync(join(runtimeSource, 'index.ts'), 'utf8')
   const modules = new Map()
@@ -34,8 +35,12 @@ export const runtimeModules = () => {
     for (const entry of list.split(',')) {
       const name = entry.trim()
       if (name === '' || name.startsWith('type ')) continue
-      modules.set(name.split(' as ').pop().trim(), specifier)
+      modules.set(name.split(' as ').pop().trim(), { specifier, namespace: false })
     }
+  }
+  for (const [, name, from] of index.matchAll(/^export \* as (\w+) from '\.\/([^']+)'/gm)) {
+    const specifier = `@rootnative/web/internal/${moduleFile(from)}.js`
+    modules.set(name, { specifier, namespace: true })
   }
   return modules
 }
@@ -65,11 +70,13 @@ const exportFile = (name, missing, modules) => {
     return `import { missing } from '../../missing.js'\n\nexport default missing('${name}')\n`
   }
   const runtime = runtimeName(name)
-  const specifier = modules.get(runtime)
-  if (specifier === undefined) {
+  const module = modules.get(runtime)
+  if (module === undefined) {
     throw new Error(`${name} isn't an export of @rootnative/web. Add it to the missing list.`)
   }
-  return `export { ${runtime} as default } from '${specifier}'\n`
+  return module.namespace
+    ? `export * as default from '${module.specifier}'\n`
+    : `export { ${runtime} as default } from '${module.specifier}'\n`
 }
 
 // Reanimated 4 reads its web style helpers from these two internal files of react-native-web.
