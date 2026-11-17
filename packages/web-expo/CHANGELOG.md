@@ -6,6 +6,10 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.0-alpha.6] - 2026-11-18
+
+Expo Router runs on `@rootnative/web`, with single-page and static output.
+
 ### Added
 
 - **Expo Router runs**, with `web.output: 'single'` and `'static'`: tabs, a stack, links, the back button, and a URL that opens a screen directly. With `'static'`, each route renders on the server through `AppRegistry.getApplication`, with the three style sheets of `@rootnative/web`, and the page hydrates.
@@ -15,7 +19,7 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ### Changed
 
-- **`Animated` and `Easing` load from `@rootnative/web`.** Before, each was a stub that threw an error on use.
+- **`Animated` and `Easing` load from `@rootnative/web` `0.0.0-alpha.6`.** Before, each was a stub that threw an error on use.
 
 ## [0.0.0-alpha.5] - 2026-11-15
 
