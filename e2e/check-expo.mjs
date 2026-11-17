@@ -6,6 +6,9 @@
 //
 // The app installs `@rootnative/web-expo` under the name `react-native-web`, as the README of that
 // package says. With `--url <address>`, the check uses a running `expo start` and exports nothing.
+// `pnpm --filter @rootnative/expo-demo dev:source` starts one on the source of `@rootnative/web`,
+// so that path needs no build. Run `node packages/web-expo/scripts/build.mjs` first: it writes
+// the files of the facade.
 
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, statSync } from 'node:fs'

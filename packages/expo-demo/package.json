@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "expo start",
+    "dev:source": "ROOTNATIVE_WEB_SOURCE=1 expo start",
     "export": "expo export --platform web --output-dir dist"
   },
   "dependencies": {
