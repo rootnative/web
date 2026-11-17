@@ -10,6 +10,6 @@
       "react-native": ["../web/src/index.ts"]
     }
   },
-  "include": ["App.tsx", "Gallery.tsx", "assets.d.ts"],
+  "include": ["app", "App.tsx", "Gallery.tsx", "assets.d.ts"],
   "references": [{ "path": "../web" }]
 }

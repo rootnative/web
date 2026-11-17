@@ -15,7 +15,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-na
 import logo from './assets/logo.png'
 import { Gallery } from './Gallery'
 
-// An Expo app with no router. Expo's bundler sends each `react-native` import to the
+// The home tab of the demo. Expo's bundler sends each `react-native` import to the
 // `react-native-web` package, which is `@rootnative/web-expo` in this app.
 export default function App(): ReactElement {
   const [count, setCount] = useState(0)

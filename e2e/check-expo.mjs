@@ -200,6 +200,42 @@ async function checkPage(url) {
       '1',
     )
 
+    // Expo Router: the tabs, and a stack in the second tab. A link pushes a screen, a press goes
+    // back, and a URL opens a screen of the stack directly.
+    const expectPath = (what, pathname) =>
+      page
+        .waitForURL((current) => current.pathname === pathname, { timeout: 5000 })
+        .catch(() =>
+          problems.push(
+            `${what}: the path is "${new URL(page.url()).pathname}". It must be "${pathname}".`,
+          ),
+        )
+    await page.getByTestId('tab-stack').click()
+    await expectPath('The Stack tab', '/stack')
+    expectEqual(
+      'The first screen of the stack',
+      await text('stack-home'),
+      'The first screen of the stack.',
+    )
+    await page.getByTestId('to-details').click()
+    await expectPath('The link to the details', '/stack/details')
+    expectEqual('The pushed screen', await text('details'), 'The second screen of the stack.')
+    await page.getByTestId('back').click()
+    await expectPath('The press on Go back', '/stack')
+    await page.getByTestId('tab-home').click()
+    await expectPath('The Home tab', '/')
+    expectEqual(
+      'The text of h1 after the tabs',
+      await page.locator('h1').textContent(),
+      'Root Native Web on Expo',
+    )
+    await page.goto(new URL('stack/details', url).href)
+    expectEqual(
+      'The screen of the URL /stack/details',
+      await text('details'),
+      'The second screen of the stack.',
+    )
+
     for (const message of errors) problems.push(`The page logged: ${message}`)
   } finally {
     await browser.close()

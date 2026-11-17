@@ -8,9 +8,9 @@ description: Run an Expo app on @rootnative/web with @rootnative/web-expo, which
 
 `@rootnative/web-expo` runs an Expo app on `@rootnative/web` in place of react-native-web. You keep your Expo setup: the dev server, `expo export`, and the Babel preset.
 
-:::note No Expo Router yet
+:::note Static output
 
-Expo Router isn't checked on `@rootnative/web` yet. An Expo app with no router works.
+Expo Router works with `web.output: 'single'`, the default. The static output, `web.output: 'static'`, isn't checked yet.
 
 :::
 
@@ -45,6 +45,7 @@ Expo's libraries import `UIManager`, `NativeModules`, `LogBox`, `DeviceEventEmit
 | Part                         | Behavior                                                                                                                                         |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Components and APIs          | Each one that `@rootnative/web` has. See [Status](/status).                                                                                      |
+| Expo Router                  | Tabs, a stack, links, the back button, and a URL that opens a screen directly.                                                                   |
 | The dev server               | Works.                                                                                                                                           |
 | `expo export --platform web` | Works with `web.output: 'single'`, the default.                                                                                                  |
 | Reanimated 4                 | Animates the components. Expo's Babel preset runs the Worklets plugin, so the app needs no setup.                                                |
@@ -53,6 +54,6 @@ Expo's libraries import `UIManager`, `NativeModules`, `LogBox`, `DeviceEventEmit
 
 ## Names that aren't there yet
 
-A name of `react-native` that `@rootnative/web` doesn't have yet loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `Animated is not in @rootnative/web yet`.
+A name of `react-native` that `@rootnative/web` doesn't have yet loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `LayoutAnimation is not in @rootnative/web yet`.
 
 The largest ones today are `LayoutAnimation`, `SectionList`, `VirtualizedList`, `ImageBackground`, and `SafeAreaView`. The file `node_modules/react-native-web/expo-exports.json` lists all of them under `missing`.

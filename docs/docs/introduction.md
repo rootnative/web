@@ -37,5 +37,5 @@ Import `@rootnative/web/dom` and `@rootnative/web/server` only in code that runs
 ## Next steps
 
 - [Installation](/installation): set up a Vite app in four steps.
-- [Expo](/expo): run an Expo app with no router.
+- [Expo](/expo): run an Expo app, also with Expo Router.
 - [Status](/status): what ships today, what's planned, and how it's tested.

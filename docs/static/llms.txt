@@ -63,7 +63,7 @@ ReferenceError. Add it to ssr.noExternal.
 
 ## Expo
 
-An Expo app (no Expo Router) runs on @rootnative/web through
+An Expo app, also with Expo Router, runs on @rootnative/web through
 @rootnative/web-expo, installed under the name react-native-web:
   npm install react-native-web@npm:@rootnative/web-expo
 Restart the dev server with --clear. The app code, the Babel preset, and the
@@ -73,15 +73,17 @@ one loads only its own module of @rootnative/web, so the bundle has only the
 components the app imports. It also gives Expo AppRegistry and the page reset
 (body margin 0), and UIManager, NativeModules ({ UIManager }, no native
 module), LogBox (no-ops), DeviceEventEmitter, and NativeEventEmitter (only
-JavaScript emits events), as react-native-web does. Works: the dev server, expo export --platform web with
-web.output 'single', Reanimated 4 (the preset adds the Worklets plugin), image
-imports, react-native-svg. web-expo depends on the exact same version of
-@rootnative/web: install that version if the app imports @rootnative/web too.
+JavaScript emits events), as react-native-web does.
+Works: the dev server, expo export --platform web with web.output 'single',
+Expo Router (tabs, a stack, links, back, a URL that opens a screen),
+Reanimated 4 (the preset adds the Worklets plugin), image imports,
+react-native-svg. NOT checked yet: Expo Router with web.output 'static'.
+web-expo depends on the exact same version of @rootnative/web: install that
+version if the app imports @rootnative/web too.
 A name that @rootnative/web lacks (LayoutAnimation, SectionList,
 VirtualizedList, ImageBackground, SafeAreaView, and more) loads as a stub
 that throws "<Name> is not in @rootnative/web yet" on use;
 node_modules/react-native-web/expo-exports.json lists them under "missing".
-Expo Router isn't checked yet.
 
 ## Entry points
 
@@ -198,7 +200,8 @@ only). Any other prop that isn't a React Native prop is dropped.
 - Types: the style props take React Native 0.88's ViewStyle, TextStyle, and
   ImageStyle, and StyleSheet.create checks each key and value. touchAction is
   the one web-only key. transform takes no Animated value (animate it with
-  Animated.View), and resizeMode has no 'none' yet. Any other CSS property passes through at runtime but needs a
+  Animated.View), and resizeMode has no 'none' yet. Any other CSS property
+  passes through at runtime but needs a
   cast: { transition: '...' } as ViewStyle, or as unknown as ViewStyle for a
   value that React Native's type doesn't allow.
 

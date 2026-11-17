@@ -39,7 +39,7 @@ Import `@rootnative/web/dom` and `@rootnative/web/server` only in code that runs
 ## Next steps
 
 - [Installation](https://rootnative.github.io/web/installation): set up a Vite app in four steps.
-- [Expo](https://rootnative.github.io/web/expo): run an Expo app with no router.
+- [Expo](https://rootnative.github.io/web/expo): run an Expo app, also with Expo Router.
 - [Status](https://rootnative.github.io/web/status): what ships today, what's planned, and how it's tested.
 
 ---
@@ -286,9 +286,9 @@ A library that needs a [compat entry](https://rootnative.github.io/web/compat) a
 
 `@rootnative/web-expo` runs an Expo app on `@rootnative/web` in place of react-native-web. You keep your Expo setup: the dev server, `expo export`, and the Babel preset.
 
-> **NOTE: No Expo Router yet**
+> **NOTE: Static output**
 >
-> Expo Router isn't checked on `@rootnative/web` yet. An Expo app with no router works.
+> Expo Router works with `web.output: 'single'`, the default. The static output, `web.output: 'static'`, isn't checked yet.
 
 ## Install
 
@@ -321,6 +321,7 @@ Expo's libraries import `UIManager`, `NativeModules`, `LogBox`, `DeviceEventEmit
 | Part                         | Behavior                                                                                                                                         |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Components and APIs          | Each one that `@rootnative/web` has. See [Status](https://rootnative.github.io/web/status).                                                                                      |
+| Expo Router                  | Tabs, a stack, links, the back button, and a URL that opens a screen directly.                                                                   |
 | The dev server               | Works.                                                                                                                                           |
 | `expo export --platform web` | Works with `web.output: 'single'`, the default.                                                                                                  |
 | Reanimated 4                 | Animates the components. Expo's Babel preset runs the Worklets plugin, so the app needs no setup.                                                |
@@ -329,7 +330,7 @@ Expo's libraries import `UIManager`, `NativeModules`, `LogBox`, `DeviceEventEmit
 
 ## Names that aren't there yet
 
-A name of `react-native` that `@rootnative/web` doesn't have yet loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `Animated is not in @rootnative/web yet`.
+A name of `react-native` that `@rootnative/web` doesn't have yet loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `LayoutAnimation is not in @rootnative/web yet`.
 
 The largest ones today are `LayoutAnimation`, `SectionList`, `VirtualizedList`, `ImageBackground`, and `SafeAreaView`. The file `node_modules/react-native-web/expo-exports.json` lists all of them under `missing`.
 
@@ -350,7 +351,7 @@ The latest release is [`0.0.0-alpha.5`](https://www.npmjs.com/package/@rootnativ
 | Compat     | [`unstable_createElement`](https://rootnative.github.io/web/compat), [`findNodeHandle`](https://rootnative.github.io/web/compat), [`TurboModuleRegistry`](https://rootnative.github.io/web/compat), and the entries `@rootnative/web/assets-registry` and `@rootnative/web/style`. Libraries import them, your app doesn't.                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`, and [`@rootnative/web-expo`](https://rootnative.github.io/web/expo), for an Expo app with no router                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`, and [`@rootnative/web-expo`](https://rootnative.github.io/web/expo), for an Expo app, also with Expo Router                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 `FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now.
 
@@ -360,7 +361,7 @@ The latest release is [`0.0.0-alpha.5`](https://www.npmjs.com/package/@rootnativ
 
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `LayoutAnimation`, and the rest of [`Animated`](https://rootnative.github.io/web/animated#not-there-yet).
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
-- **Expo Router:** not checked yet.
+- **Expo Router:** the static output, `web.output: 'static'`.
 
 ## Out of scope
 
