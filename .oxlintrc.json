@@ -32,6 +32,27 @@
         "react-perf/jsx-no-new-array-as-prop": "off",
         "react-perf/jsx-no-new-function-as-prop": "off"
       }
+    },
+    {
+      "files": ["packages/web/src/apis/Animated/**"],
+      "rules": {
+        "no-underscore-dangle": [
+          "error",
+          {
+            "allow": [
+              "__DEV__",
+              "__addChild",
+              "__attach",
+              "__callListeners",
+              "__detach",
+              "__getAnimatedValue",
+              "__getChildren",
+              "__getValue",
+              "__removeChild"
+            ]
+          }
+        ]
+      }
     }
   ],
   "ignorePatterns": ["dist/", "coverage/", "node_modules/"]

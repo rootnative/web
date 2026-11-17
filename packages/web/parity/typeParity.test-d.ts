@@ -12,6 +12,14 @@
 
 import type * as Native from 'react-native'
 
+import type { AnimatedAddition } from '../src/apis/Animated/nodes/AnimatedAddition'
+import type {
+  AnimatedInterpolation,
+  InterpolationConfigType,
+} from '../src/apis/Animated/nodes/AnimatedInterpolation'
+import type { AnimatedMultiplication } from '../src/apis/Animated/nodes/AnimatedMultiplication'
+import type { AnimatedNode } from '../src/apis/Animated/nodes/AnimatedNode'
+import type { AnimatedValue, AnimatedValueConfig } from '../src/apis/Animated/nodes/AnimatedValue'
 import type * as Web from '../src/index'
 
 type None<T extends never> = T
@@ -274,6 +282,25 @@ type HostMethodMismatches =
     }['measure' | 'measureInWindow' | 'setNativeProps']
 
 export type HostInstanceParity = [None<HostMethodMismatches>]
+
+// The nodes of `Animated`, before the package exports `Animated`. The animations come next.
+type AnimatedValueGaps = 'animate' | 'resetAnimation' | 'stopAnimation' | 'stopTracking' | 'track'
+
+export type AnimatedNodeParity = [
+  None<PropDiff<Native.Animated.AnimatedNode, AnimatedNode, never>>,
+  None<PropDiff<Native.Animated.Value, AnimatedValue, AnimatedValueGaps>>,
+  None<PropDiff<Native.Animated.Interpolation<number>, AnimatedInterpolation<number>, never>>,
+  None<PropDiff<Native.Animated.AnimatedAddition, AnimatedAddition, never>>,
+  None<PropDiff<Native.Animated.AnimatedMultiplication, AnimatedMultiplication, never>>,
+  None<Mismatch<'AnimatedConfig', Native.Animated.AnimatedConfig, AnimatedValueConfig>>,
+  None<
+    Mismatch<
+      'InterpolationConfig',
+      Native.Animated.InterpolationConfig<number | string>,
+      InterpolationConfigType<number | string>
+    >
+  >,
+]
 
 export type TypeParity = [
   None<Diff<keyof typeof Native, keyof typeof Web, ExportGaps>>,
