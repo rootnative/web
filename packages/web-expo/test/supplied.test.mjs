@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
+import { getAssetByID } from '@rootnative/web/assets-registry'
+
+import { AssetRegistry } from '../src/AssetRegistry.js'
 import { DeviceEventEmitter } from '../src/DeviceEventEmitter.js'
 import { LogBox } from '../src/LogBox.js'
 import { NativeEventEmitter } from '../src/NativeEventEmitter.js'
@@ -94,6 +97,15 @@ const fakeElement = () => ({
   style: {},
   focus: vi.fn(),
   blur: vi.fn(),
+})
+
+describe('AssetRegistry', () => {
+  test('is the registry of the runtime, as one object', () => {
+    const asset = { name: 'logo', type: 'png', httpServerLocation: '/assets', scales: [1] }
+    const id = AssetRegistry.registerAsset(asset)
+    expect(AssetRegistry.getAssetByID(id)).toBe(asset)
+    expect(getAssetByID(id)).toBe(asset)
+  })
 })
 
 describe('NativeModules', () => {

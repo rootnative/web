@@ -5,7 +5,7 @@
   "main": "expo-router/entry",
   "scripts": {
     "dev": "expo start",
-    "dev:source": "ROOTNATIVE_WEB_SOURCE=1 expo start",
+    "dev:source": "ROOTNATIVE_WEB_SOURCE=1 EXPO_WEB_DEV_HYDRATE=1 expo start",
     "export": "expo export --platform web --output-dir dist"
   },
   "dependencies": {

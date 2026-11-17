@@ -8,6 +8,7 @@
     "AppRegistry",
     "AppState",
     "Appearance",
+    "AssetRegistry",
     "BackHandler",
     "Button",
     "CheckBox",

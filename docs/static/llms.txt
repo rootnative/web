@@ -72,12 +72,12 @@ to react-native-web/dist/exports/<Name>; the package has those files, and each
 one loads only its own module of @rootnative/web, so the bundle has only the
 components the app imports. It also gives Expo AppRegistry and the page reset
 (body margin 0), and UIManager, NativeModules ({ UIManager }, no native
-module), LogBox (no-ops), DeviceEventEmitter, and NativeEventEmitter (only
-JavaScript emits events), as react-native-web does.
-Works: the dev server, expo export --platform web with web.output 'single',
-Expo Router (tabs, a stack, links, back, a URL that opens a screen),
-Reanimated 4 (the preset adds the Worklets plugin), image imports,
-react-native-svg. NOT checked yet: Expo Router with web.output 'static'.
+module), LogBox (no-ops), DeviceEventEmitter, NativeEventEmitter (only
+JavaScript emits events), and AssetRegistry, as react-native-web does.
+Works: the dev server, expo export --platform web with web.output 'single'
+or 'static' (each route renders on the server, then hydrates), Expo Router
+(tabs, a stack, links, back, a URL that opens a screen), Reanimated 4 (the
+preset adds the Worklets plugin), image imports, react-native-svg.
 web-expo depends on the exact same version of @rootnative/web: install that
 version if the app imports @rootnative/web too.
 A name that @rootnative/web lacks (LayoutAnimation, SectionList,

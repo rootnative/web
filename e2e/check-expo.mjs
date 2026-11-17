@@ -1,14 +1,16 @@
 // Checks that an Expo app runs on `@rootnative/web`. Run it after `pnpm build`:
 // - each name that Expo's bundler rewrites to a file of react-native-web is in the list of
 //   `@rootnative/web-expo`, so a new Expo release can't add a path with no file,
-// - the app in packages/expo-demo exports for the web with Expo,
-// - the exported page works in Chromium, and the runtime of the page is `@rootnative/web`.
+// - the app in packages/expo-demo exports for the web with Expo, as static output: Expo Router
+//   renders each route on the server,
+// - the exported page hydrates and works in Chromium, and its runtime is `@rootnative/web`.
 //
 // The app installs `@rootnative/web-expo` under the name `react-native-web`, as the README of that
 // package says. With `--url <address>`, the check uses a running `expo start` and exports nothing.
 // `pnpm --filter @rootnative/expo-demo dev:source` starts one on the source of `@rootnative/web`,
-// so that path needs no build. Run `node packages/web-expo/scripts/build.mjs` first: it writes
-// the files of the facade.
+// so that path needs no build, and with `EXPO_WEB_DEV_HYDRATE=1`, so the page hydrates as an
+// export does. Run `node packages/web-expo/scripts/build.mjs` first: it writes the files of the
+// facade.
 
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, statSync } from 'node:fs'
@@ -30,10 +32,10 @@ const runningUrl = urlFlag === -1 ? undefined : process.argv[urlFlag + 1]
 
 const problems = []
 
-// The list is in the Metro transform of Expo. Its package is a dependency of `expo`, so it
-// resolves from there.
-function checkNames() {
-  const fromApp = createRequire(join(appDir, 'package.json'))
+// Expo rewrites a `react-native` import in two places, each with its own list of names: the Metro
+// transform of `@expo/metro-config`, and `babel-plugin-react-native-web` in `babel-preset-expo`.
+// A server render, such as the static output of Expo Router, goes through the second.
+function metroNames(fromApp) {
   const fromExpo = createRequire(fromApp.resolve('expo/package.json'))
   const pluginPath = join(
     dirname(fromExpo.resolve('@expo/metro-config/package.json')),
@@ -43,22 +45,44 @@ function checkNames() {
     problems.push(
       `Expo has no ${pluginPath}. The file with the react-native-web names moved: find it, and change this check.`,
     )
-    return
+    return []
   }
   const source = readFileSync(pluginPath, 'utf8')
   const list = source.slice(source.indexOf('new Set(['), source.indexOf('])'))
-  const expoNames = [...list.matchAll(/'([\w$]+)'/g)].map((match) => match[1])
-  if (expoNames.length === 0) {
+  const names = [...list.matchAll(/'([\w$]+)'/g)].map((match) => match[1])
+  if (names.length === 0) {
     problems.push(`No name found in ${pluginPath}. Its format changed: change this check.`)
-    return
+  }
+  return names
+}
+
+function babelNames(fromApp) {
+  const fromPreset = createRequire(fromApp.resolve('babel-preset-expo/package.json'))
+  try {
+    return Object.keys(fromPreset('babel-plugin-react-native-web/src/moduleMap.js'))
+  } catch (error) {
+    problems.push(
+      `babel-preset-expo has no babel-plugin-react-native-web/src/moduleMap.js (${error.message}). The list moved: find it, and change this check.`,
+    )
+    return []
+  }
+}
+
+function checkNames() {
+  const fromApp = createRequire(join(appDir, 'package.json'))
+  const lists = {
+    '@expo/metro-config': metroNames(fromApp),
+    'babel-preset-expo': babelNames(fromApp),
   }
   const { names } = JSON.parse(readFileSync(join(facadeDir, 'expo-exports.json'), 'utf8'))
   const known = new Set(names)
-  for (const name of expoNames) {
-    if (!known.has(name)) {
-      problems.push(
-        `Expo rewrites "${name}" to react-native-web/dist/exports/${name}, and packages/web-expo/expo-exports.json doesn't have it. Add it to "names", and to "missing" if @rootnative/web has no such export.`,
-      )
+  for (const [source, expoNames] of Object.entries(lists)) {
+    for (const name of expoNames) {
+      if (!known.has(name)) {
+        problems.push(
+          `${source} rewrites "${name}" to react-native-web/dist/exports/${name}, and packages/web-expo/expo-exports.json doesn't have it. Add it to "names", and to "missing" if @rootnative/web has no such export.`,
+        )
+      }
     }
   }
 }
@@ -80,15 +104,17 @@ const contentTypes = {
   '.png': 'image/png',
 }
 
-// A static host for a single-page export: a file when the path names one, else index.html.
+const isFile = (path) => path.startsWith(outDir) && existsSync(path) && statSync(path).isFile()
+
+// A static host for the export: the file that the path names, else the page of the route
+// (`stack/details.html`, or `stack/index.html` for `/stack`), else index.html.
 function serve() {
   const server = createServer((request, response) => {
     const path = normalize(decodeURIComponent(new URL(request.url, 'http://localhost').pathname))
     const candidate = join(outDir, path)
     const file =
-      candidate.startsWith(outDir) && existsSync(candidate) && statSync(candidate).isFile()
-        ? candidate
-        : join(outDir, 'index.html')
+      [candidate, `${candidate}.html`, join(candidate, 'index.html')].find(isFile) ??
+      join(outDir, 'index.html')
     response.writeHead(200, {
       'content-type': contentTypes[extname(file)] ?? 'application/octet-stream',
     })
@@ -111,7 +137,37 @@ async function checkPage(url) {
       if (message.type() === 'error') errors.push(message.text())
     })
     page.on('pageerror', (error) => errors.push(String(error)))
+    // Counts the server's nodes that a script removes. Hydration keeps each one, and a fresh
+    // client render replaces them.
+    await page.addInitScript(() => {
+      globalThis.removedServerNodes = 0
+      new MutationObserver((records) => {
+        for (const { removedNodes } of records) {
+          for (const node of removedNodes) {
+            if (node.nodeType === 1 && node.querySelector?.('[data-testid="page"]')) {
+              globalThis.removedServerNodes++
+            }
+          }
+        }
+      }).observe(document, { childList: true, subtree: true })
+    })
+
+    // Static output: the server renders the page, with the three style sheets of the runtime.
     // The first request to a dev server starts the bundle.
+    const html = await fetch(url, { signal: AbortSignal.timeout(180_000) })
+      .then((response) => response.text())
+      .catch((error) => `no page (${error.message})`)
+    if (!html.includes('Root Native Web on Expo</h1>')) {
+      problems.push(
+        'The HTML from the server has no h1 with the title: the server rendered no route.',
+      )
+    }
+    for (const name of ['reset', 'shorthand', 'longhand']) {
+      if (!html.includes(`<style id="rootnative-style-${name}"`)) {
+        problems.push(`The HTML from the server has no style element rootnative-style-${name}.`)
+      }
+    }
+
     const loaded = await page.goto(url, { timeout: 180_000 }).catch((error) => {
       problems.push(`The page at ${url} did not load: ${error.message.split('\n')[0]}`)
     })
@@ -131,15 +187,26 @@ async function checkPage(url) {
       .waitFor()
       .catch(() => problems.push('The page rendered no h1.'))
     expectEqual('The text of h1', await page.locator('h1').textContent(), 'Root Native Web on Expo')
+    expectEqual(
+      'The hydration flag of Expo Router (on a dev server, set EXPO_WEB_DEV_HYDRATE=1)',
+      // oxlint-disable-next-line no-underscore-dangle -- the name of the flag that Expo sets
+      String(await page.evaluate(() => globalThis.__EXPO_ROUTER_HYDRATE__)),
+      'true',
+    )
     expectEqual('Platform.OS', await text('platform'), 'Platform.OS is web')
 
-    // react-native-web has one style sheet. `@rootnative/web` has three, with these ids.
+    // react-native-web has one style sheet. `@rootnative/web` has three, with these ids. After
+    // the hydration, each is the one from the server: the client adds no second copy.
     const sheets = await page.evaluate(() =>
-      ['reset', 'shorthand', 'longhand'].filter(
-        (name) => document.getElementById(`rootnative-style-${name}`) !== null,
+      ['reset', 'shorthand', 'longhand'].map(
+        (name) => `${name} ${document.querySelectorAll(`#rootnative-style-${name}`).length}`,
       ),
     )
-    expectEqual('The style sheets of @rootnative/web', sheets.join(' '), 'reset shorthand longhand')
+    expectEqual(
+      'The style sheets of @rootnative/web, with their counts',
+      sheets.join(', '),
+      'reset 1, shorthand 1, longhand 1',
+    )
 
     // Expo's default index.html relies on the reset of react-native-web, which web-expo gives.
     const bodyMargin = await page.evaluate(() => getComputedStyle(document.body).margin)
@@ -156,6 +223,12 @@ async function checkPage(url) {
     await page.getByTestId('add').click()
     await page.getByTestId('add').click()
     expectEqual('The count after two presses', await text('count'), '2')
+    // The presses worked, so the first render or the hydration has committed.
+    expectEqual(
+      'The count of server nodes that the first render removed',
+      String(await page.evaluate(() => globalThis.removedServerNodes)),
+      '0',
+    )
     await page.getByTestId('name').fill('Ada')
     expectEqual('The greeting after the text input', await text('greeting'), 'Hello, Ada.')
 

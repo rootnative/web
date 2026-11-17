@@ -49,6 +49,7 @@ const runtimeName = (name) => (name === 'createElement' ? 'unstable_createElemen
 // Expo's libraries import on the web too.
 export const SUPPLIED = {
   AppRegistry: 'AppRegistry.js',
+  AssetRegistry: 'AssetRegistry.js',
   DeviceEventEmitter: 'DeviceEventEmitter.js',
   LogBox: 'LogBox.js',
   NativeEventEmitter: 'NativeEventEmitter.js',

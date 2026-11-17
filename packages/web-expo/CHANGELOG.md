@@ -8,7 +8,8 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ### Added
 
-- **Expo Router runs**, with `web.output: 'single'`: tabs, a stack, links, the back button, and a URL that opens a screen directly. The static output, `web.output: 'static'`, isn't checked yet.
+- **Expo Router runs**, with `web.output: 'single'` and `'static'`: tabs, a stack, links, the back button, and a URL that opens a screen directly. With `'static'`, each route renders on the server through `AppRegistry.getApplication`, with the three style sheets of `@rootnative/web`, and the page hydrates.
+- **`AssetRegistry`**, as react-native-web has it: the asset registry of `@rootnative/web` as one object. The Babel preset of Expo sends `import { AssetRegistry } from 'react-native'` to it, and `expo-asset` imports it in a server render. Before, the server bundle of Expo Router failed on the missing file.
 - **`DeviceEventEmitter` and `NativeEventEmitter`**, as react-native-web has them. Each `NativeEventEmitter` puts its listeners on the shared `DeviceEventEmitter`, and only JavaScript emits events. `@expo/log-box`, the error overlay of Expo Router, makes a `NativeEventEmitter` when it loads, and the stub threw an error there.
 - **`UIManager`, `NativeModules`, and `LogBox`**, as react-native-web has them. `expo-constants` reads `NativeModules` when it loads, and the stub threw an error there. `NativeModules` has no native module, `LogBox` does nothing, and `UIManager` measures and updates an element with the host methods of `@rootnative/web`.
 

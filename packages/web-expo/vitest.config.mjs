@@ -8,7 +8,10 @@ const source = (path) => fileURLToPath(new URL(`../web/src/${path}`, import.meta
 export default defineConfig({
   resolve: {
     alias: [
-      { find: /^@rootnative\/web\/server$/, replacement: source('server/index.ts') },
+      {
+        find: /^@rootnative\/web\/(assets-registry|dom|server|style)$/,
+        replacement: source('$1/index.ts'),
+      },
       { find: /^@rootnative\/web\/internal\/(.*)\.js$/, replacement: source('$1.ts') },
       { find: /^@rootnative\/web$/, replacement: source('index.ts') },
     ],
