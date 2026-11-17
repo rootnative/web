@@ -75,11 +75,12 @@ components the app imports. It also gives Expo AppRegistry and the page reset
 web.output 'single', Reanimated 4 (the preset adds the Worklets plugin), image
 imports, react-native-svg. web-expo depends on the exact same version of
 @rootnative/web: install that version if the app imports @rootnative/web too.
-A name that @rootnative/web lacks (Animated, LayoutAnimation, SectionList,
+A name that @rootnative/web lacks (LayoutAnimation, SectionList,
 VirtualizedList, ImageBackground, SafeAreaView, and more) loads as a stub
 that throws "<Name> is not in @rootnative/web yet" on use;
 node_modules/react-native-web/expo-exports.json lists them under "missing".
-Expo Router needs Animated, so it doesn't work yet.
+Expo Router needs UIManager, NativeModules, and LogBox, so it doesn't work
+yet.
 
 ## Entry points
 
@@ -110,13 +111,18 @@ Modal, KeyboardAvoidingView, StatusBar.
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AppState, Keyboard, Linking, Alert, Share, Vibration, Clipboard,
 AccessibilityInfo, I18nManager, BackHandler, PixelRatio, processColor,
-PanResponder, Easing, usePressability.
+PanResponder, Animated, Easing, usePressability.
 
 Compat, for libraries only, do not call in app code: unstable_createElement,
 findNodeHandle, TurboModuleRegistry.
 
 NOT IMPLEMENTED, do not import:
-- SectionList, VirtualizedList, Animated, LayoutAnimation.
+- SectionList, VirtualizedList, LayoutAnimation.
+- Animated: ValueXY, Color, decay, sequence, stagger, loop, delay, subtract,
+  divide, modulo, diffClamp, forkEvent, unforkEvent, attachNativeEvent,
+  Animated.Image, Animated.ScrollView, Animated.FlatList,
+  Animated.SectionList, useAnimatedValue, useAnimatedValueXY,
+  useAnimatedColor.
 - A Next.js plugin, and templates for a Vite app with and without server
   rendering.
 
@@ -190,8 +196,8 @@ only). Any other prop that isn't a React Native prop is dropped.
 - elevation, borderCurve, includeFontPadding, overlayColor: no web effect.
 - Types: the style props take React Native 0.88's ViewStyle, TextStyle, and
   ImageStyle, and StyleSheet.create checks each key and value. touchAction is
-  the one web-only key. transform takes no Animated value, and resizeMode has
-  no 'none' yet. Any other CSS property passes through at runtime but needs a
+  the one web-only key. transform takes no Animated value (animate it with
+  Animated.View), and resizeMode has no 'none' yet. Any other CSS property passes through at runtime but needs a
   cast: { transition: '...' } as ViewStyle, or as unknown as ViewStyle for a
   value that React Native's type doesn't allow.
 
@@ -552,8 +558,20 @@ StatusBar
   onShouldBlockNativeResponder is ignored. getInteractionHandle() is null.
 - Easing: every curve and helper of React Native, with the same math. ease is
   cubic-bezier(0.42, 0, 1, 1) (CSS ease-in, not CSS ease). bezier throws for
-  an x out of [0, 1]. Type of a curve: EasingFunction. Animated isn't in the
-  package yet: call a curve yourself or pass it to a library.
+  an x out of [0, 1]. Type of a curve: EasingFunction. Pass a curve as the
+  easing of Animated.timing.
+- Animated: Value (setValue, setOffset, flattenOffset, extractOffset,
+  stopAnimation, resetAnimation, interpolate, listeners), add, multiply,
+  timing (500 ms and Easing.inOut(Easing.ease) by default), spring (all
+  three kinds of config, velocity, overshootClamping), parallel
+  (stopTogether), event, View, Text, createAnimatedComponent, Node,
+  Interpolation. interpolate takes numbers, strings with numbers ('90deg'),
+  and colors (out as rgba()). NO native driver: useNativeDriver: true runs
+  the same JavaScript driver on the main thread. A frame writes the style to
+  the element with no React render; a value in a prop that isn't style
+  renders the component on each frame. With prefers-reduced-motion, timing
+  and spring go to toValue at once, after their delay. toValue and velocity
+  take only a number. Animated.event always returns a function.
 - usePressability(config): returns pointer, keyboard, and focus handlers, not
   the native responder handlers. Spread them on a View. Memoize the config.
   A null config returns null. hitSlop doesn't grow the hit area. Set

@@ -10,7 +10,7 @@ description: Run an Expo app on @rootnative/web with @rootnative/web-expo, which
 
 :::note No Expo Router yet
 
-Expo Router needs `Animated`, which `@rootnative/web` doesn't have yet. An Expo app with no router works.
+Expo Router needs `UIManager`, `NativeModules`, and `LogBox`, which `@rootnative/web` doesn't have yet. An Expo app with no router works.
 
 :::
 
@@ -53,4 +53,4 @@ Expo also calls `AppRegistry` from `react-native-web` to start the app, and asks
 
 A name of `react-native` that `@rootnative/web` doesn't have yet loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `Animated is not in @rootnative/web yet`.
 
-The largest ones today are `Animated`, `LayoutAnimation`, `SectionList`, `VirtualizedList`, `ImageBackground`, and `SafeAreaView`. The file `node_modules/react-native-web/expo-exports.json` lists all of them under `missing`.
+The largest ones today are `LayoutAnimation`, `SectionList`, `VirtualizedList`, `ImageBackground`, and `SafeAreaView`. The file `node_modules/react-native-web/expo-exports.json` lists all of them under `missing`.

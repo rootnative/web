@@ -6,17 +6,17 @@ description: The easing curves of React Native, for the easing option of an anim
 
 # `Easing`
 
-The easing curves of React Native. A curve takes the time of an animation, from `0` to `1`, and returns its progress. Pass one as the `easing` option of an animation.
+The easing curves of React Native. A curve takes the time of an animation, from `0` to `1`, and returns its progress. Pass one as the `easing` of [`Animated.timing`](/animated), or to a library that takes an easing function.
 
 Each function works as in React Native, with the same math, so a curve gives the same values on the web as on a phone.
 
-`Animated` isn't in the package yet, so call a curve yourself, or pass it to a library that takes an easing function.
-
 ```tsx
-import { Easing } from 'react-native'
+import { Animated, Easing } from 'react-native'
 
 const curve = Easing.inOut(Easing.quad)
 curve(0.25) // 0.125
+
+Animated.timing(value, { toValue: 1, easing: curve, useNativeDriver: true }).start()
 ```
 
 ## Curves

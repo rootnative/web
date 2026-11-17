@@ -10,21 +10,9 @@
 // The error message is the list of names. To add a prop to a list is a decision: the prop then
 // needs a row in the docs, and a dev-mode warning if an app can set it with no effect.
 
+import type { ComponentProps } from 'react'
 import type * as Native from 'react-native'
 
-import type {
-  CompositeAnimation,
-  SpringAnimationConfig,
-  TimingAnimationConfig,
-} from '../src/apis/Animated/AnimatedImplementation'
-import type { AnimatedAddition } from '../src/apis/Animated/nodes/AnimatedAddition'
-import type {
-  AnimatedInterpolation,
-  InterpolationConfigType,
-} from '../src/apis/Animated/nodes/AnimatedInterpolation'
-import type { AnimatedMultiplication } from '../src/apis/Animated/nodes/AnimatedMultiplication'
-import type { AnimatedNode } from '../src/apis/Animated/nodes/AnimatedNode'
-import type { AnimatedValue, AnimatedValueConfig } from '../src/apis/Animated/nodes/AnimatedValue'
 import type * as Web from '../src/index'
 
 type None<T extends never> = T
@@ -52,7 +40,6 @@ type Mismatch<Name extends string, NativeType, OurType> = [NativeType] extends [
 
 type ExportGaps =
   // Not built yet.
-  | 'Animated'
   | 'ImageBackground'
   | 'LayoutAnimation'
   | 'SafeAreaView'
@@ -288,31 +275,81 @@ type HostMethodMismatches =
 
 export type HostInstanceParity = [None<HostMethodMismatches>]
 
-// The parts of `Animated`, before the package exports `Animated`. A value can't track another
-// node yet, so `toValue` takes only a number, and a spring's `velocity` too.
+// What React Native's `Animated` has and this package doesn't yet.
+type AnimatedGaps =
+  | 'Color'
+  | 'FlatList'
+  | 'Image'
+  | 'ScrollView'
+  | 'SectionList'
+  | 'ValueXY'
+  | 'attachNativeEvent'
+  | 'decay'
+  | 'delay'
+  | 'diffClamp'
+  | 'divide'
+  | 'forkEvent'
+  | 'loop'
+  | 'modulo'
+  | 'sequence'
+  | 'stagger'
+  | 'subtract'
+  | 'unforkEvent'
+
+// A value can't track another node yet, so `toValue` takes only a number, and a spring's
+// `velocity` too.
 type AnimatedValueGaps = 'stopTracking' | 'track'
 
-export type AnimatedNodeParity = [
-  None<Mismatch<'CompositeAnimation', Native.Animated.CompositeAnimation, CompositeAnimation>>,
-  None<PropDiff<Native.Animated.TimingAnimationConfig, TimingAnimationConfig, never>>,
-  None<FitDiff<Native.Animated.TimingAnimationConfig, TimingAnimationConfig, 'toValue'>>,
-  None<FitDiff<TimingAnimationConfig, Native.Animated.TimingAnimationConfig, never>>,
-  None<PropDiff<Native.Animated.SpringAnimationConfig, SpringAnimationConfig, never>>,
+export type AnimatedParity = [
+  None<Diff<keyof typeof Native.Animated, keyof typeof Web.Animated, AnimatedGaps>>,
   None<
-    FitDiff<Native.Animated.SpringAnimationConfig, SpringAnimationConfig, 'toValue' | 'velocity'>
+    PropDiff<
+      ComponentProps<typeof Native.Animated.View>,
+      ComponentProps<typeof Web.Animated.View>,
+      ViewGaps
+    >
   >,
-  None<FitDiff<SpringAnimationConfig, Native.Animated.SpringAnimationConfig, never>>,
-  None<PropDiff<Native.Animated.AnimatedNode, AnimatedNode, never>>,
-  None<PropDiff<Native.Animated.Value, AnimatedValue, AnimatedValueGaps>>,
-  None<PropDiff<Native.Animated.Interpolation<number>, AnimatedInterpolation<number>, never>>,
-  None<PropDiff<Native.Animated.AnimatedAddition, AnimatedAddition, never>>,
-  None<PropDiff<Native.Animated.AnimatedMultiplication, AnimatedMultiplication, never>>,
-  None<Mismatch<'AnimatedConfig', Native.Animated.AnimatedConfig, AnimatedValueConfig>>,
+  None<
+    PropDiff<
+      ComponentProps<typeof Native.Animated.Text>,
+      ComponentProps<typeof Web.Animated.Text>,
+      TextGaps
+    >
+  >,
+  None<
+    Mismatch<
+      'CompositeAnimation',
+      Native.Animated.CompositeAnimation,
+      Web.Animated.CompositeAnimation
+    >
+  >,
+  None<PropDiff<Native.Animated.TimingAnimationConfig, Web.Animated.TimingAnimationConfig, never>>,
+  None<
+    FitDiff<Native.Animated.TimingAnimationConfig, Web.Animated.TimingAnimationConfig, 'toValue'>
+  >,
+  None<FitDiff<Web.Animated.TimingAnimationConfig, Native.Animated.TimingAnimationConfig, never>>,
+  None<PropDiff<Native.Animated.SpringAnimationConfig, Web.Animated.SpringAnimationConfig, never>>,
+  None<
+    FitDiff<
+      Native.Animated.SpringAnimationConfig,
+      Web.Animated.SpringAnimationConfig,
+      'toValue' | 'velocity'
+    >
+  >,
+  None<FitDiff<Web.Animated.SpringAnimationConfig, Native.Animated.SpringAnimationConfig, never>>,
+  None<PropDiff<Native.Animated.AnimatedNode, Web.Animated.AnimatedNode, never>>,
+  None<PropDiff<Native.Animated.Value, Web.Animated.Value, AnimatedValueGaps>>,
+  None<PropDiff<Native.Animated.Interpolation<number>, Web.Animated.Interpolation<number>, never>>,
+  None<PropDiff<Native.Animated.AnimatedAddition, Web.Animated.AnimatedAddition, never>>,
+  None<
+    PropDiff<Native.Animated.AnimatedMultiplication, Web.Animated.AnimatedMultiplication, never>
+  >,
+  None<Mismatch<'AnimatedConfig', Native.Animated.AnimatedConfig, Web.Animated.AnimatedConfig>>,
   None<
     Mismatch<
       'InterpolationConfig',
       Native.Animated.InterpolationConfig<number | string>,
-      InterpolationConfigType<number | string>
+      Web.Animated.InterpolationConfig<number | string>
     >
   >,
 ]

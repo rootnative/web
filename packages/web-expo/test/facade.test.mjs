@@ -62,17 +62,19 @@ describe('the generated files', () => {
   })
 
   test('gives a missing name a stub, and the index exports it by name', () => {
-    expect(files.get('exports/Animated/index.js')).toContain(`missing('Animated')`)
+    expect(files.get('exports/LayoutAnimation/index.js')).toContain(`missing('LayoutAnimation')`)
     expect(files.get('index.js')).toContain(
-      `export { default as Animated } from './exports/Animated/index.js'`,
+      `export { default as LayoutAnimation } from './exports/LayoutAnimation/index.js'`,
     )
   })
 })
 
 describe('a missing export', () => {
   test('throws an error with its name on a use, not on the import', () => {
-    const Animated = missingExport('Animated')
-    expect(() => Animated.View).toThrow('Animated is not in @rootnative/web yet')
-    expect(() => Animated()).toThrow('Animated is not in @rootnative/web yet')
+    const LayoutAnimation = missingExport('LayoutAnimation')
+    expect(() => LayoutAnimation.configureNext).toThrow(
+      'LayoutAnimation is not in @rootnative/web yet',
+    )
+    expect(() => LayoutAnimation()).toThrow('LayoutAnimation is not in @rootnative/web yet')
   })
 })

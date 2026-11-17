@@ -7,6 +7,7 @@ export type {
 } from './apis/AccessibilityInfo'
 export { Alert } from './apis/Alert'
 export type { AlertButton, AlertButtonStyle, AlertOptions, AlertType } from './apis/Alert'
+export { Animated } from './apis/Animated'
 export { Appearance } from './apis/Appearance'
 export type {
   AppearanceListener,

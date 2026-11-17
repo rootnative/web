@@ -8,7 +8,7 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ### Changed
 
-- **`Easing` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
+- **`Animated` and `Easing` load from `@rootnative/web`.** Before, each was a stub that threw an error on use. Expo Router still doesn't run: it needs `UIManager`, `NativeModules`, and `LogBox`.
 
 ## [0.0.0-alpha.5] - 2026-11-15
 

@@ -288,7 +288,7 @@ A library that needs a [compat entry](https://rootnative.github.io/web/compat) a
 
 > **NOTE: No Expo Router yet**
 >
-> Expo Router needs `Animated`, which `@rootnative/web` doesn't have yet. An Expo app with no router works.
+> Expo Router needs `UIManager`, `NativeModules`, and `LogBox`, which `@rootnative/web` doesn't have yet. An Expo app with no router works.
 
 ## Install
 
@@ -329,7 +329,7 @@ Expo also calls `AppRegistry` from `react-native-web` to start the app, and asks
 
 A name of `react-native` that `@rootnative/web` doesn't have yet loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `Animated is not in @rootnative/web yet`.
 
-The largest ones today are `Animated`, `LayoutAnimation`, `SectionList`, `VirtualizedList`, `ImageBackground`, and `SafeAreaView`. The file `node_modules/react-native-web/expo-exports.json` lists all of them under `missing`.
+The largest ones today are `LayoutAnimation`, `SectionList`, `VirtualizedList`, `ImageBackground`, and `SafeAreaView`. The file `node_modules/react-native-web/expo-exports.json` lists all of them under `missing`.
 
 ---
 
@@ -341,14 +341,14 @@ The latest release is [`0.0.0-alpha.5`](https://www.npmjs.com/package/@rootnativ
 
 ## What ships today
 
-| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`Modal`](https://rootnative.github.io/web/modal), [`KeyboardAvoidingView`](https://rootnative.github.io/web/keyboardavoidingview), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                 |
-| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Keyboard`](https://rootnative.github.io/web/keyboard), [`Linking`](https://rootnative.github.io/web/linking), [`Alert`](https://rootnative.github.io/web/alert), [`Share`](https://rootnative.github.io/web/share), [`Vibration`](https://rootnative.github.io/web/vibration), [`Clipboard`](https://rootnative.github.io/web/clipboard), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`Easing`](https://rootnative.github.io/web/easing), [`usePressability`](https://rootnative.github.io/web/usepressability) |
-| Compat     | [`unstable_createElement`](https://rootnative.github.io/web/compat), [`findNodeHandle`](https://rootnative.github.io/web/compat), [`TurboModuleRegistry`](https://rootnative.github.io/web/compat), and the entries `@rootnative/web/assets-registry` and `@rootnative/web/style`. Libraries import them, your app doesn't.                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`, and [`@rootnative/web-expo`](https://rootnative.github.io/web/expo), for an Expo app with no router                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`Modal`](https://rootnative.github.io/web/modal), [`KeyboardAvoidingView`](https://rootnative.github.io/web/keyboardavoidingview), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                                          |
+| APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Keyboard`](https://rootnative.github.io/web/keyboard), [`Linking`](https://rootnative.github.io/web/linking), [`Alert`](https://rootnative.github.io/web/alert), [`Share`](https://rootnative.github.io/web/share), [`Vibration`](https://rootnative.github.io/web/vibration), [`Clipboard`](https://rootnative.github.io/web/clipboard), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`Animated`](https://rootnative.github.io/web/animated), [`Easing`](https://rootnative.github.io/web/easing), [`usePressability`](https://rootnative.github.io/web/usepressability) |
+| Compat     | [`unstable_createElement`](https://rootnative.github.io/web/compat), [`findNodeHandle`](https://rootnative.github.io/web/compat), [`TurboModuleRegistry`](https://rootnative.github.io/web/compat), and the entries `@rootnative/web/assets-registry` and `@rootnative/web/style`. Libraries import them, your app doesn't.                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`, and [`@rootnative/web-expo`](https://rootnative.github.io/web/expo), for an Expo app with no router                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 `FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now.
 
@@ -356,9 +356,9 @@ The latest release is [`0.0.0-alpha.5`](https://www.npmjs.com/package/@rootnativ
 
 **Don't import these yet.** They aren't in the package.
 
-- **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `Animated`, and `LayoutAnimation`.
+- **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `LayoutAnimation`, and the rest of [`Animated`](https://rootnative.github.io/web/animated#not-there-yet).
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
-- **Expo Router:** it needs `Animated`.
+- **Expo Router:** it needs `UIManager`, `NativeModules`, and `LogBox`.
 
 ## Out of scope
 
@@ -563,7 +563,7 @@ The types differ from native for three keys:
 | Key           | On the web                                                                                           |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | `touchAction` | Web only. Set it on an element that you drag on a touch screen. See [`PanResponder`](https://rootnative.github.io/web/panresponder). |
-| `transform`   | Takes no `Animated` value. The package has no `Animated` yet.                                        |
+| `transform`   | Takes no `Animated` value, as a plain `View` can't animate it. Use [`Animated.View`](https://rootnative.github.io/web/animated).     |
 | `resizeMode`  | Has no `'none'` yet.                                                                                 |
 
 The package passes any other CSS property through to CSS, but the types don't have it. Cast the style:
@@ -2493,19 +2493,69 @@ A pointer that joins or leaves doesn't move the gesture. The event's `nativeEven
 
 ---
 
+# `Animated`
+
+React Native's `Animated` API. An animation runs in JavaScript on each frame. A frame writes the new style to the element, with no React render.
+
+```tsx
+import { useEffect, useState, type ReactNode } from 'react'
+import { Animated } from 'react-native'
+
+export function FadeIn({ children }: { children: ReactNode }) {
+  const [opacity] = useState(() => new Animated.Value(0))
+
+  useEffect(() => {
+    Animated.timing(opacity, { toValue: 1, duration: 300, useNativeDriver: true }).start()
+  }, [opacity])
+
+  return <Animated.View style={{ opacity }}>{children}</Animated.View>
+}
+```
+
+## What's there
+
+| Member                                          | On the web                                                                                                                                                   |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `new Animated.Value(value)`                     | `setValue`, `setOffset`, `flattenOffset`, `extractOffset`, `stopAnimation`, `resetAnimation`, `interpolate`, and the listeners.                              |
+| `value.interpolate(config)`                     | Numbers, strings with numbers such as `'90deg'`, and colors, which come out as `rgba()`. `extrapolate`, `extrapolateLeft`, `extrapolateRight`, and `easing`. |
+| `Animated.add(a, b)`, `Animated.multiply(a, b)` | A value or a number on each side.                                                                                                                            |
+| `Animated.timing(value, config)`                | `toValue`, `duration` (500 ms by default), `easing` (`Easing.inOut(Easing.ease)` by default), and `delay`. See [`Easing`](https://rootnative.github.io/web/easing).                          |
+| `Animated.spring(value, config)`                | `stiffness`, `damping`, and `mass`, or `tension` and `friction`, or `bounciness` and `speed`. Also `velocity`, `overshootClamping`, and the rest thresholds. |
+| `Animated.parallel(animations, config?)`        | Starts each animation at once. With `stopTogether` (the default), one that stops early stops the rest.                                                       |
+| `Animated.event(mapping, config)`               | A handler that sets each mapped value from the event, then calls `listener`.                                                                                 |
+| `Animated.View`, `Animated.Text`                | A value in `style` or in `transform` animates.                                                                                                               |
+| `Animated.createAnimatedComponent(Component)`   | Animates the props of any component.                                                                                                                         |
+| `Animated.Node`, `Animated.Interpolation`       | The classes, for types and `instanceof`.                                                                                                                     |
+
+An animation from `timing`, `spring`, or `parallel` has `start(callback?)`, `stop()`, and `reset()`.
+
+## Differences from React Native
+
+- **No native driver.** `useNativeDriver: true` runs the same JavaScript driver. Each frame runs on the main thread, as on react-native-web.
+- **Reduced motion.** When the user asks for less motion (`prefers-reduced-motion`), `timing` and `spring` go to `toValue` at once. A `delay` still waits, so a sequence keeps its pauses.
+- **`toValue` takes only a number,** and the `velocity` of a spring too. Another `Animated` value as `toValue` throws an error.
+- **A value in a prop that isn't `style`** renders the component again on each frame. A value in `style` doesn't.
+- **`Animated.event` always returns a function,** also with `useNativeDriver: true`.
+
+## Not there yet
+
+`Animated.ValueXY`, `Animated.Color`, `decay`, `sequence`, `stagger`, `loop`, `delay`, `subtract`, `divide`, `modulo`, `diffClamp`, `forkEvent`, `unforkEvent`, `attachNativeEvent`, `Animated.Image`, `Animated.ScrollView`, `Animated.FlatList`, `Animated.SectionList`, and the hooks `useAnimatedValue`, `useAnimatedValueXY`, and `useAnimatedColor`.
+
+---
+
 # `Easing`
 
-The easing curves of React Native. A curve takes the time of an animation, from `0` to `1`, and returns its progress. Pass one as the `easing` option of an animation.
+The easing curves of React Native. A curve takes the time of an animation, from `0` to `1`, and returns its progress. Pass one as the `easing` of [`Animated.timing`](https://rootnative.github.io/web/animated), or to a library that takes an easing function.
 
 Each function works as in React Native, with the same math, so a curve gives the same values on the web as on a phone.
 
-`Animated` isn't in the package yet, so call a curve yourself, or pass it to a library that takes an easing function.
-
 ```tsx
-import { Easing } from 'react-native'
+import { Animated, Easing } from 'react-native'
 
 const curve = Easing.inOut(Easing.quad)
 curve(0.25) // 0.125
+
+Animated.timing(value, { toValue: 1, easing: curve, useNativeDriver: true }).start()
 ```
 
 ## Curves

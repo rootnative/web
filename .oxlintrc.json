@@ -47,8 +47,13 @@
               "__detach",
               "__getAnimatedValue",
               "__getChildren",
+              "__getHandler",
               "__getValue",
-              "__removeChild"
+              "__getValueWithStaticObject",
+              "__getValueWithStaticProps",
+              "__getValueWithStaticTransforms",
+              "__removeChild",
+              "__replaceAnimatedNodeWithValues"
             ]
           }
         ]

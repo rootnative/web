@@ -93,7 +93,7 @@ The types differ from native for three keys:
 | Key           | On the web                                                                                           |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | `touchAction` | Web only. Set it on an element that you drag on a touch screen. See [`PanResponder`](/panresponder). |
-| `transform`   | Takes no `Animated` value. The package has no `Animated` yet.                                        |
+| `transform`   | Takes no `Animated` value, as a plain `View` can't animate it. Use [`Animated.View`](/animated).     |
 | `resizeMode`  | Has no `'none'` yet.                                                                                 |
 
 The package passes any other CSS property through to CSS, but the types don't have it. Cast the style:

@@ -65,7 +65,6 @@
     "useWindowDimensions"
   ],
   "missing": [
-    "Animated",
     "CheckBox",
     "DeviceEventEmitter",
     "ImageBackground",

@@ -6,7 +6,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ### Added
 
-- **`Easing`**, with every curve and helper of React Native and the same math: `linear`, `ease`, `quad`, `cubic`, `poly`, `sin`, `circle`, `exp`, `elastic`, `back`, `bounce`, `bezier`, `step0`, `step1`, `in`, `out`, and `inOut`. The type `EasingFunction` comes with it. `Animated` isn't in the package yet, so call a curve yourself or pass it to a library that takes an easing function.
+- **`Animated`**, on the JavaScript driver: `Animated.Value` with `interpolate`, `add`, `multiply`, `timing`, `spring`, `parallel`, `event`, `Animated.View`, `Animated.Text`, and `createAnimatedComponent`. A frame writes the new style to the element, with no React render. `useNativeDriver: true` runs the same driver. With reduced motion, `timing` and `spring` go to their end at once, after their `delay`. `toValue` takes only a number. `ValueXY`, `sequence`, `loop`, and the rest of the API come later. See [Animated](https://rootnative.github.io/web/animated).
+- **`Easing`**, with every curve and helper of React Native and the same math: `linear`, `ease`, `quad`, `cubic`, `poly`, `sin`, `circle`, `exp`, `elastic`, `back`, `bounce`, `bezier`, `step0`, `step1`, `in`, `out`, and `inOut`. The type `EasingFunction` comes with it.
 
 ## [0.0.0-alpha.5] - 2026-11-15
 
