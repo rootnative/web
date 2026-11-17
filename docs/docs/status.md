@@ -29,7 +29,7 @@ The latest release is [`0.0.0-alpha.5`](https://www.npmjs.com/package/@rootnativ
 
 - **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `LayoutAnimation`, and the rest of [`Animated`](/animated#not-there-yet).
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
-- **Expo Router:** it needs `UIManager`, `NativeModules`, and `LogBox`.
+- **Expo Router:** not checked yet.
 
 ## Out of scope
 

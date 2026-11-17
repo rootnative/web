@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { facadeFiles, readExports, runtimeModules } from '../scripts/build.mjs'
+import { facadeFiles, readExports, runtimeModules, SUPPLIED } from '../scripts/build.mjs'
 import { missing as missingExport } from '../src/missing.js'
 
 const { names, missing } = readExports()
@@ -9,7 +9,7 @@ const runtimeName = (name) => (name === 'createElement' ? 'unstable_createElemen
 
 describe('the list of names', () => {
   const runtime = new Set(runtimeModules().keys())
-  const supplied = new Set(['AppRegistry'])
+  const supplied = new Set(Object.keys(SUPPLIED))
 
   test('each name comes from the runtime, from this package, or is in the missing list', () => {
     const lost = names.filter(
@@ -18,8 +18,8 @@ describe('the list of names', () => {
     expect(lost).toEqual([])
   })
 
-  test('the missing list has no name that the runtime exports now', () => {
-    expect(missing.filter((name) => runtime.has(name))).toEqual([])
+  test('the missing list has no name that the runtime exports or this package supplies', () => {
+    expect(missing.filter((name) => runtime.has(name) || supplied.has(name))).toEqual([])
     expect(missing.filter((name) => !names.includes(name))).toEqual([])
   })
 })
@@ -59,6 +59,15 @@ describe('the generated files', () => {
     expect(files.get('exports/StyleSheet/dom/index.js')).toBe(
       `export { createSheet } from '../../../createSheet.js'\n`,
     )
+  })
+
+  test('gives a name that this package supplies its own file', () => {
+    for (const [name, file] of Object.entries(SUPPLIED)) {
+      expect(files.get(`exports/${name}/index.js`)).toBe(
+        `export { ${name} as default } from '../../${file}'\n`,
+      )
+      expect(files.get('index.js')).toContain(`export { ${name} } from './${file}'`)
+    }
   })
 
   test('gives a missing name a stub, and the index exports it by name', () => {

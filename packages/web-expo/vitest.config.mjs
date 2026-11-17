@@ -9,6 +9,7 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: /^@rootnative\/web\/server$/, replacement: source('server/index.ts') },
+      { find: /^@rootnative\/web\/internal\/(.*)\.js$/, replacement: source('$1.ts') },
       { find: /^@rootnative\/web$/, replacement: source('index.ts') },
     ],
   },

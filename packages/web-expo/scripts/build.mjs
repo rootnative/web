@@ -44,9 +44,20 @@ export const runtimeModules = () => {
 // function as `unstable_createElement`.
 const runtimeName = (name) => (name === 'createElement' ? 'unstable_createElement' : name)
 
+// The names that this package gives itself, and their files in `src/`. `@rootnative/web` doesn't
+// have them: Expo's own launch code calls `AppRegistry`, and the other three are native APIs that
+// Expo's libraries import on the web too.
+export const SUPPLIED = {
+  AppRegistry: 'AppRegistry.js',
+  LogBox: 'LogBox.js',
+  NativeModules: 'NativeModules.js',
+  UIManager: 'UIManager.js',
+}
+
 const exportFile = (name, missing, modules) => {
-  if (name === 'AppRegistry')
-    return `export { AppRegistry as default } from '../../AppRegistry.js'\n`
+  if (Object.hasOwn(SUPPLIED, name)) {
+    return `export { ${name} as default } from '../../${SUPPLIED[name]}'\n`
+  }
   if (missing.has(name)) {
     return `import { missing } from '../../missing.js'\n\nexport default missing('${name}')\n`
   }
@@ -71,7 +82,7 @@ const styleFile = `export * from '@rootnative/web/style'\nexport { default } fro
 const SHEET_FILE = 'exports/StyleSheet/dom/index.js'
 
 // The files of `src/` that go into `dist/` as they are.
-export const SOURCE_FILES = ['AppRegistry.js', 'createSheet.js', 'missing.js']
+export const SOURCE_FILES = [...Object.values(SUPPLIED), 'createSheet.js', 'missing.js']
 
 // The path of each generated file, from `dist/`, and its text.
 export const facadeFiles = ({ names, missing } = readExports(), modules = runtimeModules()) => {
@@ -83,7 +94,7 @@ export const facadeFiles = ({ names, missing } = readExports(), modules = runtim
   const index = [
     `export * from '@rootnative/web'`,
     `export { unstable_createElement as createElement } from '@rootnative/web'`,
-    `export { AppRegistry } from './AppRegistry.js'`,
+    ...Object.entries(SUPPLIED).map(([name, file]) => `export { ${name} } from './${file}'`),
     ...missing.map((name) => `export { default as ${name} } from './exports/${name}/index.js'`),
   ]
   files.set('index.js', `${index.join('\n')}\n`)

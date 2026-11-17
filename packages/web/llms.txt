@@ -71,7 +71,8 @@ react-native types stay. Expo's Babel preset rewrites each react-native import
 to react-native-web/dist/exports/<Name>; the package has those files, and each
 one loads only its own module of @rootnative/web, so the bundle has only the
 components the app imports. It also gives Expo AppRegistry and the page reset
-(body margin 0). Works: the dev server, expo export --platform web with
+(body margin 0), and UIManager, NativeModules ({ UIManager }, no native
+module), and LogBox (no-ops), as react-native-web does. Works: the dev server, expo export --platform web with
 web.output 'single', Reanimated 4 (the preset adds the Worklets plugin), image
 imports, react-native-svg. web-expo depends on the exact same version of
 @rootnative/web: install that version if the app imports @rootnative/web too.
@@ -79,8 +80,7 @@ A name that @rootnative/web lacks (LayoutAnimation, SectionList,
 VirtualizedList, ImageBackground, SafeAreaView, and more) loads as a stub
 that throws "<Name> is not in @rootnative/web yet" on use;
 node_modules/react-native-web/expo-exports.json lists them under "missing".
-Expo Router needs UIManager, NativeModules, and LogBox, so it doesn't work
-yet.
+Expo Router isn't checked yet.
 
 ## Entry points
 

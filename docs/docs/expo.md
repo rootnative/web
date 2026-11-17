@@ -10,7 +10,7 @@ description: Run an Expo app on @rootnative/web with @rootnative/web-expo, which
 
 :::note No Expo Router yet
 
-Expo Router needs `UIManager`, `NativeModules`, and `LogBox`, which `@rootnative/web` doesn't have yet. An Expo app with no router works.
+Expo Router isn't checked on `@rootnative/web` yet. An Expo app with no router works.
 
 :::
 
@@ -37,6 +37,8 @@ The package depends on the same version of `@rootnative/web`, and works only wit
 On the web, Expo's Babel preset rewrites `import { View } from 'react-native'` to an import of `react-native-web/dist/exports/View`. The package has a file at each of these paths, and each file loads only its own module of `@rootnative/web`. So the bundle has only the components that your app imports.
 
 Expo also calls `AppRegistry` from `react-native-web` to start the app, and asks it for the reset styles of the page. The package gives both: your app renders with React DOM, and `body` gets no margin, as with react-native-web.
+
+Expo's libraries import `UIManager`, `NativeModules`, and `LogBox` on the web too. The package gives them as react-native-web does: `NativeModules` has no native module, `LogBox` does nothing, and `UIManager` measures an element with the host methods of `@rootnative/web`.
 
 ## What works
 

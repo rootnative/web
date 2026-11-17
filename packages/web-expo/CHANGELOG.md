@@ -6,9 +6,13 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+### Added
+
+- **`UIManager`, `NativeModules`, and `LogBox`**, as react-native-web has them. `expo-constants` reads `NativeModules` when it loads, and the stub threw an error there. `NativeModules` has no native module, `LogBox` does nothing, and `UIManager` measures and updates an element with the host methods of `@rootnative/web`.
+
 ### Changed
 
-- **`Animated` and `Easing` load from `@rootnative/web`.** Before, each was a stub that threw an error on use. Expo Router still doesn't run: it needs `UIManager`, `NativeModules`, and `LogBox`.
+- **`Animated` and `Easing` load from `@rootnative/web`.** Before, each was a stub that threw an error on use.
 
 ## [0.0.0-alpha.5] - 2026-11-15
 
