@@ -1,11 +1,10 @@
 import { createRef, type ReactElement } from 'react'
-import { createRoot, type Root } from 'react-dom/client'
-import { flushSync } from 'react-dom'
 import { renderToString } from 'react-dom/server.browser'
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { createStyleRegistry, StyleRegistryProvider } from '../../server'
-import { cleanup, render } from '../../test/render'
+import { mount, renderOutsideAct } from '../../test/mount'
+import { render } from '../../test/render'
 import { resetWarnings } from '../../utils/warn'
 import { Text } from '../Text'
 import { View } from '../View'
@@ -17,31 +16,9 @@ import type {
   VirtualizedListProps,
 } from './types'
 
-// The window moves on timers, resize observer callbacks, and scroll events. Inside act() React
-// holds each render until the scope ends, so these tests render the way an app does.
-const roots = new Set<{ root: Root; container: HTMLElement }>()
-
-const mount = (element: ReactElement) => {
-  const container = document.createElement('div')
-  document.body.appendChild(container)
-  const root = createRoot(container)
-  roots.add({ root, container })
-  flushSync(() => root.render(element))
-  return { container, rerender: (next: ReactElement) => flushSync(() => root.render(next)) }
-}
-
-beforeEach(() => {
-  globalThis.IS_REACT_ACT_ENVIRONMENT = false
-})
+renderOutsideAct()
 
 afterEach(() => {
-  for (const { root, container } of roots) {
-    flushSync(() => root.unmount())
-    container.remove()
-  }
-  roots.clear()
-  globalThis.IS_REACT_ACT_ENVIRONMENT = true
-  cleanup()
   resetWarnings()
   vi.restoreAllMocks()
 })

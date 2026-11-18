@@ -19,8 +19,11 @@ export const sendTouch = (target: Element, type: string, x: number, y: number): 
     touches: type === 'touchend' || type === 'touchcancel' ? [] : [point],
     changedTouches: [point],
   })
-  act(() => {
+  const dispatch = (): void => {
     target.dispatchEvent(event)
-  })
+  }
+  // A test that renders out of act() has the act environment off, and then act() logs an error.
+  if (globalThis.IS_REACT_ACT_ENVIRONMENT === true) act(dispatch)
+  else dispatch()
   return event
 }

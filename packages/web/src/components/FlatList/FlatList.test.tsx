@@ -1,7 +1,9 @@
-import { act, createRef, type ReactElement, useState } from 'react'
+import { createRef, type ReactElement, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
-import { cleanup, render } from '../../test/render'
+import { mount, renderOutsideAct } from '../../test/mount'
+import { render } from '../../test/render'
 import { canTouch, sendTouch } from '../../test/touch'
 import { RefreshControl } from '../RefreshControl'
 import { ScrollView } from '../ScrollView'
@@ -17,15 +19,24 @@ import type {
   ViewToken,
 } from './types'
 
+renderOutsideAct()
+
 afterEach(() => {
-  cleanup()
   vi.restoreAllMocks()
 })
+
+// Out of act(), React reports a render error and doesn't throw it.
+const renderInAct = (element: ReactElement) => {
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true
+  return render(element)
+}
 
 type Item = { id: string; label: string }
 
 const items = (count: number): Item[] =>
   Array.from({ length: count }, (_, i) => ({ id: `i${i}`, label: `Item ${i}` }))
+
+const rowLayout = (_data: unknown, index: number) => ({ index, length: 50, offset: 50 * index })
 
 const scroller = (container: HTMLElement): HTMLElement => container.firstElementChild as HTMLElement
 const content = (container: HTMLElement): HTMLElement =>
@@ -36,6 +47,8 @@ const cellsOf = (container: HTMLElement): HTMLElement[] =>
 const waitFor = async (check: () => void): Promise<void> => {
   await vi.waitFor(check, { timeout: 2000, interval: 10 })
 }
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
 const Row = ({ item }: ListRenderItemInfo<Item>): ReactElement => (
   <View style={{ height: 50 }}>
@@ -61,8 +74,8 @@ const viewableIndices = (fn: ReturnType<typeof vi.fn>): number[] | undefined =>
   )
 
 describe('FlatList', () => {
-  test('renders every item in a cell inside the ScrollView content', () => {
-    const { container } = render(
+  test('renders the items in cells inside the ScrollView content', () => {
+    const { container } = mount(
       <FlatList data={items(5)} renderItem={renderRow} style={{ height: 120 }} />,
     )
     expect(getComputedStyle(scroller(container)).overflowY).toBe('auto')
@@ -73,23 +86,41 @@ describe('FlatList', () => {
     expect(scroller(container).scrollHeight).toBe(250)
   })
 
-  test('renders nothing for data that is not array-like, and no renderItem throws', () => {
-    const { container } = render(
-      <FlatList data={undefined} renderItem={renderRow} style={{ height: 120 }} />,
+  test('a long list renders a window of items, and a spacer for the rest', async () => {
+    const { container } = mount(
+      <FlatList
+        data={items(1000)}
+        renderItem={renderRow}
+        getItemLayout={rowLayout}
+        windowSize={3}
+        style={{ height: 100 }}
+      />,
     )
-    expect(cellsOf(container)).toHaveLength(0)
+    expect(content(container).textContent).toContain('Item 9')
+    expect(content(container).textContent).not.toContain('Item 10')
+    expect(scroller(container).scrollHeight).toBe(50000)
 
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-    expect(() => render(<FlatList data={items(1)} />)).toThrow(/renderItem/)
+    scroller(container).scrollTop = 25000
+    await waitFor(() => expect(content(container).textContent).toContain('Item 500'))
+    expect(content(container).textContent).not.toContain('Item 100')
+  })
+
+  test('renders nothing for data that is not array-like, and an empty cell with no renderItem', () => {
+    const empty = mount(<FlatList data={undefined} renderItem={renderRow} />)
+    expect(cellsOf(empty.container)).toHaveLength(0)
+
+    const bare = mount(<FlatList data={items(1)} />)
+    expect(cellsOf(bare.container)).toHaveLength(1)
+    expect(bare.container.textContent).toBe('')
   })
 
   test('ListItemComponent renders the item when there is no renderItem', () => {
-    const { container } = render(<FlatList data={items(2)} ListItemComponent={Row} />)
+    const { container } = mount(<FlatList data={items(2)} ListItemComponent={Row} />)
     expect(cellsOf(container)[1]?.textContent).toBe('Item 1')
   })
 
   test('separators sit after every item but the last', () => {
-    const { container } = render(
+    const { container } = mount(
       <FlatList data={items(3)} renderItem={renderRow} ItemSeparatorComponent={Separator} />,
     )
     const cells = cellsOf(container)
@@ -101,7 +132,7 @@ describe('FlatList', () => {
 
   test('separators.highlight reaches this cell and the one before it', () => {
     const separatorsOf: ListSeparators[] = []
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         data={items(3)}
         ItemSeparatorComponent={LeadingSeparator}
@@ -117,17 +148,17 @@ describe('FlatList', () => {
     expect(seps().map((s) => s.dataset['highlighted'])).toEqual(['false', 'false'])
 
     // Item 1: its own separator (after it) and the one before it.
-    act(() => separatorsOf[1]?.highlight())
+    flushSync(() => separatorsOf[1]?.highlight())
     expect(seps().map((s) => s.dataset['highlighted'])).toEqual(['true', 'true'])
-    act(() => separatorsOf[1]?.unhighlight())
+    flushSync(() => separatorsOf[1]?.unhighlight())
     expect(seps().map((s) => s.dataset['highlighted'])).toEqual(['false', 'false'])
 
-    act(() => separatorsOf[2]?.updateProps('leading', { highlighted: true }))
+    flushSync(() => separatorsOf[2]?.updateProps('leading', { highlighted: true }))
     expect(seps().map((s) => s.dataset['highlighted'])).toEqual(['false', 'true'])
   })
 
   test('header, footer and their styles', () => {
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         data={items(2)}
         renderItem={renderRow}
@@ -146,7 +177,7 @@ describe('FlatList', () => {
   })
 
   test('ListEmptyComponent renders between the header and the footer for no data', () => {
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         data={[]}
         renderItem={renderRow}
@@ -159,7 +190,7 @@ describe('FlatList', () => {
   })
 
   test('stickyHeaderIndices count the header as child 0', () => {
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         data={items(3)}
         renderItem={renderRow}
@@ -173,9 +204,9 @@ describe('FlatList', () => {
     expect(first.textContent).toBe('Header')
   })
 
-  test('keyExtractor defaults to key, then id, then the index', () => {
+  test('keyExtractor defaults to key, then id, then the index', async () => {
     const onViewableItemsChanged = vi.fn()
-    render(
+    mount(
       <FlatList
         data={[{ key: 'k' }, { id: 7 }, 'plain']}
         renderItem={() => <View style={{ height: 10 }} />}
@@ -183,7 +214,7 @@ describe('FlatList', () => {
         style={{ height: 100 }}
       />,
     )
-    return waitFor(() => {
+    await waitFor(() => {
       expect(onViewableItemsChanged).toHaveBeenCalled()
       const info = onViewableItemsChanged.mock.calls[0]?.[0] as { viewableItems: ViewToken[] }
       expect(info.viewableItems.map((t) => t.key)).toEqual(['k', '7', '2'])
@@ -191,7 +222,7 @@ describe('FlatList', () => {
   })
 
   test('horizontal lays the cells out in a row', () => {
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         horizontal
         data={items(4)}
@@ -206,7 +237,7 @@ describe('FlatList', () => {
 
   test('numColumns groups the items into rows with columnWrapperStyle', () => {
     const indices: number[] = []
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         data={items(5)}
         numColumns={2}
@@ -227,15 +258,40 @@ describe('FlatList', () => {
     expect(indices).toEqual([0, 1, 2, 3, 4])
   })
 
-  test('numColumns with horizontal throws', () => {
+  test('the props that React Native rejects throw, as on native', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     expect(() =>
-      render(<FlatList horizontal numColumns={2} data={items(2)} renderItem={renderRow} />),
+      renderInAct(<FlatList horizontal numColumns={2} data={items(2)} renderItem={renderRow} />),
     ).toThrow(/numColumns does not support horizontal/)
+    expect(() =>
+      renderInAct(
+        <FlatList columnWrapperStyle={{ gap: 4 }} data={items(2)} renderItem={renderRow} />,
+      ),
+    ).toThrow(/columnWrapperStyle not supported for single column lists/)
+    expect(() =>
+      renderInAct(
+        <FlatList
+          data={items(2)}
+          renderItem={renderRow}
+          onViewableItemsChanged={() => {}}
+          viewabilityConfigCallbackPairs={[]}
+        />,
+      ),
+    ).toThrow(/both onViewableItemsChanged and viewabilityConfigCallbackPairs/)
+  })
+
+  test('a change of numColumns throws, as on native', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { rerender } = renderInAct(
+      <FlatList data={items(4)} numColumns={2} renderItem={renderRow} />,
+    )
+    expect(() =>
+      rerender(<FlatList data={items(4)} numColumns={3} renderItem={renderRow} />),
+    ).toThrow(/Changing numColumns on the fly is not supported/)
   })
 
   test('inverted flips the scroller and each cell', () => {
-    const { container } = render(
+    const { container } = mount(
       <FlatList inverted data={items(2)} renderItem={renderRow} style={{ height: 60 }} />,
     )
     expect(getComputedStyle(scroller(container)).transform).toBe('matrix(1, 0, 0, -1, 0, 0)')
@@ -254,7 +310,7 @@ describe('FlatList', () => {
         </View>
       )
     }
-    const { container } = render(
+    const { container } = mount(
       <FlatList data={items(2)} renderItem={renderRow} CellRendererComponent={Cell} />,
     )
     expect(seen).toEqual([
@@ -268,7 +324,7 @@ describe('FlatList', () => {
 
   test('onEndReached fires once per content length, and again after the content grows', async () => {
     const onEndReached = vi.fn()
-    const { container, rerender } = render(
+    const { container, rerender } = mount(
       <FlatList
         data={items(10)}
         renderItem={renderRow}
@@ -281,7 +337,7 @@ describe('FlatList', () => {
     // 500 - 100 - 330 = 70 > 50: outside the threshold.
     element.scrollTop = 330
     await waitFor(() => expect(element.scrollTop).toBe(330))
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    await sleep(50)
     expect(onEndReached).not.toHaveBeenCalled()
 
     element.scrollTop = 360
@@ -290,7 +346,7 @@ describe('FlatList', () => {
 
     element.scrollTop = 400
     await waitFor(() => expect(element.scrollTop).toBe(400))
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    await sleep(50)
     expect(onEndReached).toHaveBeenCalledTimes(1)
 
     rerender(
@@ -302,13 +358,15 @@ describe('FlatList', () => {
         style={{ height: 100 }}
       />,
     )
+    // The new items render in the next window update.
+    await waitFor(() => expect(content(container).textContent).toContain('Item 19'))
     element.scrollTop = 900
     await waitFor(() => expect(onEndReached).toHaveBeenCalledTimes(2))
   })
 
   test('a list shorter than its viewport calls onEndReached after mount', async () => {
     const onEndReached = vi.fn()
-    render(
+    mount(
       <FlatList
         data={items(1)}
         renderItem={renderRow}
@@ -321,10 +379,11 @@ describe('FlatList', () => {
 
   test('onStartReached fires when the scroll comes back to the start', async () => {
     const onStartReached = vi.fn()
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         data={items(10)}
         renderItem={renderRow}
+        getItemLayout={rowLayout}
         initialScrollIndex={4}
         onStartReached={onStartReached}
         onStartReachedThreshold={0.2}
@@ -333,7 +392,7 @@ describe('FlatList', () => {
     )
     const element = scroller(container)
     expect(element.scrollTop).toBe(200)
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    await sleep(50)
     expect(onStartReached).not.toHaveBeenCalled()
 
     element.scrollTop = 10
@@ -343,7 +402,7 @@ describe('FlatList', () => {
 
   test('onViewableItemsChanged reports the visible items and the change on scroll', async () => {
     const onViewableItemsChanged = vi.fn()
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         data={items(10)}
         renderItem={renderRow}
@@ -381,7 +440,7 @@ describe('FlatList', () => {
   test('viewabilityConfigCallbackPairs run one tracker per config', async () => {
     const loose = vi.fn()
     const strict = vi.fn()
-    render(
+    mount(
       <FlatList
         data={items(10)}
         renderItem={renderRow}
@@ -405,7 +464,7 @@ describe('FlatList', () => {
 
   test('numColumns expands a row into one view token per item', async () => {
     const onViewableItemsChanged = vi.fn()
-    render(
+    mount(
       <FlatList
         data={items(5)}
         numColumns={2}
@@ -427,10 +486,12 @@ describe('FlatList', () => {
   test('the instance scrolls by offset, index, item and to the end', async () => {
     const ref = createRef<FlatListInstance<Item>>()
     const data = items(20)
-    const { container } = render(
+    const { container } = mount(
       <FlatList ref={ref} data={data} renderItem={renderRow} style={{ height: 100 }} />,
     )
     const element = scroller(container)
+    // With no getItemLayout, scrollToIndex needs the cells measured.
+    await waitFor(() => expect(content(container).textContent).toContain('Item 19'))
 
     ref.current?.scrollToOffset({ offset: 75, animated: false })
     expect(element.scrollTop).toBe(75)
@@ -453,10 +514,26 @@ describe('FlatList', () => {
     expect(() => ref.current?.scrollToIndex({ index: 20 })).toThrow(/out of range/)
   })
 
-  test('scrollToItem with numColumns scrolls to the row of the item', () => {
+  test('scrollToIndex past the measured items calls onScrollToIndexFailed', () => {
+    const ref = createRef<FlatListInstance<Item>>()
+    const onScrollToIndexFailed = vi.fn()
+    mount(
+      <FlatList
+        ref={ref}
+        data={items(100)}
+        renderItem={renderRow}
+        onScrollToIndexFailed={onScrollToIndexFailed}
+        style={{ height: 100 }}
+      />,
+    )
+    ref.current?.scrollToIndex({ index: 50 })
+    expect(onScrollToIndexFailed).toHaveBeenCalledWith(expect.objectContaining({ index: 50 }))
+  })
+
+  test('scrollToItem with numColumns scrolls to the row of the item', async () => {
     const ref = createRef<FlatListInstance<Item>>()
     const data = items(10)
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         ref={ref}
         data={data}
@@ -465,16 +542,20 @@ describe('FlatList', () => {
         style={{ height: 50 }}
       />,
     )
-    ref.current?.scrollToItem({ item: data[5] as Item, animated: false })
-    expect(scroller(container).scrollTop).toBe(80)
+    // The rows are measured after the first layout.
+    await waitFor(() => {
+      ref.current?.scrollToItem({ item: data[5] as Item, animated: false })
+      expect(scroller(container).scrollTop).toBe(80)
+    })
   })
 
-  test('initialScrollIndex sets the first position without animation', () => {
-    const { container } = render(
+  test('initialScrollIndex with getItemLayout sets the first position without animation', () => {
+    const { container } = mount(
       <FlatList
         data={items(10)}
         renderItem={renderRow}
         ListHeaderComponent={<View style={{ height: 30 }} />}
+        getItemLayout={(_data, index) => ({ index, length: 50, offset: 30 + 50 * index })}
         initialScrollIndex={3}
         style={{ height: 100 }}
       />,
@@ -485,7 +566,7 @@ describe('FlatList', () => {
   test('recordInteraction releases a waitForInteraction tracker', async () => {
     const ref = createRef<FlatListInstance<Item>>()
     const onViewableItemsChanged = vi.fn()
-    render(
+    mount(
       <FlatList
         ref={ref}
         data={items(10)}
@@ -495,7 +576,7 @@ describe('FlatList', () => {
         style={{ height: 100 }}
       />,
     )
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    await sleep(50)
     expect(onViewableItemsChanged).not.toHaveBeenCalled()
     ref.current?.recordInteraction()
     expect(onViewableItemsChanged).toHaveBeenCalledTimes(1)
@@ -504,7 +585,7 @@ describe('FlatList', () => {
   test('the ScrollView props and callbacks pass through', async () => {
     const onScroll = vi.fn()
     const onContentSizeChange = vi.fn()
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         data={items(10)}
         renderItem={renderRow}
@@ -530,7 +611,7 @@ describe('FlatList', () => {
   test('renderScrollComponent renders the scroller and gets the ref', () => {
     const ref = createRef<FlatListInstance<Item>>()
     const seen: ScrollViewProps[] = []
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         ref={ref}
         data={items(3)}
@@ -579,7 +660,7 @@ function PullApp(props: { inverted?: boolean; onRefresh: () => void }): ReactEle
 describe('FlatList refresh', () => {
   test('onRefresh wraps the scroller in a RefreshControl', () => {
     const ref = createRef<FlatListInstance<Item>>()
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         ref={ref}
         data={items(20)}
@@ -594,7 +675,7 @@ describe('FlatList refresh', () => {
     expect(refreshArea(container).getAttribute('aria-busy')).toBe('true')
     expect(getComputedStyle(refreshArea(container)).height).toBe('120px')
     expect(element.clientHeight).toBe(120)
-    expect(element.firstElementChild?.children).toHaveLength(20)
+    expect(element.firstElementChild?.textContent).toContain('Item 0')
     expect(ref.current?.getScrollableNode()).toBe(element)
 
     const indicator = indicatorOf(container)
@@ -603,21 +684,21 @@ describe('FlatList refresh', () => {
   })
 
   test('refreshing without onRefresh adds no control', () => {
-    const { container } = render(<FlatList data={items(2)} renderItem={renderRow} refreshing />)
+    const { container } = mount(<FlatList data={items(2)} renderItem={renderRow} refreshing />)
     expect(indicatorOf(container)).toBeNull()
   })
 
   test('onRefresh without a boolean refreshing throws, as on native', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     expect(() =>
-      render(<FlatList data={items(2)} renderItem={renderRow} onRefresh={() => {}} />),
+      renderInAct(<FlatList data={items(2)} renderItem={renderRow} onRefresh={() => {}} />),
     ).toThrow(
       '`refreshing` prop must be set as a boolean in order to use `onRefresh`, but got `"undefined"`',
     )
   })
 
   test('a refreshControl of the app wins over onRefresh', () => {
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         data={items(2)}
         renderItem={renderRow}
@@ -634,7 +715,7 @@ describe('FlatList refresh', () => {
     const onRefresh = vi.fn()
     const error = vi.spyOn(console, 'error')
     const seen: ScrollViewProps[] = []
-    const { container } = render(
+    const { container } = mount(
       <FlatList
         data={items(2)}
         renderItem={renderRow}
@@ -653,20 +734,20 @@ describe('FlatList refresh', () => {
     expect(error).not.toHaveBeenCalled()
   })
 
-  test.skipIf(!canTouch)('a pull calls onRefresh', () => {
+  test.skipIf(!canTouch)('a pull calls onRefresh', async () => {
     const onRefresh = vi.fn()
-    const { container } = render(<PullApp onRefresh={onRefresh} />)
+    const { container } = mount(<PullApp onRefresh={onRefresh} />)
     const target = areaScroller(container).firstElementChild as HTMLElement
     sendTouch(target, 'touchstart', 100, 100)
     expect(sendTouch(target, 'touchmove', 100, 300).defaultPrevented).toBe(true)
     sendTouch(target, 'touchend', 100, 300)
     expect(onRefresh).toHaveBeenCalledTimes(1)
-    expect(refreshArea(container).getAttribute('aria-busy')).toBe('true')
+    await waitFor(() => expect(refreshArea(container).getAttribute('aria-busy')).toBe('true'))
   })
 
   test.skipIf(!canTouch)('inverted: the pull starts at the visual bottom and goes up', () => {
     const onRefresh = vi.fn()
-    const { container } = render(<PullApp inverted onRefresh={onRefresh} />)
+    const { container } = mount(<PullApp inverted onRefresh={onRefresh} />)
     const target = areaScroller(container).firstElementChild as HTMLElement
     // A finger that moves down scrolls the list toward the older items.
     sendTouch(target, 'touchstart', 100, 100)

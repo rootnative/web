@@ -8,6 +8,18 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 - **`VirtualizedList`**, React Native's list that renders only a window of its items, with the same rules. The first render has `initialNumToRender` cells. Then the list adds `maxToRenderPerBatch` cells at a time, until the window covers `windowSize` viewports, and a spacer holds the place of the other cells. It reads the data through `getItem` and `getItemCount`, so the data can be any collection. With `getItemLayout`, the list measures no cell. Without it, one `ResizeObserver` measures the rendered cells. `scrollToIndex`, `onScrollToIndexFailed`, viewability, the edge callbacks, sticky headers, and horizontal right-to-left work as on native. A server render has the first `initialNumToRender` cells. See [VirtualizedList](https://rootnative.github.io/web/virtualizedlist).
 
+### Changed
+
+- **Breaking: `FlatList` renders a window of its items**, on top of `VirtualizedList`, as on native. Before, it rendered every item. What changes for your app:
+  - A long list mounts faster, and an item outside the window unmounts, so keep its state in the item data or in a store.
+  - A server render has only the first `initialNumToRender` items, 10 by default. When every item must be in the HTML, set `initialNumToRender` to the item count.
+  - `initialNumToRender`, `maxToRenderPerBatch`, `windowSize`, `updateCellsBatchingPeriod`, `disableVirtualization`, and `getItemLayout` now work. Before, the list ignored them.
+  - Without `getItemLayout`, `scrollToIndex` to an item that isn't measured yet calls `onScrollToIndexFailed`, or throws when the list has no `onScrollToIndexFailed`. Before, the list measured every item. `initialScrollIndex` then has nothing above its item until the items above it render.
+  - As on native, these throw: `columnWrapperStyle` with one column, both `onViewableItemsChanged` and `viewabilityConfigCallbackPairs`, and a change of `numColumns`, `viewabilityConfig`, `viewabilityConfigCallbackPairs`, or of whether `onViewableItemsChanged` is set.
+  - With no `renderItem` and no `ListItemComponent`, the cells are empty, as on native. Before, the list threw.
+  - `ListEmptyComponent` gets the flip of `inverted` in its own `style`, as on native, not in a wrapper `View`.
+  - `setNativeProps` on the ref writes the style on the scroll element. Before, it did nothing.
+
 ## [0.0.0-alpha.6] - 2026-11-18
 
 The first part of React Native's `Animated` API, and `Easing`. With them, Expo Router runs on this runtime, through `@rootnative/web-expo`.

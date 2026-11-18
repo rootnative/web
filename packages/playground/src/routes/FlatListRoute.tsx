@@ -43,6 +43,12 @@ export function FlatListRoute(): ReactElement {
     setViewable(viewableItems.map((token) => token.index ?? -1))
   }
 
+  // An item that isn't measured yet: scroll to an estimate, so it renders, then try again.
+  const onScrollToIndexFailed = (info: { index: number; averageItemLength: number }) => {
+    list.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: false })
+    setTimeout(() => list.current?.scrollToIndex({ index: info.index, viewPosition: 0.5 }), 100)
+  }
+
   const onEndReached = () => {
     setLoads((n) => n + 1)
     setItems((current) => [...current, ...makeItems(current.length, 10)])
@@ -94,6 +100,7 @@ export function FlatListRoute(): ReactElement {
           onEndReachedThreshold={0.5}
           onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={viewabilityConfig}
+          onScrollToIndexFailed={onScrollToIndexFailed}
           refreshing={refreshing}
           onRefresh={onRefresh}
           style={styles.list}

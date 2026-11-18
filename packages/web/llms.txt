@@ -357,26 +357,39 @@ RefreshControl
 - View props and the ref go to the wrapper, which has aria-busy.
 
 FlatList
-- NO VIRTUALIZER. It renders every item. Load a long list in pages with
-  onEndReached.
-- Ignored: initialNumToRender, maxToRenderPerBatch, windowSize,
-  updateCellsBatchingPeriod, removeClippedSubviews, disableVirtualization,
-  extraData, getItemLayout.
+- On top of VirtualizedList: it renders a window of items, with the same
+  rules and props (initialNumToRender, maxToRenderPerBatch, windowSize,
+  updateCellsBatchingPeriod, disableVirtualization, getItemLayout). An item
+  outside the window unmounts and loses its state.
+- A server render has only the first initialNumToRender items (10). When
+  every item must be in the HTML, set initialNumToRender to the item count.
+- Without getItemLayout, initialScrollIndex has nothing above its item until
+  the items above it render, and scrollToIndex past the measured items calls
+  onScrollToIndexFailed, or throws when the list has no
+  onScrollToIndexFailed.
 - Works as on native: data, renderItem, keyExtractor, ItemSeparatorComponent,
   ListHeaderComponent, ListFooterComponent, ListEmptyComponent, numColumns,
-  columnWrapperStyle, horizontal, inverted, initialScrollIndex,
-  onViewableItemsChanged, viewabilityConfig, viewabilityConfigCallbackPairs,
-  onStartReached, CellRendererComponent, renderScrollComponent,
-  stickyHeaderIndices, and the ScrollView props.
-- onEndReached fires once per content length. The default threshold is 2 px.
-  A list shorter than its viewport fires it after mount.
+  columnWrapperStyle, horizontal (right-to-left too), inverted,
+  initialScrollIndex, onViewableItemsChanged, viewabilityConfig,
+  viewabilityConfigCallbackPairs, onStartReached, CellRendererComponent,
+  renderScrollComponent, stickyHeaderIndices, extraData, and the ScrollView
+  props.
+- Throws, as on native: columnWrapperStyle with one column, horizontal with
+  numColumns, both onViewableItemsChanged and viewabilityConfigCallbackPairs,
+  and a change of numColumns, viewabilityConfig,
+  viewabilityConfigCallbackPairs, or of whether onViewableItemsChanged is set.
+- onEndReached fires once per content length, when the window has the last
+  item. The default threshold is 2 px. A list shorter than its viewport fires
+  it after mount.
 - onRefresh and refreshing wrap the scroller in a RefreshControl, with
   progressViewOffset, as on native. With onRefresh, refreshing must be a
   boolean, or the list throws. A refreshControl prop wins.
   renderScrollComponent gets the three props and adds its own control.
+- Ignored: strictMode, legacyImplementation, debug.
 - Ref: scrollToOffset, scrollToIndex (a row index with numColumns),
-  scrollToItem, scrollToEnd, recordInteraction, getScrollableNode.
-  onScrollToIndexFailed never fires.
+  scrollToItem (finds the row of the item), scrollToEnd, recordInteraction,
+  getScrollableNode, getNativeScrollRef, getScrollResponder,
+  setNativeProps({ style }).
 
 VirtualizedList
 - Renders a window of cells around the viewport. A spacer takes the place of

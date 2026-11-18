@@ -21,13 +21,11 @@ The latest release is [`0.0.0-alpha.6`](https://www.npmjs.com/package/@rootnativ
 | Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Tooling    | [`rootnative()`](/vite-plugin), the Vite plugin, from `@rootnative/web/vite`, and [`@rootnative/web-expo`](/expo), for an Expo app, also with Expo Router                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
-`FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now, or use [`VirtualizedList`](/virtualizedlist), which renders a window of its items.
-
 ## Planned, not written
 
 **Don't import these yet.** They aren't in the package.
 
-- **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `LayoutAnimation`, and the rest of [`Animated`](/animated#not-there-yet).
+- **Lists and motion:** `SectionList`, `LayoutAnimation`, and the rest of [`Animated`](/animated#not-there-yet).
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
 
 ## Out of scope
