@@ -22,7 +22,9 @@ import { claimPress } from '../../events/press/Pressability'
 import { toDOMProps } from '../../render/domProps'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { lockScroll, unlockScroll } from '../../utils/scrollLock'
+import { ScrollViewContext } from '../ScrollView/ScrollViewContext'
 import { View } from '../View'
+import { VirtualizedListContextResetter } from '../VirtualizedList/VirtualizedListContext'
 import type { ModalProps } from './types'
 
 export type { ModalEvent, ModalOrientationChangeEvent, ModalProps } from './types'
@@ -363,7 +365,12 @@ function ModalDialog(props: DialogProps): ReactElement {
       }}
     >
       <HostContext.Provider value={host}>
-        <View style={[styles.container, style, containerStyle]}>{children}</View>
+        {/* As on native: a list in the Modal isn't nested in a list or a ScrollView outside it. */}
+        <VirtualizedListContextResetter>
+          <ScrollViewContext.Provider value={null}>
+            <View style={[styles.container, style, containerStyle]}>{children}</View>
+          </ScrollViewContext.Provider>
+        </VirtualizedListContextResetter>
       </HostContext.Provider>
     </dialog>
   )

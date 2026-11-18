@@ -6,6 +6,8 @@ import { createStyleRegistry, StyleRegistryProvider } from '../../server'
 import { mount, renderOutsideAct } from '../../test/mount'
 import { render } from '../../test/render'
 import { resetWarnings } from '../../utils/warn'
+import { Modal } from '../Modal'
+import { ScrollView } from '../ScrollView'
 import { Text } from '../Text'
 import { View } from '../View'
 import { VirtualizedList } from './index'
@@ -96,6 +98,38 @@ const viewableIndices = (handler: ReturnType<typeof vi.fn>): number[] | undefine
   const info = handler.mock.calls.at(-1)?.[0] as ViewableItemsChangedInfo<Item> | undefined
   return info?.viewableItems.map((token) => token.index as number)
 }
+
+// Nested lists: an outer row has data-outer, so the rows of an inner list stay apart.
+const OuterRow = ({ index }: ListRenderItemInfo<Item>): ReactElement => (
+  <View data-outer={index} style={{ height: 50 }} />
+)
+
+// A list of 100 rows of 50 px, 5000 px high, for a cell of another list.
+const renderInnerList = (): ReactElement =>
+  list(100, { getItemLayout, windowSize: 1, testID: 'inner', style: undefined })
+
+// The first outer cell holds a list of 200 rows that renders only its visible rows.
+const renderFirstNested = (info: ListRenderItemInfo<Item>): ReactElement =>
+  info.index === 0 ? (
+    list(200, { windowSize: 1, initialNumToRender: 1, style: undefined })
+  ) : (
+    <OuterRow {...info} />
+  )
+
+const renderFirstPlain = (info: ListRenderItemInfo<Item>): ReactElement =>
+  info.index === 0 ? <View style={{ height: 200 }} /> : <OuterRow {...info} />
+
+const renderHorizontalList = (): ReactElement =>
+  list(20, {
+    horizontal: true,
+    renderItem: renderColumn,
+    testID: 'row-list',
+    style: { width: 200 },
+  })
+
+const renderModalList = (): ReactElement => (
+  <Modal visible>{list(5, { testID: 'modal-list', style: { height: 100 } })}</Modal>
+)
 
 describe('VirtualizedList', () => {
   test('renders initialNumToRender cells first, then fills the window in batches', async () => {
@@ -373,6 +407,58 @@ describe('VirtualizedList', () => {
         (cell) => cell.textContent === 'Item 20',
       )
       expect(item20?.getBoundingClientRect().top).toBeCloseTo(element.getBoundingClientRect().top)
+    })
+  })
+
+  test('a list in a cell of a list of the same direction has no scroller, and follows the outer scroll', async () => {
+    const { container } = mount(list(1, { renderItem: renderInnerList }))
+    const inner = container.querySelector<HTMLElement>('[data-testid="inner"]') as HTMLElement
+    expect(getComputedStyle(inner).overflowY).toBe('visible')
+    const outer = scroller(container)
+    await waitFor(() => expect(outer.scrollHeight).toBe(5000))
+    // The inner list measures its place in the outer list first. A scroll before that would
+    // reach it through the measure, not through the scroll event.
+    await nextFrames()
+    await nextFrames()
+
+    // The outer list sends its scroll to the inner list, which moves its window.
+    outer.scrollTop = 2500
+    await waitFor(() => expect(rendered(container)).toContain(50))
+    expect(rendered(container)).not.toContain(30)
+  })
+
+  test('the outer window stops at the first cell whose nested list has more items', async () => {
+    const nested = mount(list(30, { renderItem: renderFirstNested, initialNumToRender: 1 }))
+    const plain = mount(list(30, { renderItem: renderFirstPlain, initialNumToRender: 1 }))
+    await waitFor(() =>
+      expect(plain.container.querySelectorAll('[data-outer]').length).toBeGreaterThan(3),
+    )
+    await nextFrames()
+    await nextFrames()
+    expect(nested.container.querySelectorAll('[data-outer]')).toHaveLength(0)
+  })
+
+  test('a list in a cell of a list of the other direction keeps its own scroller', () => {
+    const { container } = mount(list(1, { renderItem: renderHorizontalList }))
+    const rowList = container.querySelector<HTMLElement>('[data-testid="row-list"]') as HTMLElement
+    expect(getComputedStyle(rowList).overflowX).toBe('auto')
+  })
+
+  test('a list in a plain ScrollView of the same direction warns', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const message = expect.stringMatching(/should never be nested inside plain ScrollViews/)
+    mount(<ScrollView horizontal>{list(5, { style: undefined })}</ScrollView>)
+    expect(warn).not.toHaveBeenCalledWith(message)
+    mount(<ScrollView>{list(5, { style: undefined })}</ScrollView>)
+    expect(warn).toHaveBeenCalledWith(message)
+  })
+
+  test('a list in a Modal that a list cell opens has its own scroller', async () => {
+    mount(list(1, { renderItem: renderModalList }))
+    await waitFor(() => {
+      const modalList = document.querySelector<HTMLElement>('[data-testid="modal-list"]')
+      expect(modalList).not.toBeNull()
+      expect(getComputedStyle(modalList as HTMLElement).overflowY).toBe('auto')
     })
   })
 

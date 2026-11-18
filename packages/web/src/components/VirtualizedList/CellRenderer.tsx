@@ -20,6 +20,7 @@ import type { StyleProp } from '../../style/types'
 import { invariant } from '../../utils/invariant'
 import { warnOnce } from '../../utils/warn'
 import { View } from '../View'
+import { VirtualizedListCellContextProvider } from './VirtualizedListContext'
 import type {
   CellRendererProps,
   ListRenderItem,
@@ -167,18 +168,22 @@ export function CellRenderer<ItemT>(props: CellProps<ItemT>): ReactElement {
     // The measuring View stays outside, so the list reads the offset of the cell with no layout
     // callback from the custom component.
     return (
-      <View ref={setElement} onFocusCapture={handleFocusCapture}>
-        <CellRendererComponent cellKey={cellKey} index={index} item={item} style={cellStyle}>
-          {element}
-          {separator}
-        </CellRendererComponent>
-      </View>
+      <VirtualizedListCellContextProvider cellKey={cellKey}>
+        <View ref={setElement} onFocusCapture={handleFocusCapture}>
+          <CellRendererComponent cellKey={cellKey} index={index} item={item} style={cellStyle}>
+            {element}
+            {separator}
+          </CellRendererComponent>
+        </View>
+      </VirtualizedListCellContextProvider>
     )
   }
   return (
-    <View ref={setElement} style={cellStyle} onFocusCapture={handleFocusCapture}>
-      {element}
-      {separator}
-    </View>
+    <VirtualizedListCellContextProvider cellKey={cellKey}>
+      <View ref={setElement} style={cellStyle} onFocusCapture={handleFocusCapture}>
+        {element}
+        {separator}
+      </View>
+    </VirtualizedListCellContextProvider>
   )
 }

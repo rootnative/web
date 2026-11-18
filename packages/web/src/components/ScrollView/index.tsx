@@ -22,6 +22,7 @@ import { webStyle } from '../../style/webStyle'
 import { hasDOM } from '../../utils/env'
 import { useViewElement, View } from '../View'
 import type { LayoutChangeEvent } from '../View/types'
+import { HORIZONTAL, ScrollViewContext, VERTICAL } from './ScrollViewContext'
 import { snapTarget } from './snap'
 import type { HostInstance } from '../View/types'
 import type {
@@ -507,7 +508,9 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
         contentContainerStyle,
       ]}
     >
-      {items}
+      <ScrollViewContext.Provider value={horizontal ? HORIZONTAL : VERTICAL}>
+        {items}
+      </ScrollViewContext.Provider>
     </View>
   )
 

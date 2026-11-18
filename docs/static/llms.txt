@@ -420,8 +420,13 @@ VirtualizedList
   stickyHeaderIndices, onRefresh, and the ScrollView props.
 - maintainVisibleContentPosition: as on ScrollView, and items added at the
   start move the window by their count. minIndexForVisible counts items.
-- Ignored: debug. Not there yet: a list in a cell of a list with the same
-  direction scrolls on its own.
+- Ignored: debug.
+- Nested lists: a list in a cell of a list with the same direction renders a
+  View with no scroller, as on native. The outer list sends it its scroll
+  events, and stops its own window at the first cell whose inner list has
+  more items. The scroll methods of an inner list warn and do nothing.
+  A list of the other direction keeps its own scroller. A list in a Modal
+  isn't nested. A list in a plain ScrollView of the same direction warns.
 - Ref: scrollToOffset, scrollToIndex, scrollToItem, scrollToEnd,
   recordInteraction, hasMore, getScrollRef, getScrollResponder,
   getScrollableNode, setNativeProps.

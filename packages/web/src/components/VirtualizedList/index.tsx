@@ -8,8 +8,10 @@ import {
   cloneElement,
   Fragment,
   isValidElement,
+  useContext,
   useImperativeHandle,
   useLayoutEffect,
+  useMemo,
   useState,
   type Dispatch,
   type ReactElement,
@@ -25,9 +27,10 @@ import { invariant } from '../../utils/invariant'
 import { warnOnce } from '../../utils/warn'
 import { RefreshControl } from '../RefreshControl'
 import { ScrollView } from '../ScrollView'
+import { ScrollViewContext } from '../ScrollView/ScrollViewContext'
 import type { ScrollEvent, ScrollViewInstance, ScrollViewProps } from '../ScrollView/types'
 import { View } from '../View'
-import type { LayoutChangeEvent, LayoutRectangle } from '../View/types'
+import type { LayoutChangeEvent, LayoutRectangle, ViewInstance, ViewProps } from '../View/types'
 import {
   CellRenderer,
   horizontallyInvertedStyle,
@@ -35,6 +38,7 @@ import {
   type SeparatorUpdaters,
 } from './CellRenderer'
 import { CellRenderMask } from './CellRenderMask'
+import { ChildListCollection } from './ChildListCollection'
 import { ListMetricsAggregator } from './ListMetricsAggregator'
 import type {
   CellMetricProps,
@@ -51,6 +55,14 @@ import type {
   VirtualizedListProps,
 } from './types'
 import { ViewabilityTracker } from './viewability'
+import {
+  VirtualizedListCellContextProvider,
+  VirtualizedListContext,
+  type ChildList,
+  type NestedScrollMetrics,
+  type OutermostList,
+  type VirtualizedListContextValue,
+} from './VirtualizedListContext'
 import { computeWindowedRenderLimits, keyExtractor as defaultKeyExtractor } from './VirtualizeUtils'
 
 export type { VirtualizedListInstance, VirtualizedListProps } from './types'
@@ -348,15 +360,41 @@ const controllers = new WeakMap<object, { cellMetricsApprox: (index: number) => 
 export const cellMetricsApprox = (instance: object, index: number): CellMetrics | undefined =>
   controllers.get(instance)?.cellMetricsApprox(index)
 
+// The offset of an element from the start of the flow of a container that holds it, from the
+// layout, so a transform such as `inverted` doesn't change it. Undefined when the container
+// doesn't hold the element.
+const offsetWithin = (
+  element: HTMLElement,
+  container: HTMLElement,
+  orientation: ListOrientation,
+): number | undefined => {
+  let x = 0
+  let y = 0
+  let node: Element | null = element
+  while (node instanceof HTMLElement && node !== container) {
+    x += node.offsetLeft
+    y += node.offsetTop
+    node = node.offsetParent
+  }
+  if (node !== container) return undefined
+  if (!orientation.horizontal) return y
+  return orientation.rtl ? container.offsetWidth - x - element.offsetWidth : x
+}
+
 // The fields and methods of React Native's class. React state holds only the window, and a render
 // reads the cell metrics from here.
-class ListController<ItemT> {
+class ListController<ItemT> implements ChildList, OutermostList {
   readonly listMetrics = new ListMetricsAggregator()
   readonly separatorUpdaters: SeparatorUpdaters = new Map()
   readonly instance: VirtualizedListInstance<ItemT>
   private props: ListProps<ItemT>
   private state: ListState
   private committed = false
+  // The context of the list around this one, if any.
+  private context: VirtualizedListContextValue | null = null
+  private registeredWith: VirtualizedListContextValue | null = null
+  private readonly nestedChildLists = new ChildListCollection<ChildList>()
+  private offsetFromParentVirtualizedList = 0
   private readonly setState: Dispatch<SetStateAction<ListState>>
   private readonly trackers: Array<TrackerEntry<ItemT>>
   private readonly cells = new Map<string, MountedCell>()
@@ -410,16 +448,49 @@ class ListController<ItemT> {
     return this.listMetrics.getCellMetricsApprox(index, this.props)
   }
 
-  // After each commit, with the state that the render used and the state that React stored.
-  // Returns the props of the commit before, if any.
+  hasMore(): boolean {
+    return this.hasMoreCells
+  }
+
+  // The functions that the context of this list gives to the lists in its cells.
+  readonly getScrollMetrics = (): NestedScrollMetrics => this.scrollMetrics
+
+  readonly getOutermostParentList = (): OutermostList =>
+    this.isNestedWithSameOrientation() && this.context !== null
+      ? this.context.getOutermostParentList()
+      : this
+
+  readonly registerAsNestedChild = ({ cellKey, list }: { cellKey: string; list: ChildList }) => {
+    this.nestedChildLists.add(list, cellKey)
+  }
+
+  readonly unregisterAsNestedChild = ({ list }: { list: ChildList }) => {
+    this.nestedChildLists.remove(list)
+  }
+
+  // The key of the cell that holds this list, or 'rootList'.
+  cellKey(): string {
+    return this.context?.cellKey || 'rootList'
+  }
+
+  // A list in a cell of a list of the same direction has no scroller: it renders a View, and the
+  // outer list sends it its scroll events.
+  isNestedWithSameOrientation(): boolean {
+    return this.context !== null && this.context.horizontal === (this.props.horizontal === true)
+  }
+
+  // After each commit, with the state that the render used, the state that React stored, and the
+  // context of the list around this one. Returns the props of the commit before, if any.
   commit(
     props: ListProps<ItemT>,
     state: ListState,
     stored: ListState,
+    context: VirtualizedListContextValue | null,
   ): ListProps<ItemT> | undefined {
     const previous = this.committed ? this.props : undefined
     this.props = props
     this.state = state
+    this.context = context
     this.committed = true
     this.hasMoreCells = state.cellsAroundViewport.last < props.getItemCount(props.data) - 1
     // A derived window goes into the state at once, so an update that didUpdate schedules starts
@@ -470,9 +541,15 @@ class ListController<ItemT> {
     if (initialScrollIndex != null && initialScrollIndex > 0 && content !== null) {
       this.contentLayoutChanged(content.offsetWidth, content.offsetHeight)
     }
+    if (this.isNestedWithSameOrientation() && this.context !== null) {
+      this.context.registerAsNestedChild({ cellKey: this.cellKey(), list: this })
+      this.registeredWith = this.context
+    }
   }
 
   detach(): void {
+    this.registeredWith?.unregisterAsNestedChild({ list: this })
+    this.registeredWith = null
     this.observer?.disconnect()
     this.observer = null
     if (this.updateTimeout !== undefined) clearTimeout(this.updateTimeout)
@@ -521,11 +598,16 @@ class ListController<ItemT> {
     if (scroller !== null) this.rtl = isRightToLeft(scroller)
     const { layout } = event.nativeEvent
     this.scrollMetrics.crossAxisLength = this.selectCrossAxisLength(layout)
-    // The client box, as in the scroll events: the scroll bars and borders don't count.
-    this.scrollMetrics.visibleLength =
-      scroller === null
-        ? this.selectLength(layout)
-        : this.selectLength({ width: scroller.clientWidth, height: scroller.clientHeight })
+    if (this.isNestedWithSameOrientation()) {
+      // The scroll metrics come from the outer list, relative to this list.
+      this.measureLayoutRelativeToContainingList()
+    } else {
+      // The client box, as in the scroll events: the scroll bars and borders don't count.
+      this.scrollMetrics.visibleLength =
+        scroller === null
+          ? this.selectLength(layout)
+          : this.selectLength({ width: scroller.clientWidth, height: scroller.clientHeight })
+    }
     this.props.onLayout?.(event)
     this.scheduleCellsToRenderUpdate()
     this.maybeCallOnEdgeReached()
@@ -536,7 +618,58 @@ class ListController<ItemT> {
   }
 
   readonly handleLayoutFooter = (event: LayoutChangeEvent): void => {
+    this.remeasureChildListsInCell(`${this.cellKey()}-footer`)
     this.footerLength = this.selectLength(event.nativeEvent.layout)
+  }
+
+  private remeasureChildListsInCell(cellKey: string): void {
+    this.nestedChildLists.forEachInCell(cellKey, (child) =>
+      child.measureLayoutRelativeToContainingList(),
+    )
+  }
+
+  // React Native measures the list against the scroller of the outermost list. Here the offset
+  // comes from the layout, against the content of that scroller.
+  measureLayoutRelativeToContainingList(): void {
+    const element = this.scrollableNode()
+    if (this.context === null || element === null) return
+    const outermost = this.context.getOutermostParentList()
+    const outerContent = outermost.contentElement()
+    const orientation = this.orientation()
+    const offset =
+      outerContent === null ? undefined : offsetWithin(element, outerContent, orientation)
+    if (offset === undefined) {
+      console.warn(
+        "VirtualizedList: Encountered an error while measuring a list's offset from its " +
+          'containing VirtualizedList.',
+      )
+      return
+    }
+    this.offsetFromParentVirtualizedList = offset
+    const size = { width: element.offsetWidth, height: element.offsetHeight }
+    const crossAxisLength = this.selectCrossAxisLength(size)
+    this.listMetrics.notifyListContentLayout({ layout: size, orientation })
+    const metrics = this.convertParentScrollMetrics(outermost.getScrollMetrics())
+    if (
+      this.scrollMetrics.crossAxisLength !== crossAxisLength ||
+      this.scrollMetrics.visibleLength !== metrics.visibleLength ||
+      this.scrollMetrics.offset !== metrics.offset
+    ) {
+      this.scrollMetrics.crossAxisLength = crossAxisLength
+      this.scrollMetrics.visibleLength = metrics.visibleLength
+      this.scrollMetrics.offset = metrics.offset
+      this.nestedChildLists.forEach((child) => child.measureLayoutRelativeToContainingList())
+    }
+  }
+
+  // The scroll metrics of the outer list, relative to the start of this list.
+  private convertParentScrollMetrics(metrics: NestedScrollMetrics) {
+    const offset = metrics.offset - this.offsetFromParentVirtualizedList
+    return {
+      visibleLength: metrics.visibleLength,
+      offset,
+      dOffset: offset - this.scrollMetrics.offset,
+    }
   }
 
   readonly handleContentSizeChange = (width: number, height: number): void => {
@@ -557,13 +690,23 @@ class ListController<ItemT> {
   }
 
   readonly handleScroll = (event: ScrollEvent): void => {
+    this.nestedChildLists.forEach((child) => child.handleScroll(event))
     this.props.onScroll?.(event)
     const timestamp = event.timeStamp
     const { layoutMeasurement, zoomScale } = event.nativeEvent
-    const crossAxisLength = this.selectCrossAxisLength(layoutMeasurement)
-    const visibleLength = this.selectLength(layoutMeasurement)
-    const offset = this.offsetFromScrollEvent(event)
-    const dOffset = offset - this.scrollMetrics.offset
+    let crossAxisLength = this.selectCrossAxisLength(layoutMeasurement)
+    let visibleLength = this.selectLength(layoutMeasurement)
+    let offset = this.offsetFromScrollEvent(event)
+    let dOffset = offset - this.scrollMetrics.offset
+    if (this.isNestedWithSameOrientation()) {
+      // Before the first layout, the list doesn't know its offset in the outer list.
+      if (this.listMetrics.getContentLength() === 0) return
+      ;({ visibleLength, offset, dOffset } = this.convertParentScrollMetrics({
+        visibleLength,
+        offset,
+      }))
+      crossAxisLength = this.scrollMetrics.crossAxisLength
+    }
     const dt = this.scrollMetrics.timestamp
       ? Math.max(1, timestamp - this.scrollMetrics.timestamp)
       : 1
@@ -585,19 +728,23 @@ class ListController<ItemT> {
   }
 
   readonly handleScrollBeginDrag = (event: ScrollEvent): void => {
+    this.nestedChildLists.forEach((child) => child.handleScrollBeginDrag(event))
     for (const entry of this.trackers) entry.tracker.recordInteraction()
     this.props.onScrollBeginDrag?.(event)
   }
 
   readonly handleScrollEndDrag = (event: ScrollEvent): void => {
+    this.nestedChildLists.forEach((child) => child.handleScrollEndDrag(event))
     this.props.onScrollEndDrag?.(event)
   }
 
   readonly handleMomentumScrollBegin = (event: ScrollEvent): void => {
+    this.nestedChildLists.forEach((child) => child.handleMomentumScrollBegin(event))
     this.props.onMomentumScrollBegin?.(event)
   }
 
   readonly handleMomentumScrollEnd = (event: ScrollEvent): void => {
+    this.nestedChildLists.forEach((child) => child.handleMomentumScrollEnd(event))
     this.scrollMetrics.velocity = 0
     this.props.onMomentumScrollEnd?.(event)
   }
@@ -664,7 +811,8 @@ class ListController<ItemT> {
   private scrollToOffset({ animated, offset }: ScrollToOffsetParams): void {
     const scroller = this.scroller
     if (scroller === null) return
-    if (typeof scroller.scrollTo !== 'function') {
+    // A nested list renders a View, which has no scrollTo on native. The DOM element has one.
+    if (typeof scroller.scrollTo !== 'function' || this.isNestedWithSameOrientation()) {
       console.warn(
         'No scrollTo method provided. This may be because you have two nested ' +
           'VirtualizedLists with the same orientation, or because you are ' +
@@ -679,7 +827,8 @@ class ListController<ItemT> {
     )
   }
 
-  private recordInteraction(): void {
+  recordInteraction(): void {
+    this.nestedChildLists.forEach((child) => child.recordInteraction())
     for (const entry of this.trackers) entry.tracker.recordInteraction()
     this.updateViewableItems(this.state.cellsAroundViewport)
   }
@@ -693,7 +842,7 @@ class ListController<ItemT> {
   }
 
   // The content container: the parent of the cells, or the inner view of the ScrollView.
-  private contentElement(): HTMLElement | null {
+  contentElement(): HTMLElement | null {
     const scroller = this.scroller
     if (scroller !== null && typeof scroller.getInnerViewNode === 'function') {
       return scroller.getInnerViewNode()
@@ -756,6 +905,7 @@ class ListController<ItemT> {
         this.listMetrics.notifyCellLayout({ cellIndex: cell.index, cellKey, orientation, layout })
       ) {
         changed = true
+        this.remeasureChildListsInCell(cellKey)
       }
     }
     return changed
@@ -939,30 +1089,48 @@ class ListController<ItemT> {
     }
 
     const maxToRenderPerBatch = props.maxToRenderPerBatch ?? DEFAULT_MAX_TO_RENDER_PER_BATCH
+    let next: CellRange
     if (props.disableVirtualization === true) {
       const endThreshold = props.onEndReachedThreshold ?? DEFAULT_EDGE_THRESHOLD_VIEWPORTS
       const renderAhead = distanceFromEnd < endThreshold * visibleLength ? maxToRenderPerBatch : 0
-      return {
+      next = {
         first: 0,
         last: Math.min(cellsAroundViewport.last + renderAhead, itemCount - 1),
       }
+    } else {
+      // A pending scroll can make a new window wrong, so the window stays.
+      if (pendingScrollUpdateCount > 0) {
+        return cellsAroundViewport.last >= itemCount
+          ? constrainToItemCount(cellsAroundViewport, props)
+          : cellsAroundViewport
+      }
+      next = computeWindowedRenderLimits(
+        props,
+        maxToRenderPerBatch,
+        props.windowSize ?? DEFAULT_WINDOW_SIZE,
+        cellsAroundViewport,
+        this.listMetrics,
+        this.scrollMetrics,
+      )
+      invariant(
+        next.last < itemCount,
+        'computeWindowedRenderLimits() should return range in-bounds',
+      )
     }
-    // A pending scroll can make a new window wrong, so the window stays.
-    if (pendingScrollUpdateCount > 0) {
-      return cellsAroundViewport.last >= itemCount
-        ? constrainToItemCount(cellsAroundViewport, props)
-        : cellsAroundViewport
+    // A cell with a nested list that has more items ends the window, so that list renders its
+    // items first. Without it, several nested lists mount and unmount their items at once.
+    if (this.nestedChildLists.size() > 0) {
+      next.last = this.findFirstChildWithMore(props, next.first, next.last) ?? next.last
     }
-    const next = computeWindowedRenderLimits(
-      props,
-      maxToRenderPerBatch,
-      props.windowSize ?? DEFAULT_WINDOW_SIZE,
-      cellsAroundViewport,
-      this.listMetrics,
-      this.scrollMetrics,
-    )
-    invariant(next.last < itemCount, 'computeWindowedRenderLimits() should return range in-bounds')
     return next
+  }
+
+  private findFirstChildWithMore(props: ListProps<ItemT>, first: number, last: number) {
+    for (let index = first; index <= last; index++) {
+      const cellKey = itemKeyAt(props, index)
+      if (this.nestedChildLists.anyInCell(cellKey, (child) => child.hasMore())) return index
+    }
+    return undefined
   }
 
   // A viewport of cells stays rendered on each side of the focused cell, so a tab to the next
@@ -1092,6 +1260,8 @@ export function VirtualizedList<ItemT>(props: VirtualizedListProps<ItemT>): Reac
 
   const [state, setState] = useState(() => initialState(listProps))
   const [list] = useState(() => new ListController(listProps, setState))
+  const listContext = useContext(VirtualizedListContext)
+  const scrollContext = useContext(ScrollViewContext)
   const current = deriveState(listProps, state)
   const itemCount = listProps.getItemCount(data)
 
@@ -1114,12 +1284,38 @@ export function VirtualizedList<ItemT>(props: VirtualizedListProps<ItemT>): Reac
           'Consider using `numColumns` with `FlatList` instead.',
       )
     }
+    if (
+      scrollContext != null &&
+      scrollContext.horizontal === horizontal &&
+      listContext == null &&
+      scrollViewProps.scrollEnabled !== false
+    ) {
+      warnOnce(
+        'VirtualizedList.nesting',
+        'VirtualizedLists should never be nested inside plain ScrollViews with the same ' +
+          'orientation because it can break windowing and other functionality - use another ' +
+          'VirtualizedList-backed container instead.',
+      )
+    }
   }
 
   useLayoutEffect(() => {
-    const prevProps = list.commit(listProps, current, state)
+    const prevProps = list.commit(listProps, current, state, listContext)
     if (prevProps !== undefined) list.didUpdate(prevProps)
   })
+
+  const contextValue = useMemo<VirtualizedListContextValue>(
+    () => ({
+      cellKey: null,
+      horizontal,
+      getScrollMetrics: list.getScrollMetrics,
+      getOutermostParentList: list.getOutermostParentList,
+      registerAsNestedChild: list.registerAsNestedChild,
+      unregisterAsNestedChild: list.unregisterAsNestedChild,
+    }),
+    [list, horizontal],
+  )
+  const listCellKey = listContext?.cellKey || 'rootList'
 
   useLayoutEffect(() => {
     list.attach()
@@ -1141,17 +1337,19 @@ export function VirtualizedList<ItemT>(props: VirtualizedListProps<ItemT>): Reac
   if (ListHeaderComponent != null) {
     if (stickyIndicesFromProps.has(0)) stickyHeaderIndicesForScroller.push(0)
     cells.push(
-      <View key="$header" style={StyleSheet.compose(inversionStyle, ListHeaderComponentStyle)}>
-        {renderListComponent(ListHeaderComponent)}
-      </View>,
+      <VirtualizedListCellContextProvider key="$header" cellKey={`${listCellKey}-header`}>
+        <View style={StyleSheet.compose(inversionStyle, ListHeaderComponentStyle)}>
+          {renderListComponent(ListHeaderComponent)}
+        </View>
+      </VirtualizedListCellContextProvider>,
     )
   }
 
   if (itemCount === 0 && ListEmptyComponent != null) {
     cells.push(
-      <Fragment key="$empty">
+      <VirtualizedListCellContextProvider key="$empty" cellKey={`${listCellKey}-empty`}>
         {renderEmptyComponent(ListEmptyComponent, inversionStyle, list.handleLayoutEmpty)}
-      </Fragment>,
+      </VirtualizedListCellContextProvider>,
     )
   }
 
@@ -1225,13 +1423,14 @@ export function VirtualizedList<ItemT>(props: VirtualizedListProps<ItemT>): Reac
 
   if (ListFooterComponent != null) {
     cells.push(
-      <View
-        key="$footer"
-        onLayout={list.handleLayoutFooter}
-        style={StyleSheet.compose(inversionStyle, ListFooterComponentStyle)}
-      >
-        {renderListComponent(ListFooterComponent)}
-      </View>,
+      <VirtualizedListCellContextProvider key="$footer" cellKey={`${listCellKey}-footer`}>
+        <View
+          onLayout={list.handleLayoutFooter}
+          style={StyleSheet.compose(inversionStyle, ListFooterComponentStyle)}
+        >
+          {renderListComponent(ListFooterComponent)}
+        </View>
+      </VirtualizedListCellContextProvider>,
     )
   }
 
@@ -1263,8 +1462,9 @@ export function VirtualizedList<ItemT>(props: VirtualizedListProps<ItemT>): Reac
     children: cells,
   }
 
+  let scroller: ReactElement
   if (renderScrollComponent !== undefined) {
-    return (
+    scroller = (
       <CustomScroller
         {...scrollProps}
         onRefresh={onRefresh}
@@ -1274,24 +1474,40 @@ export function VirtualizedList<ItemT>(props: VirtualizedListProps<ItemT>): Reac
         render={renderScrollComponent}
       />
     )
+  } else if (listContext != null && listContext.horizontal === horizontal) {
+    // React Native's `_defaultRenderScrollComponent` for a nested list: a View with no
+    // onContentSizeChange, so the outer list holds the only scroller.
+    const {
+      onContentSizeChange: _nestedOnContentSizeChange,
+      refreshControl: _refreshControl,
+      ...viewProps
+    } = scrollProps
+    const setView = setScroller as unknown as (instance: ViewInstance | null) => void
+    scroller = <View {...(viewProps as ViewProps)} ref={setView} />
+  } else {
+    // React Native's `_defaultRenderScrollComponent`: a `refreshControl` of the app wins.
+    let refreshControl = scrollProps.refreshControl
+    if (onRefresh != null) {
+      invariant(
+        typeof refreshing === 'boolean',
+        '`refreshing` prop must be set as a boolean in order to use `onRefresh`, but got `' +
+          JSON.stringify(refreshing ?? 'undefined') +
+          '`',
+      )
+      refreshControl ??= (
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          progressViewOffset={progressViewOffset}
+        />
+      )
+    }
+    scroller = <ScrollView {...scrollProps} refreshControl={refreshControl} ref={setScroller} />
   }
 
-  // React Native's `_defaultRenderScrollComponent`: a `refreshControl` of the app wins.
-  let refreshControl = scrollProps.refreshControl
-  if (onRefresh != null) {
-    invariant(
-      typeof refreshing === 'boolean',
-      '`refreshing` prop must be set as a boolean in order to use `onRefresh`, but got `' +
-        JSON.stringify(refreshing ?? 'undefined') +
-        '`',
-    )
-    refreshControl ??= (
-      <RefreshControl
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        progressViewOffset={progressViewOffset}
-      />
-    )
-  }
-  return <ScrollView {...scrollProps} refreshControl={refreshControl} ref={setScroller} />
+  return (
+    <VirtualizedListContext.Provider value={contextValue}>
+      {scroller}
+    </VirtualizedListContext.Provider>
+  )
 }

@@ -80,7 +80,17 @@ A server render has only the first `initialNumToRender` cells, as the first rend
 | `debug`                                                                                | Accepted and ignored. No overlay.                                                                                                                                                                      |
 | ScrollView props                                                                       | As on [`ScrollView`](/scrollview).                                                                                                                                                                     |
 
-Not there yet: a list inside a cell of a list with the same direction scrolls on its own. On native, the outer list scrolls both.
+## Nested lists
+
+A list inside a cell of a list with the same direction has no scroller of its own, as on native. It renders a `View`, and the outer list scrolls both:
+
+- The outer list sends its scroll events to the inner list, and the inner list renders the window of its items that the viewport shows.
+- The outer list renders its cells only up to the first cell whose inner list has more items, so the inner lists fill one after the other.
+- The scroll methods of an inner list, such as `scrollToIndex`, log a warning and do nothing, as on native. Scroll the outer list.
+
+A list of the other direction, such as a horizontal list in a vertical list, keeps its own scroller. A list inside a [`Modal`](/modal) isn't nested in a list outside the `Modal`.
+
+A list inside a plain [`ScrollView`](/scrollview) of the same direction logs a warning, as on native: its window can't follow the scroll. Make the outer scroller a list.
 
 ## Ref
 
