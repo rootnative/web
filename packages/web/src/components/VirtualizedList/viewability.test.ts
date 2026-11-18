@@ -1,18 +1,18 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import type { ViewToken } from './types'
-import { computeViewableIndices, ViewabilityTracker, type CellMetrics } from './viewability'
+import { computeViewableIndices, ViewabilityTracker, type MetricsAt } from './viewability'
 
 // Ten items of 100 px, one after the other.
-const uniform = (index: number): CellMetrics | undefined =>
+const uniform = (index: number): ReturnType<MetricsAt> =>
   index < 10 ? { offset: index * 100, length: 100 } : undefined
 
 // One 1000 px item: it fills any viewport.
-const big = (index: number): CellMetrics | undefined =>
+const big = (index: number): ReturnType<MetricsAt> =>
   index === 0 ? { offset: 0, length: 1000 } : undefined
 
 // The uniform list with item 2 not measured.
-const withoutTwo = (index: number): CellMetrics | undefined =>
+const withoutTwo = (index: number): ReturnType<MetricsAt> =>
   index === 2 ? undefined : uniform(index)
 
 const token = (index: number, isViewable: boolean): ViewToken<string> => ({
@@ -74,6 +74,21 @@ describe('computeViewableIndices', () => {
         viewAreaCoveragePercentThreshold: 10,
       }),
     ).toThrow(/exactly one/)
+  })
+
+  test('a render range limits the scan to the rendered cells', () => {
+    const config = { viewAreaCoveragePercentThreshold: 0 }
+    expect(computeViewableIndices(10, uniform, 100, 300, config, { first: 2, last: 9 })).toEqual([
+      2, 3,
+    ])
+  })
+
+  test('a render range past the item count warns and finds nothing', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const config = { viewAreaCoveragePercentThreshold: 0 }
+    expect(computeViewableIndices(10, uniform, 0, 300, config, { first: 0, last: 10 })).toEqual([])
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/Invalid render range/))
+    warn.mockRestore()
   })
 })
 

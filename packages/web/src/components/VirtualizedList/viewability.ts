@@ -1,8 +1,12 @@
-import type { ViewabilityConfig, ViewableItemsChangedInfo, ViewToken } from './types'
+import type {
+  CellMetrics,
+  CellRange,
+  ViewabilityConfig,
+  ViewableItemsChangedInfo,
+  ViewToken,
+} from './types'
 
-export type CellMetrics = { offset: number; length: number }
-
-export type MetricsAt = (index: number) => CellMetrics | undefined
+export type MetricsAt = (index: number) => Pick<CellMetrics, 'offset' | 'length'> | undefined
 
 const pixelsVisible = (top: number, bottom: number, viewport: number): number =>
   Math.max(0, Math.min(bottom, viewport) - Math.max(top, 0))
@@ -26,13 +30,15 @@ const isViewable = (
 
 // The item indices that the config counts as viewable, in order. The same
 // math as React Native's ViewabilityHelper: an item is viewable when it is
-// entirely visible, or when its visible part reaches the threshold.
+// entirely visible, or when its visible part reaches the threshold. A render range limits the
+// scan to the rendered cells.
 export const computeViewableIndices = (
   itemCount: number,
   metricsAt: MetricsAt,
   scrollOffset: number,
   viewport: number,
   config: ViewabilityConfig,
+  renderRange?: CellRange,
 ): number[] => {
   const { itemVisiblePercentThreshold, viewAreaCoveragePercentThreshold } = config
   const viewAreaMode = viewAreaCoveragePercentThreshold != null
@@ -44,8 +50,16 @@ export const computeViewableIndices = (
   }
 
   const viewable: number[] = []
+  if (itemCount === 0) return viewable
+  const { first, last } = renderRange ?? { first: 0, last: itemCount - 1 }
+  if (last >= itemCount) {
+    console.warn(
+      `Invalid render range computing viewability ${JSON.stringify({ renderRange, itemCount })}`,
+    )
+    return []
+  }
   let firstVisible = -1
-  for (let index = 0; index < itemCount; index++) {
+  for (let index = first; index <= last; index++) {
     const metrics = metricsAt(index)
     if (metrics === undefined) continue
     const top = Math.floor(metrics.offset - scrollOffset)
@@ -100,11 +114,19 @@ export class ViewabilityTracker<ItemT> {
     viewport: number,
     createViewToken: CreateViewToken<ItemT>,
     onViewableItemsChanged: (info: ViewableItemsChangedInfo<ItemT>) => void,
+    renderRange?: CellRange,
   ): void {
     if ((this.config.waitForInteraction === true && !this.interacted) || itemCount === 0) return
     if (metricsAt(0) === undefined) return
 
-    const next = computeViewableIndices(itemCount, metricsAt, scrollOffset, viewport, this.config)
+    const next = computeViewableIndices(
+      itemCount,
+      metricsAt,
+      scrollOffset,
+      viewport,
+      this.config,
+      renderRange,
+    )
     if (sameIndices(this.viewableIndices, next)) return
     this.viewableIndices = next
 

@@ -21,6 +21,7 @@ import { ScrollView } from '../ScrollView'
 import type { ScrollEvent, ScrollViewInstance, ScrollViewProps } from '../ScrollView/types'
 import { View } from '../View'
 import type { LayoutChangeEvent } from '../View/types'
+import { ViewabilityTracker, type MetricsAt } from '../VirtualizedList/viewability'
 import type {
   CellRendererProps,
   FlatListInstance,
@@ -34,7 +35,6 @@ import type {
   ViewableItemsChangedInfo,
   ViewToken,
 } from './types'
-import { ViewabilityTracker, type CellMetrics } from './viewability'
 
 export type {
   CellRendererProps,
@@ -327,7 +327,7 @@ export function FlatList<ItemT>(props: FlatListProps<ItemT>): ReactElement {
   }
 
   const metricsAt = useCallback(
-    (index: number): CellMetrics | undefined => {
+    (index: number): ReturnType<MetricsAt> => {
       const element = cells.get(index)
       const { horizontal: isHorizontal = false, getItemLayout, data: currentData } = latest.current
       if (element !== undefined) {
