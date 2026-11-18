@@ -50,6 +50,12 @@ const waitFor = async (check: () => void): Promise<void> => {
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
+// The list measures a new cell in a resize observer callback, after the next layout. Two
+// animation frames later, that callback has run in every engine.
+const nextFrames = async (): Promise<void> => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+}
+
 const Row = ({ item }: ListRenderItemInfo<Item>): ReactElement => (
   <View style={{ height: 50 }}>
     <Text>{item.label}</Text>
@@ -490,8 +496,9 @@ describe('FlatList', () => {
       <FlatList ref={ref} data={data} renderItem={renderRow} style={{ height: 100 }} />,
     )
     const element = scroller(container)
-    // With no getItemLayout, scrollToIndex needs the cells measured.
+    // With no getItemLayout, scrollToIndex needs the cells measured, not only rendered.
     await waitFor(() => expect(content(container).textContent).toContain('Item 19'))
+    await nextFrames()
 
     ref.current?.scrollToOffset({ offset: 75, animated: false })
     expect(element.scrollTop).toBe(75)
