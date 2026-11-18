@@ -207,6 +207,21 @@ export type {
 } from './components/View'
 export { VirtualizedList } from './components/VirtualizedList'
 export type { VirtualizedListInstance, VirtualizedListProps } from './components/VirtualizedList'
+export { SectionList } from './components/SectionList'
+export type {
+  SectionListData,
+  SectionListInstance,
+  SectionListProps,
+  SectionListRenderItem,
+  SectionListRenderItemInfo,
+} from './components/SectionList'
+export { VirtualizedSectionList } from './components/VirtualizedSectionList'
+export type {
+  ScrollToLocationParamsType,
+  SectionBase,
+  VirtualizedSectionListInstance,
+  VirtualizedSectionListProps,
+} from './components/VirtualizedSectionList'
 export { unstable_createElement } from './compat/createElement'
 export type { CreateElementProps } from './compat/createElement'
 export { findNodeHandle } from './compat/findNodeHandle'

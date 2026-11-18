@@ -13,6 +13,7 @@ import {
   useState,
   type ComponentType,
   type ReactElement,
+  type ReactNode,
 } from 'react'
 
 import { StyleSheet } from '../../apis/StyleSheet'
@@ -143,7 +144,7 @@ const createRenderRow = <ItemT,>(
   columnWrapperStyle: StyleProp<ViewStyle> | undefined,
   numColumns: number,
 ): ListRenderItem<Row<ItemT>> => {
-  const render = (info: ListRenderItemInfo<ItemT>): ReactElement | null => {
+  const render = (info: ListRenderItemInfo<ItemT>): ReactNode => {
     if (ListItemComponent != null) return <ListItemComponent {...info} />
     if (renderItem != null) return renderItem(info)
     return null

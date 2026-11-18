@@ -7,8 +7,11 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 ### Added
 
 - **`VirtualizedList`**, React Native's list that renders only a window of its items, with the same rules. The first render has `initialNumToRender` cells. Then the list adds `maxToRenderPerBatch` cells at a time, until the window covers `windowSize` viewports, and a spacer holds the place of the other cells. It reads the data through `getItem` and `getItemCount`, so the data can be any collection. With `getItemLayout`, the list measures no cell. Without it, one `ResizeObserver` measures the rendered cells. `scrollToIndex`, `onScrollToIndexFailed`, viewability, the edge callbacks, sticky headers, and horizontal right-to-left work as on native. A server render has the first `initialNumToRender` cells. See [VirtualizedList](https://rootnative.github.io/web/virtualizedlist).
+- **`SectionList` and `VirtualizedSectionList`**, on top of `VirtualizedList`, with React Native's rules: a header and a footer for each section, `renderItem` for each section, `ItemSeparatorComponent` between the items of a section, `SectionSeparatorComponent` around them, `stickySectionHeadersEnabled`, and `scrollToLocation`. As on Android, the section headers don't stick by default. The types `SectionListProps`, `SectionListData`, `SectionListRenderItem`, `SectionListRenderItemInfo`, `SectionListInstance`, `SectionBase`, `ScrollToLocationParamsType`, `VirtualizedSectionListProps`, and `VirtualizedSectionListInstance` come with them. See [SectionList](https://rootnative.github.io/web/sectionlist).
 
 ### Changed
+
+- **`ListRenderItem` returns any React node**, as in React Native's types. Before, it returned only an element or `null`.
 
 - **Breaking: `FlatList` renders a window of its items**, on top of `VirtualizedList`, as on native. Before, it rendered every item. What changes for your app:
   - A long list mounts faster, and an item outside the window unmounts, so keep its state in the item data or in a store.

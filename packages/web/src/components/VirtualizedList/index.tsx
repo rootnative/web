@@ -38,6 +38,7 @@ import { CellRenderMask } from './CellRenderMask'
 import { ListMetricsAggregator } from './ListMetricsAggregator'
 import type {
   CellMetricProps,
+  CellMetrics,
   CellRange,
   ListComponent,
   ListOrientation,
@@ -291,6 +292,13 @@ const createTrackers = <ItemT,>(props: VirtualizedListProps<ItemT>): Array<Track
 
 type MountedCell = { index: number; element: HTMLElement }
 
+const controllers = new WeakMap<object, { cellMetricsApprox: (index: number) => CellMetrics }>()
+
+// The metrics of one cell of a list, from its ref. React Native's VirtualizedSectionList reads them
+// through `__getListMetrics()`; the package doesn't export this.
+export const cellMetricsApprox = (instance: object, index: number): CellMetrics | undefined =>
+  controllers.get(instance)?.cellMetricsApprox(index)
+
 // The fields and methods of React Native's class. React state holds only the window, and a render
 // reads the cell metrics from here.
 class ListController<ItemT> {
@@ -346,6 +354,11 @@ class ListController<ItemT> {
       setNativeProps: (nativeProps) => this.scroller?.setNativeProps?.(nativeProps),
       hasMore: () => this.hasMoreCells,
     }
+    controllers.set(this.instance, this)
+  }
+
+  cellMetricsApprox(index: number): CellMetrics {
+    return this.listMetrics.getCellMetricsApprox(index, this.props)
   }
 
   // After each commit. Returns the props of the commit before, if any.

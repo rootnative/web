@@ -46,7 +46,7 @@ export type ListRenderItemInfo<ItemT> = {
   separators: ListSeparators
 }
 
-export type ListRenderItem<ItemT> = (info: ListRenderItemInfo<ItemT>) => ReactElement | null
+export type ListRenderItem<ItemT> = (info: ListRenderItemInfo<ItemT>) => ReactNode
 
 export type CellRendererProps<ItemT> = {
   cellKey: string

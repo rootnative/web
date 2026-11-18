@@ -74,7 +74,6 @@
     "Picker",
     "ProgressBar",
     "SafeAreaView",
-    "SectionList",
     "Touchable",
     "YellowBox",
     "render",

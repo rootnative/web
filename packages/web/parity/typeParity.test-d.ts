@@ -43,8 +43,6 @@ type ExportGaps =
   | 'ImageBackground'
   | 'LayoutAnimation'
   | 'SafeAreaView'
-  | 'SectionList'
-  | 'VirtualizedSectionList'
   | 'useAnimatedColor'
   | 'useAnimatedValue'
   | 'useAnimatedValueXY'
@@ -368,6 +366,20 @@ export type TypeParity = [
     PropDiff<
       Native.VirtualizedListProps,
       Web.VirtualizedListProps<unknown>,
+      ScrollViewGaps | 'children'
+    >
+  >,
+  None<
+    PropDiff<
+      Native.SectionListProps<unknown>,
+      Web.SectionListProps<unknown>,
+      ScrollViewGaps | 'children'
+    >
+  >,
+  None<
+    PropDiff<
+      Native.VirtualizedSectionListProps<unknown>,
+      Web.VirtualizedSectionListProps<unknown>,
       ScrollViewGaps | 'children'
     >
   >,

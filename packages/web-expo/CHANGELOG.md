@@ -9,6 +9,7 @@ Each version works only with the same version of `@rootnative/web`. The package 
 ### Changed
 
 - **`VirtualizedList` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
+- **`SectionList` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
 
 ## [0.0.0-alpha.6] - 2026-11-18
 

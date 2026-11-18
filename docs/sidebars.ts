@@ -30,6 +30,7 @@ const sidebars: SidebarsConfig = {
         'scrollview',
         'flatlist',
         'virtualizedlist',
+        'sectionlist',
         'refreshcontrol',
         'textinput',
         'switch',

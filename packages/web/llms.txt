@@ -80,9 +80,9 @@ or 'static' (each route renders on the server, then hydrates), Expo Router
 preset adds the Worklets plugin), image imports, react-native-svg.
 web-expo depends on the exact same version of @rootnative/web: install that
 version if the app imports @rootnative/web too.
-A name that @rootnative/web lacks (LayoutAnimation, SectionList,
-VirtualizedList, ImageBackground, SafeAreaView, and more) loads as a stub
-that throws "<Name> is not in @rootnative/web yet" on use;
+A name that @rootnative/web lacks (LayoutAnimation, ImageBackground,
+SafeAreaView, and more) loads as a stub that throws
+"<Name> is not in @rootnative/web yet" on use;
 node_modules/react-native-web/expo-exports.json lists them under "missing".
 
 ## Entry points
@@ -108,8 +108,9 @@ Import /dom and /server only in code that runs on the web.
 
 Components: View, Text, Image, Pressable, TouchableHighlight,
 TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, Button,
-ScrollView, FlatList, VirtualizedList, RefreshControl, TextInput, Switch,
-ActivityIndicator, Modal, KeyboardAvoidingView, StatusBar.
+ScrollView, FlatList, VirtualizedList, SectionList, VirtualizedSectionList,
+RefreshControl, TextInput, Switch, ActivityIndicator, Modal,
+KeyboardAvoidingView, StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AppState, Keyboard, Linking, Alert, Share, Vibration, Clipboard,
@@ -120,7 +121,7 @@ Compat, for libraries only, do not call in app code: unstable_createElement,
 findNodeHandle, TurboModuleRegistry.
 
 NOT IMPLEMENTED, do not import:
-- SectionList, LayoutAnimation.
+- LayoutAnimation.
 - Animated: ValueXY, Color, decay, sequence, stagger, loop, delay, subtract,
   divide, modulo, diffClamp, forkEvent, unforkEvent, attachNativeEvent,
   Animated.Image, Animated.ScrollView, Animated.FlatList,
@@ -417,6 +418,33 @@ VirtualizedList
 - Ref: scrollToOffset, scrollToIndex, scrollToItem, scrollToEnd,
   recordInteraction, hasMore, getScrollRef, getScrollResponder,
   getScrollableNode, setNativeProps.
+
+SectionList
+- On top of VirtualizedList, with the same window rules and props, apart
+  from data, getItem, getItemCount. One flat list of cells: a header cell,
+  a cell for each item, and a footer cell for each section.
+- sections: each has data, and can have key, renderItem,
+  ItemSeparatorComponent, keyExtractor, and any other field. A section's
+  renderItem and keyExtractor win. A cell key is "<section key>:<item key>".
+- renderItem gets item, index in the section, section, separators.
+  renderSectionHeader and renderSectionFooter get section.
+- ItemSeparatorComponent sits between the items of a section.
+  SectionSeparatorComponent sits above the first and below the last item.
+  Both get highlighted, leadingItem, trailingItem, section, leadingSection,
+  trailingSection.
+- stickySectionHeadersEnabled is false by default on the web (true only on
+  iOS in React Native).
+- getItemLayout gives the cells of the flat list, headers and footers too.
+- A server render has the first initialNumToRender cells, headers and
+  footers included.
+- onViewableItemsChanged tokens have the index in the section and section;
+  a header or footer has index null.
+- Ref: scrollToLocation({ sectionIndex, itemIndex }) (itemIndex 0 is the
+  section header, as on native), recordInteraction, getScrollableNode,
+  getScrollResponder, setNativeProps.
+- VirtualizedSectionList: the list under SectionList. It takes getItem and
+  getItemCount for the data of each section, so the data can be any
+  collection. Ref: scrollToLocation, getListRef.
 
 TextInput
 - An <input type="text">, or a <textarea> with multiline. No border, padding,
