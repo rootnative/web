@@ -408,3 +408,97 @@ describe('ScrollView', () => {
     expect(getComputedStyle(wrapper.firstElementChild as HTMLElement).overflowY).toBe('auto')
   })
 })
+
+const rows = (labels: string[]): React.ReactElement[] =>
+  labels.map((label) => <View key={label} data-label={label} style={{ height: 50 }} />)
+
+const columns = (labels: string[]): React.ReactElement[] =>
+  labels.map((label) => <View key={label} style={{ width: 50, height: 50 }} />)
+
+const labels = (prefix: string, count: number): string[] =>
+  Array.from({ length: count }, (_, i) => `${prefix}${i}`)
+
+// A header and 20 rows, in a 100 px viewport.
+const headerPage = (minIndexForVisible: number, headerHeight: number): React.ReactElement => (
+  <ScrollView maintainVisibleContentPosition={{ minIndexForVisible }} style={{ height: 100 }}>
+    <View key="header" style={{ height: headerHeight }} />
+    {rows(labels('a', 20))}
+  </ScrollView>
+)
+
+describe('ScrollView maintainVisibleContentPosition', () => {
+  test('keeps the first visible child in place when children are added above it', () => {
+    const config = { minIndexForVisible: 0 }
+    const { container, rerender } = render(
+      <ScrollView maintainVisibleContentPosition={config} style={{ height: 100 }}>
+        {rows(labels('a', 20))}
+      </ScrollView>,
+    )
+    const element = scroller(container)
+    element.scrollTop = 200
+    rerender(
+      <ScrollView maintainVisibleContentPosition={config} style={{ height: 100 }}>
+        {rows([...labels('n', 2), ...labels('a', 20)])}
+      </ScrollView>,
+    )
+    // Two rows of 50 px came above: a4 is still at the top.
+    expect(element.scrollTop).toBe(300)
+  })
+
+  test('autoscrollToTopThreshold goes to the start when the offset was near it', async () => {
+    const config = { minIndexForVisible: 0, autoscrollToTopThreshold: 50 }
+    const view = (children: React.ReactElement[]) => (
+      <ScrollView maintainVisibleContentPosition={config} style={{ height: 100 }}>
+        {children}
+      </ScrollView>
+    )
+    const near = render(view(rows(labels('a', 20))))
+    scroller(near.container).scrollTop = 20
+    near.rerender(view(rows([...labels('n', 2), ...labels('a', 20)])))
+    await waitFor(() => expect(scroller(near.container).scrollTop).toBe(0))
+
+    const far = render(view(rows(labels('a', 20))))
+    scroller(far.container).scrollTop = 200
+    far.rerender(view(rows([...labels('n', 2), ...labels('a', 20)])))
+    await frame()
+    expect(scroller(far.container).scrollTop).toBe(300)
+  })
+
+  test('minIndexForVisible skips the children before it', () => {
+    // At the top, the header is the first visible child, and it doesn't move when it grows.
+    const first = render(headerPage(0, 20))
+    first.rerender(headerPage(0, 120))
+    expect(scroller(first.container).scrollTop).toBe(0)
+
+    // With minIndexForVisible 1, a0 is the anchor, and it moves down by 100 px.
+    const second = render(headerPage(1, 20))
+    second.rerender(headerPage(1, 120))
+    expect(scroller(second.container).scrollTop).toBe(100)
+  })
+
+  test('a horizontal right-to-left ScrollView counts from the right edge', () => {
+    const config = { minIndexForVisible: 0 }
+    const view = (children: React.ReactElement[]) => (
+      <View style={{ direction: 'rtl' }}>
+        <ScrollView horizontal maintainVisibleContentPosition={config} style={{ width: 100 }}>
+          {children}
+        </ScrollView>
+      </View>
+    )
+    const { container, rerender } = render(view(columns(labels('a', 20))))
+    const element = container.firstElementChild?.firstElementChild as HTMLElement
+    element.scrollLeft = -200
+    rerender(view(columns([...labels('n', 2), ...labels('a', 20)])))
+    expect(element.scrollLeft).toBe(-300)
+  })
+
+  test('turns off the scroll anchoring of the browser', () => {
+    const { container } = render(
+      <ScrollView maintainVisibleContentPosition={{ minIndexForVisible: 0 }}>{tall(2)}</ScrollView>,
+    )
+    // An engine with no scroll anchoring has no overflow-anchor to turn off.
+    if (CSS.supports('overflow-anchor', 'none')) {
+      expect(getComputedStyle(scroller(container)).overflowAnchor).toBe('none')
+    }
+  })
+})

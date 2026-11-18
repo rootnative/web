@@ -73,16 +73,14 @@ A server render has only the first `initialNumToRender` cells, as the first rend
 | `onScrollToIndexFailed`                                                                | Fires when `scrollToIndex` asks for a cell after the last measured cell, and there's no `getItemLayout`. It gets `index`, `highestMeasuredFrameIndex`, and `averageItemLength`.                        |
 | `CellRendererComponent`                                                                | Renders inside the cell `View`, with `cellKey`, `index`, `item`, `style`, and the item and separator as children.                                                                                      |
 | `renderScrollComponent`                                                                | Renders the scroller. It gets the scroll props and `onRefresh`, `refreshing`, and `progressViewOffset`, without the ref. The list adds no `RefreshControl` then, as on native.                         |
+| `maintainVisibleContentPosition`                                                       | As on [`ScrollView`](/scrollview). When items come at the start, the window moves by their count, so it keeps the same items, as on native. `minIndexForVisible` counts the items, not the header.     |
 | `stickyHeaderIndices`                                                                  | As on [`ScrollView`](/scrollview). With a `ListHeaderComponent`, the header is index 0.                                                                                                                |
 | `onRefresh`, `refreshing`, `progressViewOffset`                                        | Wrap the scroller in a [`RefreshControl`](/refreshcontrol), as on native. With `onRefresh`, `refreshing` must be a boolean, or the list throws. A `refreshControl` prop wins.                          |
 | `extraData`                                                                            | A new value reports the viewable items again, as a new `data` does.                                                                                                                                    |
 | `debug`                                                                                | Accepted and ignored. No overlay.                                                                                                                                                                      |
 | ScrollView props                                                                       | As on [`ScrollView`](/scrollview).                                                                                                                                                                     |
 
-Not there yet:
-
-- `maintainVisibleContentPosition` has no effect.
-- A list inside a cell of a list with the same direction scrolls on its own. On native, the outer list scrolls both.
+Not there yet: a list inside a cell of a list with the same direction scrolls on its own. On native, the outer list scrolls both.
 
 ## Ref
 

@@ -59,6 +59,10 @@ const horizontalScrollerStyle = webStyle({
 
 const disabledScrollerStyle = webStyle({ overflowX: 'hidden', overflowY: 'hidden' })
 
+// With maintainVisibleContentPosition, the ScrollView moves the scroll offset itself, so the
+// scroll anchoring of the browser must not move it too.
+const noScrollAnchorStyle = webStyle({ overflowAnchor: 'none' })
+
 // The base of the box that wraps the scroller, as React Native's on Android.
 const refreshAreaStyle = Object.freeze({ flexGrow: 1, flexShrink: 1 })
 
@@ -105,6 +109,35 @@ const domScrollTo = (element: HTMLElement, options: ScrollToOptions): void => {
 }
 
 type Phase = 'idle' | 'drag' | 'released' | 'momentum'
+
+type FlowAxis = { horizontal: boolean; rtl: boolean }
+
+// The offset of a child from the start of the flow: from the top, from the left, or from the
+// right in a right-to-left row.
+const flowStart = (child: HTMLElement, content: HTMLElement, axis: FlowAxis): number => {
+  if (!axis.horizontal) return child.offsetTop
+  return axis.rtl ? content.offsetWidth - child.offsetLeft - child.offsetWidth : child.offsetLeft
+}
+
+const flowLength = (child: HTMLElement, axis: FlowAxis): number =>
+  axis.horizontal ? child.offsetWidth : child.offsetHeight
+
+// A right-to-left scroller has scrollLeft of 0 or less (CSSOM View).
+const scrollFlow = (scroller: HTMLElement, axis: FlowAxis): number => {
+  if (!axis.horizontal) return scroller.scrollTop
+  return axis.rtl ? -scroller.scrollLeft : scroller.scrollLeft
+}
+
+const setScrollFlow = (scroller: HTMLElement, axis: FlowAxis, offset: number): void => {
+  if (!axis.horizontal) scroller.scrollTop = offset
+  else scroller.scrollLeft = axis.rtl ? -offset : offset
+}
+
+type VisibleContentPosition = NonNullable<ScrollViewProps['maintainVisibleContentPosition']>
+
+// The child that maintainVisibleContentPosition keeps in place, and its offset when the
+// ScrollView saw it last.
+type ScrollAnchor = { element: HTMLElement; start: number }
 
 type ScrollHandlers = Pick<
   ScrollViewProps,
@@ -164,7 +197,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     fadingEdgeLength: _fadingEdgeLength,
     indicatorStyle: _indicatorStyle,
     keyboardShouldPersistTaps: _keyboardShouldPersistTaps,
-    maintainVisibleContentPosition: _maintainVisibleContentPosition,
+    maintainVisibleContentPosition,
     maximumZoomScale: _maximumZoomScale,
     minimumZoomScale: _minimumZoomScale,
     nestedScrollEnabled: _nestedScrollEnabled,
@@ -242,6 +275,67 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     snapping: false,
   })
   const stickyHeaders = useRef<HTMLElement[]>([])
+
+  // maintainVisibleContentPosition: the latest config, the axis, the sticky children, and the
+  // anchor.
+  const anchoring = useRef<{
+    config: VisibleContentPosition | undefined
+    axis: FlowAxis
+    sticky: ReadonlySet<number> | undefined
+    anchor: ScrollAnchor | null
+  }>({ config: undefined, axis: { horizontal, rtl: false }, sticky: undefined, anchor: null })
+
+  // React Native's rule: the first child at or after minIndexForVisible that is partly or fully
+  // visible. A sticky child moves while it's stuck, so it's never the anchor.
+  const captureAnchor = useCallback((): void => {
+    const state = anchoring.current
+    const element = scroller.current
+    const contentNode = content.current
+    state.anchor = null
+    if (state.config === undefined || element === null || contentNode === null) return
+    const offset = scrollFlow(element, state.axis)
+    const childNodes = contentNode.children
+    for (
+      let index = Math.max(0, state.config.minIndexForVisible);
+      index < childNodes.length;
+      index++
+    ) {
+      const child = childNodes[index]
+      if (!(child instanceof HTMLElement) || state.sticky?.has(index) === true) continue
+      const start = flowStart(child, contentNode, state.axis)
+      if (start + flowLength(child, state.axis) > offset || index === childNodes.length - 1) {
+        state.anchor = { element: child, start }
+        return
+      }
+    }
+  }, [])
+
+  // After the content changes: the scroll offset moves as far as the anchor moved.
+  const keepAnchorInPlace = useCallback((): void => {
+    const state = anchoring.current
+    const element = scroller.current
+    const contentNode = content.current
+    const { anchor, config, axis } = state
+    if (
+      config !== undefined &&
+      anchor !== null &&
+      element !== null &&
+      contentNode !== null &&
+      anchor.element.parentElement === contentNode
+    ) {
+      const delta = flowStart(anchor.element, contentNode, axis) - anchor.start
+      if (Math.abs(delta) > 0.5) {
+        const offset = scrollFlow(element, axis)
+        setScrollFlow(element, axis, offset + delta)
+        // An offset that was near the start before the change goes to the start, as on native.
+        const threshold = config.autoscrollToTopThreshold
+        if (threshold != null && offset <= threshold) {
+          domScrollTo(element, axis.horizontal ? { x: 0 } : { y: 0 })
+        }
+      }
+    }
+    captureAnchor()
+  }, [captureAnchor])
 
   const refreshEvent = useCallback((): ScrollEvent | null => {
     const state = sequence.current
@@ -326,6 +420,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     }
 
     handlers.current.onScroll?.(scrollEvent)
+    if (anchoring.current.config !== undefined) captureAnchor()
 
     if (!supportsScrollEnd) {
       if (state.timer !== undefined) clearTimeout(state.timer)
@@ -431,6 +526,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
         scrollerStyle,
         horizontal && horizontalScrollerStyle,
         !scrollEnabled && disabledScrollerStyle,
+        maintainVisibleContentPosition != null && noScrollAnchorStyle,
         split === undefined ? style : split.inner,
       ],
       onScroll: handleScroll,
@@ -452,6 +548,35 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     if (offsetY !== undefined) element.scrollTop = offsetY
     sequence.current.lastOffset = horizontal ? element.scrollLeft : element.scrollTop
   }, [offsetX, offsetY, horizontal])
+
+  // After each render: keep the anchor in place, then take the anchor again.
+  useLayoutEffect(() => {
+    const state = anchoring.current
+    const element = scroller.current
+    state.config = maintainVisibleContentPosition ?? undefined
+    state.sticky = stickySet
+    if (state.config === undefined) {
+      state.anchor = null
+      return
+    }
+    state.axis = {
+      horizontal,
+      rtl: horizontal && element !== null && getComputedStyle(element).direction === 'rtl',
+    }
+    keepAnchorInPlace()
+  })
+
+  // A change of the content that no render of the ScrollView makes, such as an image that loads.
+  const anchoringEnabled = maintainVisibleContentPosition != null
+  useEffect(() => {
+    const contentNode = content.current
+    if (!anchoringEnabled || contentNode === null || typeof ResizeObserver === 'undefined') {
+      return
+    }
+    const observer = new ResizeObserver(keepAnchorInPlace)
+    observer.observe(contentNode)
+    return () => observer.disconnect()
+  }, [anchoringEnabled, keepAnchorInPlace])
 
   useImperativeHandle(ref, () => {
     const element = scroller.current as HTMLElement

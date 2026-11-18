@@ -330,6 +330,11 @@ ScrollView
 - scrollEnabled={false} hides the overflow.
 - snapToInterval, snapToOffsets, pagingEnabled snap after the scroll settles.
 - stickyHeaderIndices: vertical only. keyboardDismissMode: on-drag works.
+- maintainVisibleContentPosition: after a content change, the scroll offset
+  moves as far as the first visible child at or after minIndexForVisible
+  moved, as on native. autoscrollToTopThreshold works. It turns off the
+  browser's own scroll anchoring; without the prop, the browser's anchoring
+  applies where the browser has it.
 - refreshControl wraps the scroller and gets the style props that place the
   box (margins, flex, sizes, position, transform, gaps), as on Android. The
   scroller fills it and keeps the rest of the style.
@@ -413,8 +418,10 @@ VirtualizedList
   viewabilityConfig, viewabilityConfigCallbackPairs, onEndReached,
   onStartReached, CellRendererComponent, renderScrollComponent,
   stickyHeaderIndices, onRefresh, and the ScrollView props.
-- Ignored: debug. No effect yet: maintainVisibleContentPosition. A list in a
-  cell of a list with the same direction scrolls on its own.
+- maintainVisibleContentPosition: as on ScrollView, and items added at the
+  start move the window by their count. minIndexForVisible counts items.
+- Ignored: debug. Not there yet: a list in a cell of a list with the same
+  direction scrolls on its own.
 - Ref: scrollToOffset, scrollToIndex, scrollToItem, scrollToEnd,
   recordInteraction, hasMore, getScrollRef, getScrollResponder,
   getScrollableNode, setNativeProps.

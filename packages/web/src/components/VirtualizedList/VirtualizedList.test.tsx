@@ -352,6 +352,30 @@ describe('VirtualizedList', () => {
     ).toThrow(/"getItemCount" prop must be provided/)
   })
 
+  test('maintainVisibleContentPosition keeps the items in place when items come at the start', async () => {
+    const config = { minIndexForVisible: 0 }
+    const before = items(100)
+    const added = Array.from({ length: 10 }, (_, index) => ({
+      key: `n${index}`,
+      label: `New ${index}`,
+    }))
+    const props = { getItemLayout, maintainVisibleContentPosition: config }
+    const { container, rerender } = mount(list(100, { ...props, data: before }))
+    const element = scroller(container)
+    element.scrollTop = 1000
+    await waitFor(() => expect(rendered(container)).toContain(23))
+
+    rerender(list(110, { ...props, data: [...added, ...before] }))
+    // Ten rows of 50 px came at the start: Item 20 is still at the top.
+    expect(element.scrollTop).toBe(1500)
+    await waitFor(() => {
+      const item20 = Array.from(container.querySelectorAll('[data-index]')).find(
+        (cell) => cell.textContent === 'Item 20',
+      )
+      expect(item20?.getBoundingClientRect().top).toBeCloseTo(element.getBoundingClientRect().top)
+    })
+  })
+
   test('a server render has the first batch and the spacers', () => {
     const html = renderToString(
       <StyleRegistryProvider registry={createStyleRegistry()}>

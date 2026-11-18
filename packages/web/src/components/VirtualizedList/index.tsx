@@ -77,8 +77,11 @@ type ListProps<ItemT> = VirtualizedListProps<ItemT> & CellMetricProps<ItemT, unk
 type ListState = {
   cellsAroundViewport: CellRange
   renderMask: CellRenderMask
+  // The key of the item at minIndexForVisible, to find items added at the start for
+  // maintainVisibleContentPosition.
+  firstVisibleItemKey: string | null
   // Above 0, the scroll metrics are stale: the list waits for the scroll event of its initial
-  // scroll.
+  // scroll, or of a maintainVisibleContentPosition move.
   pendingScrollUpdateCount: number
 }
 
@@ -179,24 +182,70 @@ const constrainToItemCount = <ItemT,>(cells: CellRange, props: ListProps<ItemT>)
   }
 }
 
+const firstVisibleItemKeyOf = <ItemT,>(props: ListProps<ItemT>): string | null => {
+  const minIndexForVisible = props.maintainVisibleContentPosition?.minIndexForVisible ?? 0
+  return props.getItemCount(props.data) > minIndexForVisible
+    ? itemKeyAt(props, minIndexForVisible)
+    : null
+}
+
 const initialState = <ItemT,>(props: ListProps<ItemT>): ListState => {
   const region = initialRenderRegion(props)
   return {
     cellsAroundViewport: region,
     renderMask: createRenderMask(props, region),
+    firstVisibleItemKey: firstVisibleItemKeyOf(props),
     pendingScrollUpdateCount:
       props.initialScrollIndex != null && props.initialScrollIndex > 0 ? 1 : 0,
   }
 }
 
-// React Native's `getDerivedStateFromProps`: a new item count can make the window stale.
+const findItemIndexWithKey = <ItemT,>(
+  props: ListProps<ItemT>,
+  key: string,
+  hint: number,
+): number | null => {
+  const itemCount = props.getItemCount(props.data)
+  if (hint >= 0 && hint < itemCount && itemKeyAt(props, hint) === key) return hint
+  for (let index = 0; index < itemCount; index++) {
+    if (itemKeyAt(props, index) === key) return index
+  }
+  return null
+}
+
+// React Native's `getDerivedStateFromProps`: a new item count can make the window stale. With
+// maintainVisibleContentPosition, items added at the start move the window by their count, so
+// it keeps the same items.
 const deriveState = <ItemT,>(props: ListProps<ItemT>, state: ListState): ListState => {
-  if (props.getItemCount(props.data) === state.renderMask.numCells()) return state
-  const cellsAroundViewport = constrainToItemCount(state.cellsAroundViewport, props)
+  const itemCount = props.getItemCount(props.data)
+  if (itemCount === state.renderMask.numCells()) return state
+
+  let adjustment: number | null = null
+  const minIndexForVisible = props.maintainVisibleContentPosition?.minIndexForVisible ?? 0
+  const firstVisibleItemKey = firstVisibleItemKeyOf(props)
+  const previousKey = state.firstVisibleItemKey
+  if (
+    props.maintainVisibleContentPosition != null &&
+    previousKey != null &&
+    firstVisibleItemKey != null &&
+    firstVisibleItemKey !== previousKey
+  ) {
+    // The fast path: items added at the start.
+    const hint = itemCount - state.renderMask.numCells() + minIndexForVisible
+    const index = findItemIndexWithKey(props, previousKey, hint)
+    adjustment = index != null ? index - minIndexForVisible : null
+  }
+
+  const { first, last } = state.cellsAroundViewport
+  const cellsAroundViewport = constrainToItemCount(
+    adjustment != null ? { first: first + adjustment, last: last + adjustment } : { first, last },
+    props,
+  )
   return {
     cellsAroundViewport,
     renderMask: createRenderMask(props, cellsAroundViewport),
-    pendingScrollUpdateCount: state.pendingScrollUpdateCount,
+    firstVisibleItemKey,
+    pendingScrollUpdateCount: adjustment != null ? 1 : state.pendingScrollUpdateCount,
   }
 }
 
@@ -361,13 +410,22 @@ class ListController<ItemT> {
     return this.listMetrics.getCellMetricsApprox(index, this.props)
   }
 
-  // After each commit. Returns the props of the commit before, if any.
-  commit(props: ListProps<ItemT>, state: ListState): ListProps<ItemT> | undefined {
+  // After each commit, with the state that the render used and the state that React stored.
+  // Returns the props of the commit before, if any.
+  commit(
+    props: ListProps<ItemT>,
+    state: ListState,
+    stored: ListState,
+  ): ListProps<ItemT> | undefined {
     const previous = this.committed ? this.props : undefined
     this.props = props
     this.state = state
     this.committed = true
     this.hasMoreCells = state.cellsAroundViewport.last < props.getItemCount(props.data) - 1
+    // A derived window goes into the state at once, so an update that didUpdate schedules starts
+    // from it, and doesn't derive the window again. A shift of maintainVisibleContentPosition
+    // would apply twice.
+    if (state !== stored) this.setState((value) => (value === stored ? state : value))
     return previous
   }
 
@@ -385,6 +443,18 @@ class ListController<ItemT> {
     // With getItemLayout, a scroll can pass the last rendered cell with no layout change, so the
     // edge check runs again after more cells render.
     if (getItemLayout != null) this.maybeCallOnEdgeReached()
+    // A move of maintainVisibleContentPosition that didn't change the scroll offset fires no
+    // scroll event, so the list ends the wait itself.
+    const { initialScrollIndex } = this.props
+    const initialScrollDone =
+      this.hasTriggeredInitialScrollToIndex || initialScrollIndex == null || initialScrollIndex <= 0
+    if (
+      this.state.pendingScrollUpdateCount > 0 &&
+      initialScrollDone &&
+      this.currentScrollOffset() === this.scrollMetrics.offset
+    ) {
+      this.endPendingScrollUpdate()
+    }
   }
 
   attach(): void {
@@ -971,6 +1041,7 @@ export function VirtualizedList<ItemT>(props: VirtualizedListProps<ItemT>): Reac
     initialScrollIndex,
     windowSize,
     disableVirtualization,
+    maintainVisibleContentPosition,
     ItemSeparatorComponent,
     ListEmptyComponent,
     ListHeaderComponent,
@@ -1046,7 +1117,7 @@ export function VirtualizedList<ItemT>(props: VirtualizedListProps<ItemT>): Reac
   }
 
   useLayoutEffect(() => {
-    const prevProps = list.commit(listProps, current)
+    const prevProps = list.commit(listProps, current, state)
     if (prevProps !== undefined) list.didUpdate(prevProps)
   })
 
@@ -1169,6 +1240,16 @@ export function VirtualizedList<ItemT>(props: VirtualizedListProps<ItemT>): Reac
     ...scrollViewProps,
     contentContainerStyle,
     horizontal,
+    // The header is a child of the ScrollView too.
+    maintainVisibleContentPosition:
+      maintainVisibleContentPosition != null
+        ? {
+            ...maintainVisibleContentPosition,
+            minIndexForVisible:
+              maintainVisibleContentPosition.minIndexForVisible +
+              (ListHeaderComponent != null ? 1 : 0),
+          }
+        : undefined,
     onContentSizeChange: list.handleContentSizeChange,
     onLayout: list.handleLayout,
     onScroll: list.handleScroll,
