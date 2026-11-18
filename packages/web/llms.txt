@@ -108,8 +108,8 @@ Import /dom and /server only in code that runs on the web.
 
 Components: View, Text, Image, Pressable, TouchableHighlight,
 TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, Button,
-ScrollView, FlatList, RefreshControl, TextInput, Switch, ActivityIndicator,
-Modal, KeyboardAvoidingView, StatusBar.
+ScrollView, FlatList, VirtualizedList, RefreshControl, TextInput, Switch,
+ActivityIndicator, Modal, KeyboardAvoidingView, StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AppState, Keyboard, Linking, Alert, Share, Vibration, Clipboard,
@@ -120,7 +120,7 @@ Compat, for libraries only, do not call in app code: unstable_createElement,
 findNodeHandle, TurboModuleRegistry.
 
 NOT IMPLEMENTED, do not import:
-- SectionList, VirtualizedList, LayoutAnimation.
+- SectionList, LayoutAnimation.
 - Animated: ValueXY, Color, decay, sequence, stagger, loop, delay, subtract,
   divide, modulo, diffClamp, forkEvent, unforkEvent, attachNativeEvent,
   Animated.Image, Animated.ScrollView, Animated.FlatList,
@@ -377,6 +377,33 @@ FlatList
 - Ref: scrollToOffset, scrollToIndex (a row index with numColumns),
   scrollToItem, scrollToEnd, recordInteraction, getScrollableNode.
   onScrollToIndexFailed never fires.
+
+VirtualizedList
+- Renders a window of cells around the viewport. A spacer takes the place of
+  the other cells. A cell outside the window unmounts and loses its state.
+- getItem(data, index) and getItemCount(data) are required. data can be any
+  collection.
+- The first render has initialNumToRender cells (10). Then batches of
+  maxToRenderPerBatch cells (10), up to windowSize viewports (21).
+  updateCellsBatchingPeriod (50 ms) spaces the batches.
+- A server render has only the first initialNumToRender cells. When every
+  item must be in the HTML, set initialNumToRender to the item count.
+- getItemLayout: no measure, exact spacers, and scrollToIndex reaches any
+  cell. Without it, the content ends at the last measured cell, and
+  scrollToIndex past that cell calls onScrollToIndexFailed, or throws when
+  the list has no onScrollToIndexFailed.
+- Works as on native: renderItem, ListItemComponent, keyExtractor,
+  ItemSeparatorComponent, ListHeaderComponent, ListFooterComponent,
+  ListEmptyComponent, horizontal (right-to-left too), inverted,
+  initialScrollIndex, disableVirtualization, onViewableItemsChanged,
+  viewabilityConfig, viewabilityConfigCallbackPairs, onEndReached,
+  onStartReached, CellRendererComponent, renderScrollComponent,
+  stickyHeaderIndices, onRefresh, and the ScrollView props.
+- Ignored: debug. No effect yet: maintainVisibleContentPosition. A list in a
+  cell of a list with the same direction scrolls on its own.
+- Ref: scrollToOffset, scrollToIndex, scrollToItem, scrollToEnd,
+  recordInteraction, hasMore, getScrollRef, getScrollResponder,
+  getScrollableNode, setNativeProps.
 
 TextInput
 - An <input type="text">, or a <textarea> with multiline. No border, padding,

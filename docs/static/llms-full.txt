@@ -328,7 +328,7 @@ Expo's libraries import `UIManager`, `NativeModules`, `LogBox`, `DeviceEventEmit
 
 A name of `react-native` that `@rootnative/web` doesn't have yet loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `LayoutAnimation is not in @rootnative/web yet`.
 
-The largest ones today are `LayoutAnimation`, `SectionList`, `VirtualizedList`, `ImageBackground`, and `SafeAreaView`. The file `node_modules/react-native-web/expo-exports.json` lists all of them under `missing`.
+The largest ones today are `LayoutAnimation`, `SectionList`, `ImageBackground`, and `SafeAreaView`. The file `node_modules/react-native-web/expo-exports.json` lists all of them under `missing`.
 
 ---
 
@@ -342,20 +342,20 @@ The latest release is [`0.0.0-alpha.6`](https://www.npmjs.com/package/@rootnativ
 
 | Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`Modal`](https://rootnative.github.io/web/modal), [`KeyboardAvoidingView`](https://rootnative.github.io/web/keyboardavoidingview), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                                          |
+| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`VirtualizedList`](https://rootnative.github.io/web/virtualizedlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`Modal`](https://rootnative.github.io/web/modal), [`KeyboardAvoidingView`](https://rootnative.github.io/web/keyboardavoidingview), [`StatusBar`](https://rootnative.github.io/web/statusbar)                   |
 | APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Keyboard`](https://rootnative.github.io/web/keyboard), [`Linking`](https://rootnative.github.io/web/linking), [`Alert`](https://rootnative.github.io/web/alert), [`Share`](https://rootnative.github.io/web/share), [`Vibration`](https://rootnative.github.io/web/vibration), [`Clipboard`](https://rootnative.github.io/web/clipboard), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`Animated`](https://rootnative.github.io/web/animated), [`Easing`](https://rootnative.github.io/web/easing), [`usePressability`](https://rootnative.github.io/web/usepressability) |
 | Compat     | [`unstable_createElement`](https://rootnative.github.io/web/compat), [`findNodeHandle`](https://rootnative.github.io/web/compat), [`TurboModuleRegistry`](https://rootnative.github.io/web/compat), and the entries `@rootnative/web/assets-registry` and `@rootnative/web/style`. Libraries import them, your app doesn't.                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Server     | `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, `StyleRegistry`, from `@rootnative/web/server`. See [Server rendering](https://rootnative.github.io/web/server-rendering).                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Tooling    | [`rootnative()`](https://rootnative.github.io/web/vite-plugin), the Vite plugin, from `@rootnative/web/vite`, and [`@rootnative/web-expo`](https://rootnative.github.io/web/expo), for an Expo app, also with Expo Router                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
-`FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now.
+`FlatList` renders every item. It has no virtualizer yet, so keep long lists short for now, or use [`VirtualizedList`](https://rootnative.github.io/web/virtualizedlist), which renders a window of its items.
 
 ## Planned, not written
 
 **Don't import these yet.** They aren't in the package.
 
-- **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `VirtualizedList`, `LayoutAnimation`, and the rest of [`Animated`](https://rootnative.github.io/web/animated#not-there-yet).
+- **Lists and motion:** a virtualizer for `FlatList`, `SectionList`, `LayoutAnimation`, and the rest of [`Animated`](https://rootnative.github.io/web/animated#not-there-yet).
 - **Tooling:** a Next.js plugin, and templates for a Vite app with and without server rendering.
 
 ## Out of scope
@@ -1432,6 +1432,103 @@ The ref is an object with the React Native methods:
 | `flashScrollIndicators()`, `setNativeProps()`                         | Do nothing.                                                |
 
 `onScrollToIndexFailed` never fires, because every cell is in the DOM.
+
+---
+
+# `VirtualizedList`
+
+React Native's list that renders only a window of cells around the viewport. A spacer takes the place of the other cells. The list reads the data through `getItem` and `getItemCount`, so the data can be any collection, not only an array.
+
+```tsx
+import { Text, VirtualizedList } from 'react-native'
+
+export function Messages({ messages }) {
+  return (
+    <VirtualizedList
+      data={messages}
+      getItemCount={(data) => data.size}
+      getItem={(data, index) => data.get(index)}
+      keyExtractor={(message) => message.id}
+      renderItem={({ item }) => <Text>{item.text}</Text>}
+    />
+  )
+}
+```
+
+## The window
+
+The list follows the rules of React Native:
+
+1. The first render has the first `initialNumToRender` cells, or the cells from `initialScrollIndex`.
+2. After the first layout, the list adds `maxToRenderPerBatch` cells at a time, until the window covers `windowSize` viewports: the viewport, and half of the other viewports on each side of it.
+3. A scroll moves the window. When the viewport comes near cells that aren't rendered, the next batch renders at once. Otherwise it waits `updateCellsBatchingPeriod`.
+
+Some cells stay rendered outside the window:
+
+- The first `initialNumToRender` cells, so a scroll back to the top shows them at once. With an `initialScrollIndex` above 0, they don't stay.
+- The closest sticky header before the window.
+- A viewport of cells on each side of the cell that has the focus, so the Tab key finds the next cell.
+
+A cell outside the window unmounts, and its state goes with it. Keep the state in the item data or in a store.
+
+### Cell sizes
+
+With `getItemLayout`, the list knows the place of each cell at once. It measures nothing, each spacer has the exact size, and `scrollToIndex` reaches any cell.
+
+Without `getItemLayout`, the list measures the rendered cells, and it estimates the other cells from the average length. The content then ends at the last measured cell. A scroll stops there, and the next batch moves the end further.
+
+> **NOTE: Server rendering**
+>
+> A server render has only the first `initialNumToRender` cells, as the first render on native. When every item must be in the HTML, for example for SEO, set `initialNumToRender` to the item count.
+
+## Props
+
+| Prop                                                                                   | On the web                                                                                                                                                                                             |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `data`, `getItem`, `getItemCount`                                                      | `getItem(data, index)` and `getItemCount(data)` read the data. The list throws without one of them.                                                                                                    |
+| `renderItem`, `ListItemComponent`                                                      | As on native. With both, `ListItemComponent` wins, and the list logs a warning.                                                                                                                        |
+| `keyExtractor`                                                                         | The default uses `key`, then `id`, then the index, as on native. An item with no `key` or `id` logs a warning.                                                                                         |
+| `initialNumToRender`, `maxToRenderPerBatch`, `windowSize`, `updateCellsBatchingPeriod` | As on native. The defaults are 10 cells, 10 cells, 21 viewports, and 50 ms.                                                                                                                            |
+| `getItemLayout`                                                                        | Gives the `length` and `offset` of each cell. See [Cell sizes](#cell-sizes).                                                                                                                           |
+| `initialScrollIndex`                                                                   | The first render starts at that cell, and the first paint shows it. Without `getItemLayout`, nothing is above the cell until the cells above it render.                                                |
+| `disableVirtualization`                                                                | No spacers, and no cell unmounts. Near the end, the list adds a batch.                                                                                                                                 |
+| `ItemSeparatorComponent`                                                               | Gets `highlighted` and `leadingItem`. `separators.highlight()`, `unhighlight()`, and `updateProps()` in `renderItem` work.                                                                             |
+| `ListHeaderComponent`, `ListFooterComponent`, `ListEmptyComponent`                     | A component or an element. `ListHeaderComponentStyle` and `ListFooterComponentStyle` style their wrappers. `ListEmptyComponent` gets the flip of `inverted` in its `style`, as on native.              |
+| `horizontal`                                                                           | A row of cells. In a right-to-left direction, the first cell is at the right edge, and offsets count from there, as on native. The list reads the direction of its scroll element.                     |
+| `inverted`                                                                             | Flips the scroller and each cell with a transform, as on native, so the first cell is at the bottom.                                                                                                   |
+| `onViewableItemsChanged`, `viewabilityConfig`, `viewabilityConfigCallbackPairs`        | The React Native rules. Only rendered cells count.                                                                                                                                                     |
+| `onEndReached`, `onEndReachedThreshold`                                                | Fires once per content length, when the window has the last cell and the scroll comes within the threshold of the end. The threshold is a share of the viewport. Without one, it's 2 px, as on native. |
+| `onStartReached`, `onStartReachedThreshold`                                            | The same, at the start.                                                                                                                                                                                |
+| `onScrollToIndexFailed`                                                                | Fires when `scrollToIndex` asks for a cell after the last measured cell, and there's no `getItemLayout`. It gets `index`, `highestMeasuredFrameIndex`, and `averageItemLength`.                        |
+| `CellRendererComponent`                                                                | Renders inside the cell `View`, with `cellKey`, `index`, `item`, `style`, and the item and separator as children.                                                                                      |
+| `renderScrollComponent`                                                                | Renders the scroller. It gets the scroll props and `onRefresh`, `refreshing`, and `progressViewOffset`, without the ref. The list adds no `RefreshControl` then, as on native.                         |
+| `stickyHeaderIndices`                                                                  | As on [`ScrollView`](https://rootnative.github.io/web/scrollview). With a `ListHeaderComponent`, the header is index 0.                                                                                                                |
+| `onRefresh`, `refreshing`, `progressViewOffset`                                        | Wrap the scroller in a [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), as on native. With `onRefresh`, `refreshing` must be a boolean, or the list throws. A `refreshControl` prop wins.                          |
+| `extraData`                                                                            | A new value reports the viewable items again, as a new `data` does.                                                                                                                                    |
+| `debug`                                                                                | Accepted and ignored. No overlay.                                                                                                                                                                      |
+| ScrollView props                                                                       | As on [`ScrollView`](https://rootnative.github.io/web/scrollview).                                                                                                                                                                     |
+
+Not there yet:
+
+- `maintainVisibleContentPosition` has no effect.
+- A list inside a cell of a list with the same direction scrolls on its own. On native, the outer list scrolls both.
+
+## Ref
+
+The ref is an object with the React Native methods:
+
+| Method                                                         | On the web                                                                                           |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `scrollToOffset({ offset, animated })`                         | As on native.                                                                                        |
+| `scrollToIndex({ index, viewPosition, viewOffset, animated })` | As on native. A fractional index scrolls into the cell. See `onScrollToIndexFailed` for limits.      |
+| `scrollToItem({ item, viewPosition, viewOffset, animated })`   | Finds the item through `getItem` and scrolls to it.                                                  |
+| `scrollToEnd({ animated })`                                    | Scrolls to the end of the last cell and the footer. Without `getItemLayout`, the end is an estimate. |
+| `recordInteraction()`                                          | Starts viewability for `waitForInteraction`.                                                         |
+| `hasMore()`                                                    | `true` while the window doesn't reach the last item.                                                 |
+| `getScrollRef()`, `getScrollResponder()`                       | The [`ScrollView`](https://rootnative.github.io/web/scrollview) ref.                                                                 |
+| `getScrollableNode()`                                          | The scroll element.                                                                                  |
+| `setNativeProps({ style })`                                    | Writes the style on the scroll element.                                                              |
+| `flashScrollIndicators()`                                      | Does nothing, as on `ScrollView`.                                                                    |
 
 ---
 
@@ -2660,14 +2757,14 @@ The element gets no style reset. A `div` from this function is a plain `div`, no
 
 On native, `findNodeHandle` returns the number of a view. On the web, it returns the DOM element.
 
-| Input                                           | Result                 |
-| ----------------------------------------------- | ---------------------- |
-| A `ref` object                                  | Its element, or `null` |
-| A DOM element                                   | The same element       |
-| A [`ScrollView`](https://rootnative.github.io/web/scrollview) or `FlatList` ref | The scroll element     |
-| A number                                        | The same number        |
-| A class component instance                      | `null`                 |
-| `null`, `undefined`, or any other value         | `null`                 |
+| Input                                                               | Result                 |
+| ------------------------------------------------------------------- | ---------------------- |
+| A `ref` object                                                      | Its element, or `null` |
+| A DOM element                                                       | The same element       |
+| A [`ScrollView`](https://rootnative.github.io/web/scrollview), `FlatList`, or `VirtualizedList` ref | The scroll element     |
+| A number                                                            | The same number        |
+| A class component instance                                          | `null`                 |
+| `null`, `undefined`, or any other value                             | `null`                 |
 
 A class component instance gives `null`, because React 19 can't find the element of a component.
 

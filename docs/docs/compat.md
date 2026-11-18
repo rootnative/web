@@ -35,14 +35,14 @@ The element gets no style reset. A `div` from this function is a plain `div`, no
 
 On native, `findNodeHandle` returns the number of a view. On the web, it returns the DOM element.
 
-| Input                                           | Result                 |
-| ----------------------------------------------- | ---------------------- |
-| A `ref` object                                  | Its element, or `null` |
-| A DOM element                                   | The same element       |
-| A [`ScrollView`](/scrollview) or `FlatList` ref | The scroll element     |
-| A number                                        | The same number        |
-| A class component instance                      | `null`                 |
-| `null`, `undefined`, or any other value         | `null`                 |
+| Input                                                               | Result                 |
+| ------------------------------------------------------------------- | ---------------------- |
+| A `ref` object                                                      | Its element, or `null` |
+| A DOM element                                                       | The same element       |
+| A [`ScrollView`](/scrollview), `FlatList`, or `VirtualizedList` ref | The scroll element     |
+| A number                                                            | The same number        |
+| A class component instance                                          | `null`                 |
+| `null`, `undefined`, or any other value                             | `null`                 |
 
 A class component instance gives `null`, because React 19 can't find the element of a component.
 

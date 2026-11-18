@@ -4,6 +4,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Added
+
+- **`VirtualizedList`**, React Native's list that renders only a window of its items, with the same rules. The first render has `initialNumToRender` cells. Then the list adds `maxToRenderPerBatch` cells at a time, until the window covers `windowSize` viewports, and a spacer holds the place of the other cells. It reads the data through `getItem` and `getItemCount`, so the data can be any collection. With `getItemLayout`, the list measures no cell. Without it, one `ResizeObserver` measures the rendered cells. `scrollToIndex`, `onScrollToIndexFailed`, viewability, the edge callbacks, sticky headers, and horizontal right-to-left work as on native. A server render has the first `initialNumToRender` cells. See [VirtualizedList](https://rootnative.github.io/web/virtualizedlist).
+
 ## [0.0.0-alpha.6] - 2026-11-18
 
 The first part of React Native's `Animated` API, and `Easing`. With them, Expo Router runs on this runtime, through `@rootnative/web-expo`.

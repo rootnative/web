@@ -44,7 +44,6 @@ type ExportGaps =
   | 'LayoutAnimation'
   | 'SafeAreaView'
   | 'SectionList'
-  | 'VirtualizedList'
   | 'VirtualizedSectionList'
   | 'useAnimatedColor'
   | 'useAnimatedValue'
@@ -364,6 +363,13 @@ export type TypeParity = [
   None<PropDiff<Native.TextInputProps, Web.TextInputProps, TextInputGaps>>,
   None<
     PropDiff<Native.FlatListProps<unknown>, Web.FlatListProps<unknown>, ScrollViewGaps | 'children'>
+  >,
+  None<
+    PropDiff<
+      Native.VirtualizedListProps,
+      Web.VirtualizedListProps<unknown>,
+      ScrollViewGaps | 'children'
+    >
   >,
   None<PropDiff<Native.SwitchProps, Web.SwitchProps, ViewGaps | 'children'>>,
   None<PropDiff<Native.RefreshControlProps, Web.RefreshControlProps, ViewGaps>>,

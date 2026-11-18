@@ -205,6 +205,8 @@ export type {
   ViewInstance,
   ViewProps,
 } from './components/View'
+export { VirtualizedList } from './components/VirtualizedList'
+export type { VirtualizedListInstance, VirtualizedListProps } from './components/VirtualizedList'
 export { unstable_createElement } from './compat/createElement'
 export type { CreateElementProps } from './compat/createElement'
 export { findNodeHandle } from './compat/findNodeHandle'

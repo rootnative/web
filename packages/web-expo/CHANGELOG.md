@@ -6,6 +6,10 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+### Changed
+
+- **`VirtualizedList` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
+
 ## [0.0.0-alpha.6] - 2026-11-18
 
 Expo Router runs on `@rootnative/web`, with single-page and static output.
