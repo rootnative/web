@@ -13,6 +13,21 @@ import { AnimatedStyle } from './AnimatedStyle'
 
 type Props = Readonly<Record<string, unknown>>
 
+// What the Web Animations driver needs from the mounted component of a leaf.
+export type LeafHost = Readonly<{
+  element: () => HTMLElement | null
+  staticStyle: () => unknown
+}>
+
+// The Web Animation that plays the style of a leaf for the Web Animations driver.
+export type LeafTrack = Readonly<{
+  // A change that the driver didn't make. The driver moves its animation to the frame loop.
+  onUpdate: () => void
+  // After a render, which can bring a new static style.
+  rebuild: () => void
+  cancel: () => void
+}>
+
 const flatten = (style: unknown): FlatStyle | undefined =>
   flattenStyle(style as StyleProp<FlatStyle>)
 
@@ -24,6 +39,8 @@ export class AnimatedProps extends AnimatedNode {
   private readonly nodeKeys: readonly string[]
   private readonly props: Props
   private callback: (() => void) | null = null
+  private mountedHost: LeafHost | null = null
+  track: LeafTrack | null = null
 
   constructor(inputProps: Props) {
     super()
@@ -54,6 +71,15 @@ export class AnimatedProps extends AnimatedNode {
 
   setUpdateCallback(callback: (() => void) | null): void {
     this.callback = callback
+  }
+
+  // Null before the mount and after the unmount.
+  get host(): LeafHost | null {
+    return this.mountedHost
+  }
+
+  setHost(host: LeafHost | null): void {
+    this.mountedHost = host
   }
 
   // True when a node drives `style` and no other prop. A frame can then write the style to the
@@ -119,11 +145,13 @@ export class AnimatedProps extends AnimatedNode {
   }
 
   override __detach(): void {
+    this.track?.cancel()
     for (const node of this.nodes) node.__removeChild(this)
     super.__detach()
   }
 
   update(): void {
+    this.track?.onUpdate()
     this.callback?.()
   }
 }

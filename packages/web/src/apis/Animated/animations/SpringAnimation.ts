@@ -6,6 +6,9 @@
 
 import { FRAME_MS } from '../nativeDriver/curve'
 import type { Curve } from '../nativeDriver/curve'
+import { startNativeRun } from '../nativeDriver/driver'
+import type { NativeRun } from '../nativeDriver/driver'
+import type { AnimatedValue } from '../nodes/AnimatedValue'
 import { Animation, isMotionReduced, now } from './Animation'
 import type { AnimationConfig, EndCallback } from './Animation'
 import { fromBouncinessAndSpeed, fromOrigamiTensionAndFriction } from './springConfig'
@@ -62,9 +65,10 @@ export class SpringAnimation extends Animation {
   private setValue: (value: number) => void = () => {}
   private frame: number | undefined
   private timeout: ReturnType<typeof setTimeout> | undefined
+  private native: NativeRun | null = null
 
   constructor(config: SpringAnimationConfigSingle) {
-    super()
+    super(config)
     this.overshootClamping = config.overshootClamping ?? false
     this.restDisplacementThreshold = config.restDisplacementThreshold ?? 0.001
     this.restSpeedThreshold = config.restSpeedThreshold ?? 0.001
@@ -111,6 +115,7 @@ export class SpringAnimation extends Animation {
     onUpdate: (value: number) => void,
     onEnd: EndCallback | null | undefined,
     previousAnimation: Animation | null | undefined,
+    animatedValue?: AnimatedValue,
   ): void {
     super.start(fromValue, onUpdate, onEnd, previousAnimation)
     this.startPosition = fromValue
@@ -130,7 +135,7 @@ export class SpringAnimation extends Animation {
 
     const start = (): void => {
       if (isMotionReduced()) this.finish()
-      else this.onUpdate()
+      else if (!this.startNative(animatedValue)) this.onUpdate()
     }
     if (this.delay) this.timeout = setTimeout(start, this.delay)
     else start()
@@ -203,6 +208,24 @@ export class SpringAnimation extends Animation {
     return null
   }
 
+  private startNative(value: AnimatedValue | undefined): boolean {
+    if (!this.useNativeDriver || value === undefined) return false
+    this.native = startNativeRun(
+      value,
+      (maxDuration) => this.curve(maxDuration),
+      this.setValue,
+      () => {
+        this.native = null
+        this.finish()
+      },
+    )
+    return this.native !== null
+  }
+
+  override liveValue(): number | undefined {
+    return this.native?.liveValue()
+  }
+
   onUpdate(): void {
     const time = Math.min(now(), this.lastTime + MAX_STEP_MS)
     this.frameTime += (time - this.lastTime) / 1000
@@ -225,6 +248,16 @@ export class SpringAnimation extends Animation {
     super.stop()
     clearTimeout(this.timeout)
     if (this.frame !== undefined) cancelAnimationFrame(this.frame)
+    const run = this.native
+    if (run !== null) {
+      // A spring that takes over reads the position and the speed at the stop.
+      this.native = null
+      const { position, velocity } = this.stateAt(run.stop() / 1000)
+      this.lastPosition = position
+      this.lastVelocity = velocity
+      this.lastTime = now()
+      this.setValue(position)
+    }
     this.notifyAnimationEnd({ finished: false })
   }
 

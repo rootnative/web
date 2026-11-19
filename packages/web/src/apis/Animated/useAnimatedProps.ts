@@ -20,6 +20,7 @@ import { flattenStyle } from '../../style/compile'
 import { resolveStyle } from '../../style/resolveStyle'
 import type { FlatStyle, StyleProp } from '../../style/types'
 import { AnimatedEvent } from './AnimatedEvent'
+import { adoptLeaf } from './nativeDriver/driver'
 import { AnimatedNode } from './nodes/AnimatedNode'
 import { animatedNodesIn } from './nodes/AnimatedObject'
 import { AnimatedProps } from './nodes/AnimatedProps'
@@ -122,6 +123,7 @@ export const useAnimatedProps = <TInstance>(
     if (element !== null && written.size > 0) {
       writeStyle(element, node.styleWithStaticStyle(propsRef.current['style']), written)
     }
+    node.track?.rebuild()
   })
 
   // React Native sets the callback when the ref attaches, so a component that ignores its `ref`
@@ -135,7 +137,15 @@ export const useAnimatedProps = <TInstance>(
         scheduleUpdate()
       }
     })
-    return () => node.setUpdateCallback(null)
+    node.setHost({
+      element: () => elementRef.current,
+      staticStyle: () => propsRef.current['style'],
+    })
+    adoptLeaf()
+    return () => {
+      node.setUpdateCallback(null)
+      node.setHost(null)
+    }
   }, [node, written, scheduleUpdate])
 
   const ref = useCallback((instance: TInstance | null) => {

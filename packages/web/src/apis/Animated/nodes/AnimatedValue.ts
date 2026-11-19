@@ -71,7 +71,7 @@ export class AnimatedValue extends AnimatedWithChildren {
   }
 
   override __getValue(): number {
-    return (sampled?.get(this) ?? this.value) + this.offset
+    return (sampled?.get(this) ?? this.animation?.liveValue() ?? this.value) + this.offset
   }
 
   override addListener(callback: ValueListenerCallback): string {
@@ -132,6 +132,7 @@ export class AnimatedValue extends AnimatedWithChildren {
         callback?.(result)
       },
       previous,
+      this,
     )
   }
 

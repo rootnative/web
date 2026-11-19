@@ -5,6 +5,7 @@
  */
 
 import { Platform } from '../../Platform'
+import type { AnimatedValue } from '../nodes/AnimatedValue'
 
 export type EndResult = {
   finished: boolean
@@ -35,20 +36,31 @@ export const now = (): number => performance.now()
 // still waits, so a sequence keeps its order and its pauses.
 export const isMotionReduced = (): boolean => Platform.isDisableAnimations
 
-// The web has no native driver, so `useNativeDriver`, `isInteraction`, `iterations`, and
-// `platformConfig` have no effect here.
+// `isInteraction`, `iterations`, and `platformConfig` have no effect here.
 export class Animation {
   private onEnd: EndCallback | null | undefined
   protected active = false
+  protected readonly useNativeDriver: boolean
+
+  constructor(config?: AnimationConfig) {
+    this.useNativeDriver = config?.useNativeDriver === true
+  }
 
   start(
     _fromValue: number,
     _onUpdate: (value: number) => void,
     onEnd: EndCallback | null | undefined,
     _previousAnimation: Animation | null | undefined,
+    _animatedValue?: AnimatedValue,
   ): void {
     this.onEnd = onEnd
     this.active = true
+  }
+
+  // The value at the current frame while the Web Animations driver runs the animation. The value
+  // gets no frame of its own then.
+  liveValue(): number | undefined {
+    return undefined
   }
 
   stop(): void {

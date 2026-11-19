@@ -7,6 +7,9 @@
 import { Easing } from '../../Easing'
 import type { EasingFunction } from '../../Easing'
 import type { Curve } from '../nativeDriver/curve'
+import { startNativeRun } from '../nativeDriver/driver'
+import type { NativeRun } from '../nativeDriver/driver'
+import type { AnimatedValue } from '../nodes/AnimatedValue'
 import { Animation, isMotionReduced, now } from './Animation'
 import type { AnimationConfig, EndCallback } from './Animation'
 
@@ -31,9 +34,10 @@ export class TimingAnimation extends Animation {
   private setValue: (value: number) => void = () => {}
   private frame: number | undefined
   private timeout: ReturnType<typeof setTimeout> | undefined
+  private native: NativeRun | null = null
 
   constructor(config: TimingAnimationConfigSingle) {
-    super()
+    super(config)
     this.toValue = config.toValue
     this.easing = config.easing ?? (easeInOut ??= Easing.inOut(Easing.ease))
     this.duration = config.duration ?? 500
@@ -45,6 +49,7 @@ export class TimingAnimation extends Animation {
     onUpdate: (value: number) => void,
     onEnd: EndCallback | null | undefined,
     previousAnimation: Animation | null | undefined,
+    animatedValue?: AnimatedValue,
   ): void {
     super.start(fromValue, onUpdate, onEnd, previousAnimation)
     this.fromValue = fromValue
@@ -55,7 +60,7 @@ export class TimingAnimation extends Animation {
       if (this.duration === 0 || isMotionReduced()) {
         this.setValue(this.toValue)
         this.notifyAnimationEnd({ finished: true })
-      } else {
+      } else if (!this.startNative(animatedValue)) {
         this.frame = requestAnimationFrame(() => this.onUpdate())
       }
     }
@@ -75,6 +80,25 @@ export class TimingAnimation extends Animation {
     return { duration: this.duration, valueAt: (time) => this.valueAt(time) }
   }
 
+  private startNative(value: AnimatedValue | undefined): boolean {
+    if (!this.useNativeDriver || value === undefined) return false
+    this.native = startNativeRun(
+      value,
+      () => this.curve(),
+      this.setValue,
+      () => {
+        this.native = null
+        this.setValue(this.valueAt(this.duration))
+        this.notifyAnimationEnd({ finished: true })
+      },
+    )
+    return this.native !== null
+  }
+
+  override liveValue(): number | undefined {
+    return this.native?.liveValue()
+  }
+
   onUpdate(): void {
     const time = now() - this.startTime
     this.setValue(this.valueAt(time))
@@ -89,6 +113,11 @@ export class TimingAnimation extends Animation {
     super.stop()
     clearTimeout(this.timeout)
     if (this.frame !== undefined) cancelAnimationFrame(this.frame)
+    const run = this.native
+    if (run !== null) {
+      this.native = null
+      this.setValue(this.valueAt(run.stop()))
+    }
     this.notifyAnimationEnd({ finished: false })
   }
 }
