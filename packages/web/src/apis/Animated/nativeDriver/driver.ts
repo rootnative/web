@@ -65,36 +65,52 @@ const clock = (): number => performance.now()
 
 const runs = new Set<NativeRun>()
 
+// The runs whose own write of their value is in progress. Their tracks know that write.
+const writing = new Set<NativeRun>()
+
+// One Web Animation for each leaf, with each run that reaches the leaf. Two Web Animations of
+// `transform` on one element would replace each other, so the `x` and `y` of a `ValueXY`, or a
+// translate and a scale in a `parallel`, share one track.
 class Track implements LeafTrack {
+  private readonly runs = new Map<NativeRun, ReadonlySet<CompositorProperty>>()
   private animation: Animation | null = null
 
-  constructor(
-    private readonly run: NativeRun,
-    private readonly leaf: AnimatedProps,
-    private readonly properties: readonly CompositorProperty[],
-  ) {}
+  constructor(private readonly leaf: AnimatedProps) {
+    leaf.track = this
+  }
 
-  // The keyframes go from now to the end, so a build in the middle of the run goes on from where
-  // the value is.
+  add(run: NativeRun, properties: ReadonlySet<CompositorProperty>): void {
+    this.runs.set(run, properties)
+    this.build()
+  }
+
+  // A track that keeps other runs builds again. The value of `run` is its last one now.
+  remove(run: NativeRun): void {
+    this.runs.delete(run)
+    if (this.runs.size === 0) this.cancel()
+    else this.build()
+  }
+
+  // The keyframes go from now to the latest end, so a build in the middle of the runs goes on from
+  // where the values are. A run that ends first keeps its end value in the later keyframes.
   build(): void {
-    const host = this.leaf.host
-    const element = host?.element()
-    if (host === null || host === undefined || element === null || element === undefined) {
-      this.cancel()
-      return
-    }
+    const element = this.leaf.host?.element()
+    const staticStyle = this.leaf.host?.staticStyle()
+    if (element === null || element === undefined) return
     const now = clock()
-    const { curve, value } = this.run
-    const elapsed = now - this.run.start
-    const remaining = curve.duration - elapsed
+    let end = now
+    const properties = new Set<CompositorProperty>()
+    for (const [run, keys] of this.runs) {
+      end = Math.max(end, run.start + run.curve.duration)
+      for (const key of keys) properties.add(key)
+    }
+    const remaining = end - now
     if (remaining <= 0) return
-    const keyframes = buildKeyframes(
-      this.leaf,
-      host.staticStyle(),
-      this.properties,
-      [{ value, curve: { duration: remaining, valueAt: (time) => curve.valueAt(elapsed + time) } }],
-      remaining,
-    )
+    const curves = [...this.runs.keys()].map((run) => ({
+      value: run.value,
+      curve: { duration: remaining, valueAt: (time: number) => run.valueAt(now + time) },
+    }))
+    const keyframes = buildKeyframes(this.leaf, staticStyle, [...properties], curves, remaining)
     this.animation?.cancel()
     // `backwards` too: a timeline that is behind `now` shows the first keyframe, not the old inline
     // style.
@@ -107,8 +123,12 @@ class Track implements LeafTrack {
     this.animation = animation
   }
 
+  // A change that the runs of this track didn't make: the track can't follow it.
   onUpdate(): void {
-    this.run.toFrameLoop()
+    for (const run of writing) if (this.runs.has(run)) return
+    const moved = [...this.runs.keys()]
+    this.cancel()
+    for (const run of moved) run.toFrameLoop()
   }
 
   rebuild(): void {
@@ -119,11 +139,12 @@ class Track implements LeafTrack {
     this.animation?.cancel()
     this.animation = null
     if (this.leaf.track === this) this.leaf.track = null
-    this.run.forget(this.leaf)
+    for (const run of this.runs.keys()) run.forget(this.leaf)
+    this.runs.clear()
   }
 }
 
-// One `timing` or `spring` on the Web Animations driver. Each leaf plays a Web Animation, and a
+// One `timing` or `spring` on the Web Animations driver. It plays on the track of each leaf, and a
 // frame callback calls the listeners and ends the run. The callback writes no style. A change that
 // the run didn't make moves the run to the frame loop of the JavaScript driver.
 export class NativeRun {
@@ -143,32 +164,38 @@ export class NativeRun {
     return Math.max(0, clock() - this.start)
   }
 
+  // The value at the time `time` of the clock.
+  valueAt(time: number): number {
+    return this.curve.valueAt(Math.max(0, time - this.start))
+  }
+
   liveValue(): number | undefined {
     return this.mode === 'ended' ? undefined : this.curve.valueAt(this.elapsed())
   }
 
-  // Gives each new leaf of `plan` a track and drops the tracks of the leaves that left. False when
-  // a leaf has the track of another run: one track for each leaf in this step.
-  place(plan: Plan): boolean {
-    for (const [leaf, track] of this.tracks) if (!plan.has(leaf)) track.cancel()
+  // Joins the track of each new leaf of `plan`, and leaves the tracks of the leaves that left.
+  place(plan: Plan): void {
+    for (const [leaf, track] of this.tracks) {
+      if (plan.has(leaf)) continue
+      this.tracks.delete(leaf)
+      track.remove(this)
+    }
     for (const [leaf, properties] of plan) {
       if (this.tracks.has(leaf)) continue
-      if (leaf.track !== null) return false
-      const track = new Track(this, leaf, [...properties])
+      const track = leaf.track instanceof Track ? leaf.track : new Track(leaf)
       this.tracks.set(leaf, track)
-      leaf.track = track
-      track.build()
+      track.add(this, properties)
     }
-    return true
   }
 
-  // A leaf that mounted during the run gets a track, or the run moves to the frame loop.
+  // A leaf that mounted during the run joins it, or the run moves to the frame loop.
   replan(): void {
     if (this.mode !== 'native') return
     const plan = planOf(this.value)
-    const remaining = this.curve.duration - this.elapsed()
-    if (plan === null || !fitsBudget(remaining, plan.size) || !this.place(plan)) {
+    if (plan === null || !fitsBudget(this.curve.duration - this.elapsed(), plan.size)) {
       this.toFrameLoop()
+    } else {
+      this.place(plan)
     }
   }
 
@@ -179,43 +206,56 @@ export class NativeRun {
   toFrameLoop(): void {
     if (this.mode !== 'native') return
     this.mode = 'frames'
-    this.cancelTracks()
+    this.leaveTracks()
   }
 
   startFrames(): void {
     this.frame = requestAnimationFrame(this.onFrame)
   }
 
-  // Ends the run and gives the time of the stop. The animation then sets the value.
+  // Ends the run, writes the value at the time of the stop, and gives that time.
   stop(): number {
     const elapsed = this.elapsed()
-    this.end()
+    this.end(this.curve.valueAt(elapsed))
     return elapsed
   }
 
   private readonly onFrame = (): void => {
     const elapsed = this.elapsed()
     if (elapsed >= this.curve.duration) {
-      this.end()
+      this.end(this.curve.valueAt(this.curve.duration))
       this.onFinish()
       return
     }
-    if (this.mode === 'frames') this.setValue(this.curve.valueAt(elapsed))
+    if (this.mode === 'frames') this.write(this.curve.valueAt(elapsed))
     else if (hasListeners(this.value)) this.value.__callListeners(this.value.__getValue())
     this.frame = requestAnimationFrame(this.onFrame)
   }
 
-  // The tracks hold their last frame until the animation writes the end value to the inline style,
-  // in the same task, so no frame shows the old inline style.
-  private end(): void {
+  // The tracks hold their frame until the value is in the inline style, in the same task, so no
+  // frame shows the old inline style. Then a track with other runs builds again from this value.
+  private end(value: number): void {
     this.mode = 'ended'
     runs.delete(this)
     if (this.frame !== undefined) cancelAnimationFrame(this.frame)
-    this.cancelTracks()
+    this.write(value)
+    this.leaveTracks()
   }
 
-  private cancelTracks(): void {
-    for (const track of this.tracks.values()) track.cancel()
+  private write(value: number): void {
+    writing.add(this)
+    try {
+      this.setValue(value)
+    } finally {
+      writing.delete(this)
+    }
+  }
+
+  private leaveTracks(): void {
+    for (const [leaf, track] of this.tracks) {
+      this.tracks.delete(leaf)
+      track.remove(this)
+    }
   }
 }
 
@@ -233,7 +273,6 @@ export const startNativeRun = (
   const maxSamples = Math.floor(SAMPLE_BUDGET / plan.size)
   const curve = makeCurve((maxSamples - 1) * FRAME_MS)
   if (curve === null || curve.duration <= 0 || !fitsBudget(curve.duration, plan.size)) return null
-  for (const leaf of plan.keys()) if (leaf.track !== null) return null
   const run = new NativeRun(value, curve, clock(), setValue, onFinish)
   run.place(plan)
   runs.add(run)

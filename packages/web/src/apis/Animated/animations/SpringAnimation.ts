@@ -216,7 +216,9 @@ export class SpringAnimation extends Animation {
       this.setValue,
       () => {
         this.native = null
-        this.finish()
+        this.lastPosition = this.toValue
+        this.lastVelocity = 0
+        this.notifyAnimationEnd({ finished: true })
       },
     )
     return this.native !== null
@@ -256,7 +258,6 @@ export class SpringAnimation extends Animation {
       this.lastPosition = position
       this.lastVelocity = velocity
       this.lastTime = now()
-      this.setValue(position)
     }
     this.notifyAnimationEnd({ finished: false })
   }

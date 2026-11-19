@@ -23,6 +23,12 @@ const byTestId = (container: HTMLElement, id: string): HTMLElement =>
 
 const tracksOf = (element: HTMLElement): Animation[] => element.getAnimations()
 
+const keyframesOf = (element: HTMLElement): ComputedKeyframe[] => {
+  const effect = tracksOf(element)[0]?.effect
+  if (!(effect instanceof KeyframeEffect)) throw new Error('no keyframes')
+  return effect.getKeyframes()
+}
+
 type Config = { useNativeDriver: boolean; duration?: number; delay?: number }
 
 const linear = (
@@ -269,11 +275,8 @@ describe('a render during the run', () => {
     rerender(<Spinner value={value} rotate="20deg" />)
     await flushDetach()
 
-    const tracks = tracksOf(box)
-    expect(tracks).toHaveLength(1)
-    const effect = tracks[0]?.effect
-    if (!(effect instanceof KeyframeEffect)) throw new Error('no keyframes')
-    const keyframes = effect.getKeyframes()
+    expect(tracksOf(box)).toHaveLength(1)
+    const keyframes = keyframesOf(box)
     expect(String(keyframes[0]?.['transform'])).toContain('rotate(20deg)')
     expect(Number.parseFloat(String(keyframes[0]?.['transform']).slice(11))).toBeGreaterThan(0)
     value.stopAnimation()
@@ -373,5 +376,169 @@ describe('the frame loop of driver A takes over', () => {
     } finally {
       media.restore()
     }
+  })
+})
+
+// A box whose opacity follows `fade` and whose translateX follows `move`.
+const FadeAndMove = ({ fade, move }: { fade: Animated.Value; move: Animated.Value }): ReactNode => (
+  <Animated.View testID="box" style={{ opacity: fade, transform: [{ translateX: move }] }} />
+)
+
+const lastKeyframe = (element: HTMLElement): ComputedKeyframe | undefined =>
+  keyframesOf(element).at(-1)
+
+describe('more than one value on one element', () => {
+  test('the x and y of a ValueXY share one track', async () => {
+    const xy = new Animated.ValueXY({ x: 0, y: 0 })
+    const { container } = render(
+      <Animated.View testID="box" style={{ transform: xy.getTranslateTransform() }} />,
+    )
+    const box = byTestId(container, 'box')
+    const done = vi.fn()
+
+    Animated.spring(xy, {
+      toValue: { x: 100, y: 50 },
+      stiffness: 300,
+      damping: 30,
+      useNativeDriver: true,
+    }).start(done)
+
+    expect(tracksOf(box)).toHaveLength(1)
+    expect(lastKeyframe(box)?.['transform']).toBe('translateX(100px) translateY(50px)')
+    await vi.waitFor(() => expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true }), {
+      timeout: 3000,
+    })
+    expect(tracksOf(box)).toHaveLength(0)
+    expect(box.style.transform).toBe('translateX(100px) translateY(50px)')
+  })
+
+  test('a run that ends first keeps its end value, and the other goes on', async () => {
+    const fade = new Animated.Value(0)
+    const move = new Animated.Value(0)
+    const box = byTestId(render(<FadeAndMove fade={fade} move={move} />).container, 'box')
+    const faded = vi.fn()
+    const moved = vi.fn()
+
+    Animated.parallel([
+      linear(fade, 1, { useNativeDriver: true, duration: 150 }),
+      linear(move, 100, { useNativeDriver: true, duration: 1500 }),
+    ]).start(moved)
+    fade.addListener(({ value }) => {
+      if (value === 1) faded()
+    })
+
+    expect(tracksOf(box)).toHaveLength(1)
+    expect(lastKeyframe(box)).toMatchObject({ opacity: '1', transform: 'translateX(100px)' })
+    await vi.waitFor(() => expect(faded).toHaveBeenCalled(), { timeout: 3000 })
+
+    // The ended run left the track, and the inline style holds its value.
+    expect(tracksOf(box)).toHaveLength(1)
+    expect(keyframesOf(box).some((keyframe) => 'opacity' in keyframe)).toBe(false)
+    expect(box.style.opacity).toBe('1')
+    await vi.waitFor(() => expect(moved).toHaveBeenCalledExactlyOnceWith({ finished: true }), {
+      timeout: 3000,
+    })
+    expect(tracksOf(box)).toHaveLength(0)
+    expect(box.style.transform).toBe('translateX(100px)')
+  })
+
+  test('a stop of one run keeps the other on its Web Animation', async () => {
+    const fade = new Animated.Value(0)
+    const move = new Animated.Value(0)
+    const box = byTestId(render(<FadeAndMove fade={fade} move={move} />).container, 'box')
+
+    linear(fade, 1, { useNativeDriver: true, duration: 5000 }).start()
+    linear(move, 100, { useNativeDriver: true, duration: 5000 }).start()
+    await frames(2)
+    let stoppedAt = -1
+    fade.stopAnimation((value) => {
+      stoppedAt = value
+    })
+
+    expect(tracksOf(box)).toHaveLength(1)
+    expect(keyframesOf(box).some((keyframe) => 'opacity' in keyframe)).toBe(false)
+    expect(Number(box.style.opacity)).toBeCloseTo(stoppedAt, 6)
+    const before = move.__getValue()
+    await frames(2)
+    expect(move.__getValue()).toBeGreaterThan(before)
+    move.stopAnimation()
+  })
+
+  test('a setValue of one value moves the other to the frame loop', async () => {
+    const fade = new Animated.Value(0)
+    const move = new Animated.Value(0)
+    const box = byTestId(render(<FadeAndMove fade={fade} move={move} />).container, 'box')
+
+    linear(fade, 1, { useNativeDriver: true, duration: 5000 }).start()
+    linear(move, 100, { useNativeDriver: true, duration: 5000 }).start()
+    await frames(2)
+    fade.setValue(0.5)
+
+    expect(tracksOf(box)).toHaveLength(0)
+    const transform = box.style.transform
+    await frames(2)
+    expect(box.style.transform).not.toBe(transform)
+    move.stopAnimation()
+  })
+})
+
+describe('the composites', () => {
+  test('a sequence runs each step on a Web Animation', async () => {
+    const value = new Animated.Value(0)
+    const box = renderBox(value)
+    const done = vi.fn()
+    const steps: number[] = []
+
+    Animated.sequence([
+      linear(value, 1, { useNativeDriver: true, duration: 150 }),
+      linear(value, 0.5, { useNativeDriver: true, duration: 150 }),
+    ]).start(done)
+    value.addListener(() => steps.push(tracksOf(box).length))
+
+    await vi.waitFor(() => expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true }), {
+      timeout: 3000,
+    })
+    expect(steps).toContain(1)
+    expect(tracksOf(box)).toHaveLength(0)
+    expect(value.__getValue()).toBe(0.5)
+    expect(box.style.opacity).toBe('0.5')
+  })
+
+  test('a loop runs each round on a Web Animation', async () => {
+    const value = new Animated.Value(0)
+    const box = renderBox(value)
+    const done = vi.fn()
+
+    Animated.loop(linear(value, 1, { useNativeDriver: true, duration: 150 }), {
+      iterations: 2,
+    }).start(done)
+    expect(tracksOf(box)).toHaveLength(1)
+
+    await vi.waitFor(() => expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true }), {
+      timeout: 3000,
+    })
+    expect(tracksOf(box)).toHaveLength(0)
+    expect(value.__getValue()).toBe(1)
+  })
+
+  test('a stagger starts each element on its own Web Animation', async () => {
+    const first = new Animated.Value(0)
+    const second = new Animated.Value(0)
+    const { container } = render(
+      <View>
+        <Box value={first} id="first" />
+        <Box value={second} id="second" />
+      </View>,
+    )
+
+    Animated.stagger(50, [
+      linear(first, 1, { useNativeDriver: true, duration: 5000 }),
+      linear(second, 1, { useNativeDriver: true, duration: 5000 }),
+    ]).start()
+
+    expect(tracksOf(byTestId(container, 'first'))).toHaveLength(1)
+    await vi.waitFor(() => expect(tracksOf(byTestId(container, 'second'))).toHaveLength(1))
+    first.stopAnimation()
+    second.stopAnimation()
   })
 })

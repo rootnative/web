@@ -88,7 +88,6 @@ export class TimingAnimation extends Animation {
       this.setValue,
       () => {
         this.native = null
-        this.setValue(this.valueAt(this.duration))
         this.notifyAnimationEnd({ finished: true })
       },
     )
@@ -116,7 +115,7 @@ export class TimingAnimation extends Animation {
     const run = this.native
     if (run !== null) {
       this.native = null
-      this.setValue(this.valueAt(run.stop()))
+      run.stop()
     }
     this.notifyAnimationEnd({ finished: false })
   }
