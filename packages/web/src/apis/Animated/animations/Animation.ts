@@ -5,7 +5,6 @@
  */
 
 import { Platform } from '../../Platform'
-import type { AnimatedValue } from '../nodes/AnimatedValue'
 
 export type EndResult = {
   finished: boolean
@@ -51,7 +50,9 @@ export class Animation {
     _onUpdate: (value: number) => void,
     onEnd: EndCallback | null | undefined,
     _previousAnimation: Animation | null | undefined,
-    _animatedValue?: AnimatedValue,
+    // React Native types it with its own `AnimatedValue`. With ours, this class wouldn't fit React
+    // Native's, nor would `Animated.Value`, whose `animate` takes it.
+    _animatedValue?: unknown,
   ): void {
     this.onEnd = onEnd
     this.active = true
