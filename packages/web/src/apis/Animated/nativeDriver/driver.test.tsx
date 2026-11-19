@@ -70,16 +70,43 @@ describe('a timing or spring with useNativeDriver: true', () => {
     const style = box.getAttribute('style')
     const done = vi.fn()
 
-    linear(value, 1, { useNativeDriver: true }).start(done)
+    linear(value, 1, { useNativeDriver: true, duration: 600 }).start(done)
     expect(tracksOf(box)).toHaveLength(1)
     await frames(3)
     expect(box.getAttribute('style')).toBe(style)
 
-    await vi.waitFor(() => expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true }))
+    await vi.waitFor(() => expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true }), {
+      timeout: 3000,
+    })
     expect(tracksOf(box)).toHaveLength(0)
     expect(value.__getValue()).toBe(1)
     expect(box.style.opacity).toBe('1')
     expect(box.style.transform).toBe('translateX(100px)')
+  })
+
+  // Firefox gives the time of its last refresh tick, which is old after an idle time. The next
+  // tick gives the time of now.
+  test('an old time of the document timeline does not end the run early', async () => {
+    const value = new Animated.Value(0)
+    const box = renderBox(value)
+    const done = vi.fn()
+    let old: number | null = performance.now() - 10_000
+    Object.defineProperty(document.timeline, 'currentTime', {
+      configurable: true,
+      get: () => old ?? performance.now(),
+    })
+    try {
+      linear(value, 1, { useNativeDriver: true, duration: 2000 }).start(done)
+      old = null
+      await frames(2)
+
+      expect(done).not.toHaveBeenCalled()
+      expect(tracksOf(box)).toHaveLength(1)
+      expect(value.__getValue()).toBeLessThan(0.5)
+    } finally {
+      Reflect.deleteProperty(document.timeline, 'currentTime')
+      value.stopAnimation()
+    }
   })
 
   test('with useNativeDriver: false, writes the style on each frame, as before', async () => {

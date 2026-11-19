@@ -52,13 +52,16 @@ const fitsBudget = (duration: number, leaves: number): boolean =>
 const hasListeners = (node: AnimatedNode): boolean =>
   node.hasListeners() || node.__getChildren().some(hasListeners)
 
-// The time of the current frame, which the Web Animations of the document read too. Null with no
-// Web Animations API, as in jsdom, so the animation runs on the frame loop.
-const timelineNow = (): number | null => {
+// False with no Web Animations API, as in jsdom, so the animation runs on the frame loop.
+const hasWebAnimations = (): boolean => {
   const timeline: DocumentTimeline | undefined = document.timeline
-  const time = timeline?.currentTime
-  return typeof time === 'number' ? time : null
+  return timeline !== undefined
 }
+
+// The clock of a run. `performance.now()` and the document timeline have the same origin, so a
+// time of one is a time of the other. Not `document.timeline.currentTime`: Firefox gives the time
+// of its last refresh tick, which is old after an idle time, so a run would start in the past.
+const clock = (): number => performance.now()
 
 const runs = new Set<NativeRun>()
 
@@ -76,12 +79,11 @@ class Track implements LeafTrack {
   build(): void {
     const host = this.leaf.host
     const element = host?.element()
-    const now = timelineNow()
     if (host === null || host === undefined || element === null || element === undefined) {
       this.cancel()
       return
     }
-    if (now === null) return
+    const now = clock()
     const { curve, value } = this.run
     const elapsed = now - this.run.start
     const remaining = curve.duration - elapsed
@@ -94,10 +96,12 @@ class Track implements LeafTrack {
       remaining,
     )
     this.animation?.cancel()
+    // `backwards` too: a timeline that is behind `now` shows the first keyframe, not the old inline
+    // style.
     const animation = element.animate(keyframes, {
       duration: remaining,
       easing: 'linear',
-      fill: 'forwards',
+      fill: 'both',
     })
     animation.startTime = now
     this.animation = animation
@@ -136,10 +140,9 @@ export class NativeRun {
   ) {}
 
   elapsed(): number {
-    return Math.max(0, (timelineNow() ?? this.start) - this.start)
+    return Math.max(0, clock() - this.start)
   }
 
-  // The value at the time of the current frame, which the browser shows.
   liveValue(): number | undefined {
     return this.mode === 'ended' ? undefined : this.curve.valueAt(this.elapsed())
   }
@@ -224,14 +227,14 @@ export const startNativeRun = (
   setValue: (value: number) => void,
   onFinish: () => void,
 ): NativeRun | null => {
-  const start = timelineNow()
+  if (!hasWebAnimations()) return null
   const plan = planOf(value)
-  if (start === null || plan === null || plan.size === 0) return null
+  if (plan === null || plan.size === 0) return null
   const maxSamples = Math.floor(SAMPLE_BUDGET / plan.size)
   const curve = makeCurve((maxSamples - 1) * FRAME_MS)
   if (curve === null || curve.duration <= 0 || !fitsBudget(curve.duration, plan.size)) return null
   for (const leaf of plan.keys()) if (leaf.track !== null) return null
-  const run = new NativeRun(value, curve, start, setValue, onFinish)
+  const run = new NativeRun(value, curve, clock(), setValue, onFinish)
   run.place(plan)
   runs.add(run)
   run.startFrames()
