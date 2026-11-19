@@ -291,6 +291,10 @@ export class AnimatedInterpolation<
     return new AnimatedInterpolation(this, config)
   }
 
+  configKeys(): string[] {
+    return Object.keys(this.config)
+  }
+
   override __attach(): void {
     this.parent.__addChild(this)
     super.__attach()

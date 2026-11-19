@@ -26,7 +26,7 @@ export class DecayAnimation extends Animation {
   private frame: number | undefined
 
   constructor(config: DecayAnimationConfigSingle) {
-    super()
+    super(config)
     this.deceleration = config.deceleration ?? 0.998
     this.velocity = config.velocity
   }

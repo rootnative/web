@@ -309,7 +309,7 @@ describe('the frame loop of driver A takes over', () => {
 
   test('for a style key other than transform and opacity', async () => {
     const value = new Animated.Value(0)
-    const { container } = render(<Animated.View testID="box" style={{ width: value }} />)
+    const { container } = render(<Animated.View testID="box" style={{ borderRadius: value }} />)
     const box = byTestId(container, 'box')
     const done = vi.fn()
 
@@ -317,7 +317,7 @@ describe('the frame loop of driver A takes over', () => {
     expect(tracksOf(box)).toHaveLength(0)
 
     await vi.waitFor(() => expect(done).toHaveBeenCalled())
-    expect(box.style.width).toBe('50px')
+    expect(box.style.borderRadius).toBe('50px')
   })
 
   test('for a diffClamp on the way', () => {
@@ -566,5 +566,62 @@ describe('the composites', () => {
     await vi.waitFor(() => expect(tracksOf(byTestId(container, 'second'))).toHaveLength(1))
     first.stopAnimation()
     second.stopAnimation()
+  })
+})
+
+const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+
+describe("React Native's rules for useNativeDriver", () => {
+  test('logs the errors of React Native for what its native driver does not move, once', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const value = new Animated.Value(0)
+      const opacity = value.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 1],
+        ...({ step: 2 } as object),
+      })
+      render(
+        <Animated.View
+          style={{
+            width: value,
+            opacity,
+            transform: [{ translateX: value }, { matrix: IDENTITY }],
+          }}
+        />,
+      )
+
+      linear(value, 1, { useNativeDriver: true, duration: 5000 }).start()
+      linear(value, 0, { useNativeDriver: true, duration: 5000 }).start()
+      value.stopAnimation()
+
+      expect(error).toHaveBeenCalledTimes(3)
+      expect(error).toHaveBeenCalledWith(
+        "Style property 'width' is not supported by native animated module",
+      )
+      expect(error).toHaveBeenCalledWith(
+        "Interpolation property 'step' is not supported by native animated module",
+      )
+      expect(error).toHaveBeenCalledWith(
+        "Property 'matrix' is not supported by native animated module",
+      )
+    } finally {
+      error.mockRestore()
+    }
+  })
+
+  test('a useNativeDriver: false animation throws on a value that ran a useNativeDriver: true one', () => {
+    const value = new Animated.Value(0)
+    linear(value, 1, { useNativeDriver: true, duration: 5000 }).start()
+    value.stopAnimation()
+
+    expect(() => linear(value, 0, { useNativeDriver: false }).start()).toThrow(
+      'Attempting to run JS driven animation on animated node that has been moved to "native" earlier',
+    )
+
+    const other = new Animated.Value(0)
+    linear(other, 1, { useNativeDriver: false, duration: 5000 }).start()
+    expect(() => linear(other, 0, { useNativeDriver: true, duration: 5000 }).start()).not.toThrow()
+    other.stopAnimation()
   })
 })

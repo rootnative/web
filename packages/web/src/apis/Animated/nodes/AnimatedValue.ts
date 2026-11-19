@@ -5,6 +5,7 @@
  */
 
 import type { Animation, EndCallback } from '../animations/Animation'
+import { checkNativeGraph } from '../nativeDriver/validate'
 import type { AnimatedNode, AnimatedNodeConfig, ValueListenerCallback } from './AnimatedNode'
 import { AnimatedInterpolation } from './AnimatedInterpolation'
 import type {
@@ -33,6 +34,9 @@ export const flushValue = (root: AnimatedNode): void => {
   for (const leaf of leaves) leaf.update()
 }
 
+const MOVED_TO_NATIVE =
+  'Attempting to run JS driven animation on animated node that has been moved to "native" earlier by starting an animation with `useNativeDriver: true`'
+
 let sampled: ReadonlyMap<AnimatedValue, number> | null = null
 
 // Runs `read` with each value of `values` at its sample, so the graph gives its output at those
@@ -53,8 +57,10 @@ export class AnimatedValue extends AnimatedWithChildren {
   private readonly startingValue: number
   private animation: Animation | null = null
   private tracking: AnimatedTracking | null = null
+  private movedToNative = false
 
-  // `useNativeDriver` has no effect: the web runs each animation on the JavaScript driver.
+  // React Native moves the value to its native side at once with `useNativeDriver`. Here, only an
+  // animation with `useNativeDriver: true` does that.
   constructor(value: number, _config?: AnimatedValueConfig | null) {
     super()
     if (typeof value !== 'number') {
@@ -119,8 +125,16 @@ export class AnimatedValue extends AnimatedWithChildren {
     return new AnimatedInterpolation(this, config)
   }
 
-  // A new animation stops the one that runs, and that one ends with `finished: false`.
+  // A new animation stops the one that runs, and that one ends with `finished: false`. As in React
+  // Native, a value that an animation with `useNativeDriver: true` moved stays there, so the
+  // JavaScript driver can't animate it after that: on native, such code throws.
   animate(animation: Animation, callback: EndCallback | null | undefined): void {
+    if (animation.useNativeDriver) {
+      checkNativeGraph(this)
+      this.movedToNative = true
+    } else if (this.movedToNative) {
+      throw new Error(MOVED_TO_NATIVE)
+    }
     const previous = this.animation
     previous?.stop()
     this.animation = animation

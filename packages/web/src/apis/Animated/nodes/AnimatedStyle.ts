@@ -78,6 +78,10 @@ export class AnimatedStyle extends AnimatedWithChildren {
     return Object.keys(this.style).find((key) => this.style[key] === node)
   }
 
+  animatedKeys(): string[] {
+    return Object.keys(this.style).filter((key) => this.style[key] instanceof AnimatedNode)
+  }
+
   // Only the animated keys, with their values.
   override __getAnimatedValue(): FlatStyle {
     const style: Record<string, unknown> = {}

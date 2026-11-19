@@ -39,7 +39,7 @@ export const isMotionReduced = (): boolean => Platform.isDisableAnimations
 export class Animation {
   private onEnd: EndCallback | null | undefined
   protected active = false
-  protected readonly useNativeDriver: boolean
+  readonly useNativeDriver: boolean
 
   constructor(config?: AnimationConfig) {
     this.useNativeDriver = config?.useNativeDriver === true

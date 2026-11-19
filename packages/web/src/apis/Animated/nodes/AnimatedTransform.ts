@@ -80,6 +80,11 @@ export class AnimatedTransform extends AnimatedWithChildren {
     return mapTransforms(this.transforms, (node) => node.__getAnimatedValue())
   }
 
+  // The name of each transform, such as `translateX`.
+  properties(): string[] {
+    return this.transforms.flatMap((transform) => Object.keys(transform))
+  }
+
   override __attach(): void {
     for (const node of this.nodes) node.__addChild(this)
     super.__attach()
