@@ -48,6 +48,34 @@ describe('Animated.View', () => {
     expect(onCountingRender).toHaveBeenCalledOnce()
   })
 
+  test('animates a Color in a color style, and the layout and transform of a ValueXY', () => {
+    const color = new Animated.Color('red')
+    const position = new Animated.ValueXY({ x: 1, y: 2 })
+    const { container } = render(
+      <Animated.View
+        style={[
+          {
+            backgroundColor: color,
+            position: 'absolute',
+            transform: position.getTranslateTransform(),
+          },
+          position.getLayout(),
+        ]}
+      />,
+    )
+    expect(getComputedStyle(first(container)).backgroundColor).toBe('rgb(255, 0, 0)')
+
+    color.setValue('blue')
+    position.setValue({ x: 10, y: 20 })
+
+    const { style } = first(container)
+    const computed = getComputedStyle(first(container))
+    expect(style.backgroundColor).toBe('rgb(0, 0, 255)')
+    expect([computed.left, computed.top]).toEqual(['10px', '20px'])
+    expect(style.transform).toContain('translateX(10px)')
+    expect(style.transform).toContain('translateY(20px)')
+  })
+
   test('animates a transform from an interpolation and keeps its static parts', () => {
     const progress = new Animated.Value(0)
     const translateX = progress.interpolate({ inputRange: [0, 1], outputRange: [0, 100] })
@@ -195,6 +223,25 @@ describe('Animated.event', () => {
     const handler = Animated.event([{ nativeEvent: { y } }], { useNativeDriver: false })
     expect(() => handler({ nativeEvent: { y: '30' } })).toThrow(
       'Bad mapping of event key y, should be number but got string',
+    )
+  })
+
+  test('sets a ValueXY from an { x, y } in the event', () => {
+    const offset = new Animated.ValueXY()
+    const handler = Animated.event([{ nativeEvent: { contentOffset: offset } }], {
+      useNativeDriver: false,
+    })
+
+    handler({ nativeEvent: { contentOffset: { x: 3, y: 4 } } })
+
+    expect(offset.__getValue()).toEqual({ x: 3, y: 4 })
+  })
+
+  test('in development, throws when a ValueXY gets no { x, y }', () => {
+    const offset = new Animated.ValueXY()
+    const handler = Animated.event([{ nativeEvent: { offset } }], { useNativeDriver: false })
+    expect(() => handler({ nativeEvent: { offset: 3 } })).toThrow(
+      'Bad mapping of event key offset, should be XY but got 3',
     )
   })
 })

@@ -2679,6 +2679,9 @@ export function FadeIn({ children }: { children: ReactNode }) {
 | Member                                                       | On the web                                                                                                                                                                                            |
 | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `new Animated.Value(value)`                                  | `setValue`, `setOffset`, `flattenOffset`, `extractOffset`, `stopAnimation`, `resetAnimation`, `stopTracking`, `interpolate`, and the listeners.                                                       |
+| `new Animated.ValueXY({ x, y }?)`                            | Two values, `x` and `y`, for a 2D motion such as a drag. The same methods take and give `{ x, y }`. `getLayout()` gives `{ left, top }`, and `getTranslateTransform()` gives the `transform`.         |
+| `new Animated.Color(color?)`                                 | Four values, `r`, `g`, `b` (0 to 255), and `a` (0 to 1), from a color string, `{ r, g, b, a }`, or four `Animated.Value`s. Black by default. Put it in a color style, such as `backgroundColor`.      |
+| `useAnimatedValue`, `useAnimatedValueXY`, `useAnimatedColor` | Hooks, imported from `react-native`. Each makes its value on the first render and returns the same value after that.                                                                                  |
 | `value.interpolate(config)`                                  | Numbers, strings with numbers such as `'90deg'`, and colors, which come out as `rgba()`. `extrapolate`, `extrapolateLeft`, `extrapolateRight`, and `easing`.                                          |
 | `Animated.add`, `subtract`, `multiply`, `divide`             | Take two values, or a value and a number. A division by zero gives 0, as on native.                                                                                                                   |
 | `Animated.modulo(value, modulus)`                            | The rest from 0 up to `modulus`, also for a negative value.                                                                                                                                           |
@@ -2690,7 +2693,7 @@ export function FadeIn({ children }: { children: ReactNode }) {
 | `Animated.parallel(animations, config?)`                     | Starts each animation at once. With `stopTogether` (the default), one that stops early stops the rest.                                                                                                |
 | `Animated.delay(time)`, `Animated.stagger(time, animations)` | `delay` waits `time` ms, for a pause in a sequence. `stagger` starts animation `i` after `time * i` ms.                                                                                               |
 | `Animated.loop(animation, config?)`                          | Runs `animation` `iterations` times, or until `stop()` with -1 (the default). With `resetBeforeIteration` (the default), each iteration starts from the first value.                                  |
-| `Animated.event(mapping, config)`                            | A handler that sets each mapped value from the event, then calls `listener`.                                                                                                                          |
+| `Animated.event(mapping, config)`                            | A handler that sets each mapped value from the event, then calls `listener`. A `ValueXY` in the mapping takes an `{ x, y }` of the event.                                                             |
 | `Animated.View`, `Animated.Text`                             | A value in `style` or in `transform` animates.                                                                                                                                                        |
 | `Animated.createAnimatedComponent(Component)`                | Animates the props of any component.                                                                                                                                                                  |
 | `Animated.Node`, `Animated.Interpolation`                    | The classes, for types and `instanceof`.                                                                                                                                                              |
@@ -2699,18 +2702,21 @@ Each animation has `start(callback?)`, `stop()`, and `reset()`.
 
 The `toValue` of `timing` and `spring` can be another `Animated` value or an interpolation. The animated value then follows it: each change starts a new animation to the new target. `stopAnimation()` or a new animation of the value ends this. `setValue()` doesn't.
 
+`timing`, `spring`, and `decay` also animate a `ValueXY` or a `Color`: they run one animation for each channel. A `toValue` or a `velocity` with a part for each channel, such as `{ x: 100, y: 0 }` or `{ r: 255, g: 0, b: 0, a: 1 }`, gives each channel its part. Another `ValueXY` or `Color` as `toValue` makes each channel follow its own channel.
+
 ## Differences from React Native
 
 - **No native driver.** `useNativeDriver: true` runs the same JavaScript driver. Each frame runs on the main thread, as on react-native-web.
 - **Reduced motion.** When the user asks for less motion (`prefers-reduced-motion`), `timing` and `spring` go to `toValue` at once, and `decay` goes at once to the value where it would stop. A `delay` still waits, so a sequence keeps its pauses. A `loop` ends after one iteration.
-- **`toValue` takes a number or an `Animated` node,** and the `velocity` of `spring` and `decay` takes only a number. The `{ x, y }` and color forms aren't there yet.
+- **An `{ x, y }` with a single `Animated.Value`** as the `toValue` or the `velocity` throws an error. React Native gives `NaN` frames.
+- **A color that `Animated.Color` can't read** gives black, as on native. This includes CSS values such as `var(--accent)`.
 - **A division by zero** logs one warning in development. React Native logs an error each time.
 - **A value in a prop that isn't `style`** renders the component again on each frame. A value in `style` doesn't.
 - **`Animated.event` always returns a function,** also with `useNativeDriver: true`.
 
 ## Not there yet
 
-`Animated.ValueXY`, `Animated.Color`, `forkEvent`, `unforkEvent`, `attachNativeEvent`, `Animated.Image`, `Animated.ScrollView`, `Animated.FlatList`, `Animated.SectionList`, and the hooks `useAnimatedValue`, `useAnimatedValueXY`, and `useAnimatedColor`.
+`forkEvent`, `unforkEvent`, `attachNativeEvent`, `Animated.Image`, `Animated.ScrollView`, `Animated.FlatList`, and `Animated.SectionList`.
 
 ---
 

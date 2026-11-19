@@ -6,6 +6,12 @@
 
 export type ValueListenerCallback = (state: { value: number }) => unknown
 
+// React Native types the listener of a node with `any`, so a node can pass its own kind of value:
+// a `ValueXY` passes `{ x, y }`, and an interpolation with a string output passes `{ value }` with
+// a string.
+// oxlint-disable-next-line typescript/no-explicit-any
+type NodeListenerCallback = (value: any) => unknown
+
 export type AnimatedNodeConfig = Readonly<{
   debugID?: string | undefined
   unstable_disableBatchingForNativeCreate?: boolean | undefined
@@ -17,7 +23,7 @@ let nextListenerId = 1
 // with `__` keep React Native's names, because libraries call them: react-native-svg calls
 // `__getAnimatedValue`.
 export class AnimatedNode {
-  private readonly listeners = new Map<string, ValueListenerCallback>()
+  private readonly listeners = new Map<string, NodeListenerCallback>()
 
   __attach(): void {}
 
@@ -40,7 +46,7 @@ export class AnimatedNode {
     return []
   }
 
-  addListener(callback: ValueListenerCallback): string {
+  addListener(callback: NodeListenerCallback): string {
     const id = String(nextListenerId++)
     this.listeners.set(id, callback)
     return id

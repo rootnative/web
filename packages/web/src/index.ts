@@ -11,6 +11,7 @@ export type { AlertButton, AlertButtonStyle, AlertOptions, AlertType } from './a
 // from its module: the build emits no file for a module that only re-exports, and
 // `@rootnative/web-expo` imports the file of each name.
 export * as Animated from './apis/Animated/AnimatedExports'
+export { useAnimatedColor, useAnimatedValue, useAnimatedValueXY } from './apis/Animated/hooks'
 export { Appearance } from './apis/Appearance'
 export type {
   AppearanceListener,

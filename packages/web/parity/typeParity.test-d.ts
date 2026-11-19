@@ -43,9 +43,6 @@ type ExportGaps =
   | 'ImageBackground'
   | 'LayoutAnimation'
   | 'SafeAreaView'
-  | 'useAnimatedColor'
-  | 'useAnimatedValue'
-  | 'useAnimatedValueXY'
   // Native platform, native modules, and development tools.
   | 'ActionSheetIOS'
   | 'AppRegistry'
@@ -274,18 +271,21 @@ export type HostInstanceParity = [None<HostMethodMismatches>]
 
 // What React Native's `Animated` has and this package doesn't yet.
 type AnimatedGaps =
-  | 'Color'
   | 'FlatList'
   | 'Image'
   | 'ScrollView'
   | 'SectionList'
-  | 'ValueXY'
   | 'attachNativeEvent'
   | 'forkEvent'
   | 'unforkEvent'
 
-// With no `ValueXY` and no `Color` yet, `toValue` takes no `{ x, y }` and no color, and a
-// `velocity` takes no `{ x, y }`.
+// The name, when a value of our type doesn't fit React Native's type.
+type Misfit<Name extends string, OurType, NativeType> = [OurType] extends [NativeType]
+  ? never
+  : Name
+
+// From React Native's side, `toValue` never fits: our node classes have private members, so React
+// Native's classes don't fit them. From our side, each `toValue` must fit.
 export type AnimatedParity = [
   None<Diff<keyof typeof Native.Animated, keyof typeof Web.Animated, AnimatedGaps>>,
   None<
@@ -316,20 +316,30 @@ export type AnimatedParity = [
   None<FitDiff<Web.Animated.TimingAnimationConfig, Native.Animated.TimingAnimationConfig, never>>,
   None<PropDiff<Native.Animated.SpringAnimationConfig, Web.Animated.SpringAnimationConfig, never>>,
   None<
-    FitDiff<
-      Native.Animated.SpringAnimationConfig,
-      Web.Animated.SpringAnimationConfig,
-      'toValue' | 'velocity'
-    >
+    FitDiff<Native.Animated.SpringAnimationConfig, Web.Animated.SpringAnimationConfig, 'toValue'>
   >,
   None<FitDiff<Web.Animated.SpringAnimationConfig, Native.Animated.SpringAnimationConfig, never>>,
   None<PropDiff<Native.Animated.DecayAnimationConfig, Web.Animated.DecayAnimationConfig, never>>,
-  None<
-    FitDiff<Native.Animated.DecayAnimationConfig, Web.Animated.DecayAnimationConfig, 'velocity'>
-  >,
+  None<FitDiff<Native.Animated.DecayAnimationConfig, Web.Animated.DecayAnimationConfig, never>>,
   None<FitDiff<Web.Animated.DecayAnimationConfig, Native.Animated.DecayAnimationConfig, never>>,
   None<PropDiff<Native.Animated.AnimatedNode, Web.Animated.AnimatedNode, never>>,
   None<PropDiff<Native.Animated.Value, Web.Animated.Value, never>>,
+  None<PropDiff<Native.Animated.ValueXY, Web.Animated.ValueXY, never>>,
+  None<PropDiff<Native.Animated.Color, Web.Animated.Color, never>>,
+  None<Misfit<'ValueXY', Web.Animated.ValueXY, Native.Animated.ValueXY>>,
+  None<Misfit<'Color', Web.Animated.Color, Native.Animated.Color>>,
+  None<Misfit<'useAnimatedValue', typeof Web.useAnimatedValue, typeof Native.useAnimatedValue>>,
+  None<
+    Misfit<'useAnimatedValueXY', typeof Web.useAnimatedValueXY, typeof Native.useAnimatedValueXY>
+  >,
+  // React Native's parameter takes four of its own `Animated.Value`s, which don't fit ours.
+  None<
+    Misfit<
+      'useAnimatedColor',
+      ReturnType<typeof Web.useAnimatedColor>,
+      ReturnType<typeof Native.useAnimatedColor>
+    >
+  >,
   None<PropDiff<Native.Animated.Interpolation<number>, Web.Animated.Interpolation<number>, never>>,
   None<PropDiff<Native.Animated.AnimatedAddition, Web.Animated.AnimatedAddition, never>>,
   None<PropDiff<Native.Animated.AnimatedSubtraction, Web.Animated.AnimatedSubtraction, never>>,

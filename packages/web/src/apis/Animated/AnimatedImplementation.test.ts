@@ -14,8 +14,10 @@ import {
 } from './AnimatedImplementation'
 import { SpringAnimation } from './animations/SpringAnimation'
 import { fromBouncinessAndSpeed, fromOrigamiTensionAndFriction } from './animations/springConfig'
+import { AnimatedColor } from './nodes/AnimatedColor'
 import { AnimatedNode } from './nodes/AnimatedNode'
 import { AnimatedValue } from './nodes/AnimatedValue'
+import { AnimatedValueXY } from './nodes/AnimatedValueXY'
 
 type Sample = { time: number; value: number }
 
@@ -182,14 +184,14 @@ describe('timing', () => {
     expect(calls).toEqual(['onComplete', 'start'])
   })
 
-  test('throws for a toValue that is not a number or a node, such as the one of a ValueXY', () => {
+  test('throws for a toValue that is not a number or a node, such as a color string', () => {
     const value = new AnimatedValue(0)
-    const toValue = { x: 1, y: 2 } as unknown as number
+    const toValue = 'red' as unknown as number
     expect(() => timing(value, { toValue, useNativeDriver: false }).start()).toThrow(
-      'Animated: a toValue that is not a number or an Animated node is not in @rootnative/web yet',
+      'Animated: toValue must be a number or an Animated node.',
     )
     expect(() => spring(value, { toValue, useNativeDriver: false }).start()).toThrow(
-      'Animated: a toValue that is not a number or an Animated node is not in @rootnative/web yet',
+      'Animated: toValue must be a number or an Animated node.',
     )
   })
 })
@@ -747,5 +749,107 @@ describe('a node as toValue', () => {
     vi.advanceTimersByTime(200)
 
     expect(follower.__getValue()).toBeCloseTo(50, 6)
+  })
+})
+
+describe('a ValueXY or a Color', () => {
+  test('timing moves each channel to its part of toValue, and calls back once', () => {
+    const xy = new AnimatedValueXY({ x: 0, y: 100 })
+    const done = vi.fn()
+    timing(xy, { toValue: { x: 50, y: 0 }, duration: 100, useNativeDriver: false }).start(done)
+    vi.advanceTimersByTime(50)
+    const halfway = xy.__getValue()
+    expect(halfway.x).toBeGreaterThan(0)
+    expect(halfway.y).toBeLessThan(100)
+
+    vi.advanceTimersByTime(100)
+
+    expect(xy.__getValue()).toEqual({ x: 50, y: 0 })
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
+  })
+
+  test('a number as toValue moves each channel to it', () => {
+    const xy = new AnimatedValueXY()
+    timing(xy, { toValue: 7, duration: 0, useNativeDriver: false }).start()
+    expect(xy.__getValue()).toEqual({ x: 7, y: 7 })
+  })
+
+  test('spring and decay give each channel its part of velocity', () => {
+    const springing = new AnimatedValueXY()
+    spring(springing, {
+      toValue: { x: 0, y: 0 },
+      velocity: { x: 1, y: -1 },
+      useNativeDriver: false,
+    }).start()
+    const sliding = new AnimatedValueXY()
+    decay(sliding, { velocity: { x: -1, y: 1 }, useNativeDriver: false }).start()
+
+    vi.advanceTimersByTime(48)
+
+    expect(springing.x.__getValue()).toBeGreaterThan(0)
+    expect(springing.y.__getValue()).toBeLessThan(0)
+    expect(sliding.x.__getValue()).toBeLessThan(0)
+    expect(sliding.y.__getValue()).toBeGreaterThan(0)
+  })
+
+  test('another ValueXY as toValue: each channel follows its own channel', () => {
+    const leader = new AnimatedValueXY()
+    const follower = new AnimatedValueXY()
+    timing(follower, { toValue: leader, duration: 100, useNativeDriver: false }).start()
+
+    leader.setValue({ x: 30, y: -30 })
+    vi.advanceTimersByTime(200)
+
+    expect(follower.__getValue()).toEqual({ x: 30, y: -30 })
+  })
+
+  test('stop stops each channel, and the callback runs once with finished: false', () => {
+    const xy = new AnimatedValueXY()
+    const done = vi.fn()
+    const animation = timing(xy, {
+      toValue: { x: 100, y: 100 },
+      duration: 100,
+      useNativeDriver: false,
+    })
+    animation.start(done)
+    vi.advanceTimersByTime(50)
+    const at = xy.__getValue()
+
+    animation.stop()
+    vi.advanceTimersByTime(100)
+
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: false })
+    expect(xy.__getValue()).toEqual(at)
+  })
+
+  test('timing moves a Color to { r, g, b, a }, and a spring follows another Color', () => {
+    const color = new AnimatedColor('red')
+    timing(color, {
+      toValue: { r: 0, g: 0, b: 255, a: 0.5 },
+      duration: 100,
+      useNativeDriver: false,
+    }).start()
+    vi.advanceTimersByTime(150)
+    expect(color.__getValue()).toBe('rgba(0, 0, 255, 0.5)')
+
+    const leader = new AnimatedColor('black')
+    spring(color, { toValue: leader, overshootClamping: true, useNativeDriver: false }).start()
+    leader.setValue('white')
+    vi.advanceTimersByTime(3000)
+    expect(color.__getValue()).toBe('rgba(255, 255, 255, 1)')
+  })
+
+  test('throws for { x, y } with a single value, where React Native gives NaN', () => {
+    const value = new AnimatedValue(0)
+    const xy = { x: 1, y: 2 }
+    expect(() =>
+      spring(value, { toValue: 1, velocity: xy, useNativeDriver: false }).start(),
+    ).toThrow('Animated: a velocity of { x, y } needs an Animated.ValueXY.')
+    expect(() => decay(value, { velocity: xy, useNativeDriver: false }).start()).toThrow(
+      'Animated: a velocity of { x, y } needs an Animated.ValueXY.',
+    )
+    expect(() => timing(value, { toValue: xy, useNativeDriver: false }).start()).toThrow(
+      'Animated: toValue must be a number or an Animated node.',
+    )
   })
 })

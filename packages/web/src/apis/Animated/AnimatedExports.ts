@@ -38,6 +38,8 @@ export type {
 } from './createAnimatedComponent'
 export { add } from './nodes/AnimatedAddition'
 export type { AnimatedAddition } from './nodes/AnimatedAddition'
+export { AnimatedColor as Color } from './nodes/AnimatedColor'
+export type { AnimatedColor } from './nodes/AnimatedColor'
 export { diffClamp } from './nodes/AnimatedDiffClamp'
 export type { AnimatedDiffClamp } from './nodes/AnimatedDiffClamp'
 export { divide } from './nodes/AnimatedDivision'
@@ -57,6 +59,7 @@ export { subtract } from './nodes/AnimatedSubtraction'
 export type { AnimatedSubtraction } from './nodes/AnimatedSubtraction'
 export { AnimatedValue as Value } from './nodes/AnimatedValue'
 export type { AnimatedValueConfig as AnimatedConfig } from './nodes/AnimatedValue'
+export { AnimatedValueXY as ValueXY } from './nodes/AnimatedValueXY'
 
 export type Numeric =
   | AnimatedAddition

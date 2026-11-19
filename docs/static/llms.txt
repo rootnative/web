@@ -115,17 +115,16 @@ KeyboardAvoidingView, StatusBar.
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AppState, Keyboard, Linking, Alert, Share, Vibration, Clipboard,
 AccessibilityInfo, I18nManager, BackHandler, PixelRatio, processColor,
-PanResponder, Animated, Easing, usePressability.
+PanResponder, Animated, useAnimatedValue, useAnimatedValueXY, useAnimatedColor,
+Easing, usePressability.
 
 Compat, for libraries only, do not call in app code: unstable_createElement,
 findNodeHandle, TurboModuleRegistry.
 
 NOT IMPLEMENTED, do not import:
 - LayoutAnimation.
-- Animated: ValueXY, Color, forkEvent, unforkEvent, attachNativeEvent,
-  Animated.Image, Animated.ScrollView, Animated.FlatList,
-  Animated.SectionList, useAnimatedValue, useAnimatedValueXY,
-  useAnimatedColor.
+- Animated: forkEvent, unforkEvent, attachNativeEvent, Animated.Image,
+  Animated.ScrollView, Animated.FlatList, Animated.SectionList.
 - A Next.js plugin, and templates for a Vite app with and without server
   rendering.
 
@@ -650,12 +649,21 @@ StatusBar
   Easing.inOut(Easing.ease) by default), spring (all three kinds of config,
   velocity, overshootClamping), decay (velocity per ms, deceleration 0.998 by
   default), sequence, parallel (stopTogether), delay, stagger, loop
-  (iterations, -1 by default; resetBeforeIteration), event, View, Text,
-  createAnimatedComponent, Node, Interpolation. interpolate takes numbers,
-  strings with numbers ('90deg'), and colors (out as rgba()). toValue of
-  timing and spring: a number, or an Animated value or interpolation that the
-  value follows until stopAnimation() or a new animation; NOT { x, y } or a
-  color yet. velocity takes only a number. NO native driver:
+  (iterations, -1 by default; resetBeforeIteration), event (a ValueXY in the
+  mapping takes { x, y }), View, Text, createAnimatedComponent, Node,
+  Interpolation. ValueXY: x and y values, the same methods with { x, y },
+  getLayout() ({ left, top }), getTranslateTransform(). Color: r, g, b (0 to
+  255) and a (0 to 1) values, from a color string, { r, g, b, a }, or four
+  values; black by default and for a color it can't read (also var(--x));
+  its output is an rgba() string for a color style. Hooks (top-level
+  imports): useAnimatedValue, useAnimatedValueXY, useAnimatedColor; each
+  returns the value of its first render. interpolate takes numbers, strings
+  with numbers ('90deg'), and colors (out as rgba()). toValue of timing and
+  spring: a number, or an Animated value or interpolation that the value
+  follows until stopAnimation() or a new animation. timing, spring, and decay
+  on a ValueXY or a Color run one animation per channel; a toValue or
+  velocity of { x, y } or { r, g, b, a }, or another ValueXY or Color, gives
+  each channel its part. { x, y } with a single Value throws. NO native driver:
   useNativeDriver: true runs the same JavaScript driver on the main thread. A
   frame writes the style to the element with no React render; a value in a
   prop that isn't style renders the component on each frame. With

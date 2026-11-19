@@ -8,8 +8,17 @@ import type { NativeSyntheticEvent } from '../../events/types'
 import { isProductionEnv } from '../../utils/env'
 import type { PlatformConfig } from './animations/Animation'
 import { AnimatedValue } from './nodes/AnimatedValue'
+import { AnimatedValueXY } from './nodes/AnimatedValueXY'
 
-export type Mapping = { [key: string]: Mapping } | AnimatedValue
+export type Mapping = { [key: string]: Mapping } | AnimatedValue | AnimatedValueXY
+
+const isNumberPair = (event: unknown): boolean =>
+  typeof event === 'object' &&
+  event !== null &&
+  'x' in event &&
+  typeof event.x === 'number' &&
+  'y' in event &&
+  typeof event.y === 'number'
 
 export type EventConfig<T> = {
   listener?: ((event: NativeSyntheticEvent<T>) => unknown) | undefined
@@ -27,6 +36,12 @@ const validate = (mapping: Mapping | null | undefined, event: unknown, key: stri
   if (mapping instanceof AnimatedValue) {
     if (typeof event !== 'number') {
       fail(`Bad mapping of event key ${key}, should be number but got ${typeof event}`)
+    }
+    return
+  }
+  if (mapping instanceof AnimatedValueXY) {
+    if (!isNumberPair(event)) {
+      fail(`Bad mapping of event key ${key}, should be XY but got ${String(event)}`)
     }
     return
   }
@@ -50,6 +65,12 @@ const validateMapping = (argMapping: readonly (Mapping | null | undefined)[], ar
 const setValues = (mapping: Mapping | null | undefined, event: unknown): void => {
   if (mapping instanceof AnimatedValue) {
     if (typeof event === 'number') mapping.setValue(event)
+  } else if (mapping instanceof AnimatedValueXY) {
+    if (typeof event === 'object' && event !== null) {
+      const { x, y } = event as Record<string, unknown>
+      setValues(mapping.x, x)
+      setValues(mapping.y, y)
+    }
   } else if (typeof mapping === 'object' && mapping !== null) {
     for (const name in mapping) {
       setValues(mapping[name], (event as Record<string, unknown> | null)?.[name])

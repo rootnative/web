@@ -12,10 +12,12 @@ import { SpringAnimation } from './animations/SpringAnimation'
 import type { SpringAnimationConfigSingle } from './animations/SpringAnimation'
 import { TimingAnimation } from './animations/TimingAnimation'
 import type { TimingAnimationConfigSingle } from './animations/TimingAnimation'
+import type { AnimatedColor, RgbaValue } from './nodes/AnimatedColor'
 import type { AnimatedInterpolation } from './nodes/AnimatedInterpolation'
 import { AnimatedNode } from './nodes/AnimatedNode'
 import { AnimatedTracking } from './nodes/AnimatedTracking'
 import { AnimatedValue } from './nodes/AnimatedValue'
+import { AnimatedValueXY } from './nodes/AnimatedValueXY'
 
 export type CompositeAnimation = {
   start: (callback?: EndCallback | undefined, isLooping?: boolean) => void
@@ -23,18 +25,33 @@ export type CompositeAnimation = {
   reset: () => void
 }
 
-// A number, or a node that the value follows. React Native also takes the `toValue` of a `ValueXY`
-// and of a color.
-type ToValue = number | AnimatedValue | AnimatedInterpolation<number>
+type XY = Readonly<{ x: number; y: number }>
+
+type AnimatedTarget = AnimatedValue | AnimatedValueXY | AnimatedColor
+
+// A number, or a node that the value follows. `{ x, y }` and a `ValueXY` are for a `ValueXY`, and
+// `{ r, g, b, a }` and a `Color` are for a `Color`.
+type ToValue =
+  | number
+  | AnimatedValue
+  | XY
+  | AnimatedValueXY
+  | RgbaValue
+  | AnimatedColor
+  | AnimatedInterpolation<number>
 
 export type TimingAnimationConfig = Readonly<
   Omit<TimingAnimationConfigSingle, 'toValue'> & { toValue: ToValue }
 >
 export type SpringAnimationConfig = Readonly<
-  Omit<SpringAnimationConfigSingle, 'toValue'> & { toValue: ToValue }
+  Omit<SpringAnimationConfigSingle, 'toValue' | 'velocity'> & {
+    toValue: ToValue
+    velocity?: number | XY | undefined
+  }
 >
-// Only a number as `velocity` for now. React Native also takes `{ x, y }` for a `ValueXY`.
-export type DecayAnimationConfig = DecayAnimationConfigSingle
+export type DecayAnimationConfig = Readonly<
+  Omit<DecayAnimationConfigSingle, 'velocity'> & { velocity: number | XY }
+>
 
 export type ParallelConfig = { stopTogether?: boolean | undefined }
 
@@ -66,7 +83,7 @@ const animateTo = (
 ): void => {
   if (typeof toValue !== 'number' && !(toValue instanceof AnimatedNode)) {
     throw new Error(
-      'Animated: a toValue that is not a number or an Animated node is not in @rootnative/web yet. See https://rootnative.github.io/web/status.',
+      'Animated: toValue must be a number or an Animated node. An object of numbers, such as { x, y }, needs an Animated.ValueXY or an Animated.Color.',
     )
   }
   value.stopTracking()
@@ -74,46 +91,109 @@ const animateTo = (
   else value.track(new AnimatedTracking(value, toValue, makeAnimation, callback))
 }
 
+// React Native gives NaN frames here. A `ValueXY` splits `{ x, y }` before this point.
+const singleVelocity = (velocity: number | XY): number => {
+  if (typeof velocity !== 'number') {
+    throw new Error('Animated: a velocity of { x, y } needs an Animated.ValueXY.')
+  }
+  return velocity
+}
+
+const channelsOf = (value: AnimatedValueXY | AnimatedColor): [string, AnimatedValue][] =>
+  value instanceof AnimatedValueXY
+    ? [
+        ['x', value.x],
+        ['y', value.y],
+      ]
+    : [
+        ['r', value.r],
+        ['g', value.g],
+        ['b', value.b],
+        ['a', value.a],
+      ]
+
+// The config of one channel. A key with a part for each channel, such as `toValue: { x, y }` or
+// `toValue: someValueXY`, gives the channel its part. Any other key stays as it is.
+const channelConfig = <Config extends object>(
+  config: Config,
+  channel: string,
+  channels: readonly string[],
+): Config => {
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(config)) {
+    const parts = typeof value === 'object' && value !== null ? value : {}
+    result[key] = channels.every((name) => parts[name] !== undefined) ? parts[channel] : value
+  }
+  return result as Config
+}
+
+// A `ValueXY` or a `Color` runs one animation for each channel. The `parallel` has
+// `stopTogether: false`, as in React Native, so a channel that tracks a node doesn't stop the
+// others.
+const vectorAnimation = <Config extends object>(
+  value: AnimatedValueXY | AnimatedColor,
+  config: Config,
+  animate: (value: AnimatedValue, config: Config) => CompositeAnimation,
+): CompositeAnimation => {
+  const channels = channelsOf(value)
+  const names = channels.map(([name]) => name)
+  return parallel(
+    channels.map(([name, channel]) => animate(channel, channelConfig(config, name, names))),
+    { stopTogether: false },
+  )
+}
+
 export const timing = (
-  value: AnimatedValue,
+  value: AnimatedTarget,
   config: TimingAnimationConfig,
-): CompositeAnimation => ({
-  start: (callback) => {
-    animateTo(
-      value,
-      config.toValue,
-      (toValue) => new TimingAnimation({ ...config, toValue }),
-      combineCallbacks(callback, config),
-    )
-  },
-  stop: () => value.stopAnimation(),
-  reset: () => value.resetAnimation(),
-})
+): CompositeAnimation => {
+  if (!(value instanceof AnimatedValue)) return vectorAnimation(value, config, timing)
+  return {
+    start: (callback) => {
+      animateTo(
+        value,
+        config.toValue,
+        (toValue) => new TimingAnimation({ ...config, toValue }),
+        combineCallbacks(callback, config),
+      )
+    },
+    stop: () => value.stopAnimation(),
+    reset: () => value.resetAnimation(),
+  }
+}
 
 export const spring = (
-  value: AnimatedValue,
+  value: AnimatedTarget,
   config: SpringAnimationConfig,
-): CompositeAnimation => ({
-  start: (callback) => {
-    animateTo(
-      value,
-      config.toValue,
-      (toValue) => new SpringAnimation({ ...config, toValue }),
-      combineCallbacks(callback, config),
-    )
-  },
-  stop: () => value.stopAnimation(),
-  reset: () => value.resetAnimation(),
-})
+): CompositeAnimation => {
+  if (!(value instanceof AnimatedValue)) return vectorAnimation(value, config, spring)
+  return {
+    start: (callback) => {
+      const velocity = config.velocity === undefined ? undefined : singleVelocity(config.velocity)
+      animateTo(
+        value,
+        config.toValue,
+        (toValue) => new SpringAnimation({ ...config, toValue, velocity }),
+        combineCallbacks(callback, config),
+      )
+    },
+    stop: () => value.stopAnimation(),
+    reset: () => value.resetAnimation(),
+  }
+}
 
-export const decay = (value: AnimatedValue, config: DecayAnimationConfig): CompositeAnimation => ({
-  start: (callback) => {
-    value.stopTracking()
-    value.animate(new DecayAnimation(config), combineCallbacks(callback, config))
-  },
-  stop: () => value.stopAnimation(),
-  reset: () => value.resetAnimation(),
-})
+export const decay = (value: AnimatedTarget, config: DecayAnimationConfig): CompositeAnimation => {
+  if (!(value instanceof AnimatedValue)) return vectorAnimation(value, config, decay)
+  return {
+    start: (callback) => {
+      const velocity = singleVelocity(config.velocity)
+      value.stopTracking()
+      value.animate(new DecayAnimation({ ...config, velocity }), combineCallbacks(callback, config))
+    },
+    stop: () => value.stopAnimation(),
+    reset: () => value.resetAnimation(),
+  }
+}
 
 // Starts each animation when the one before it ends. One that stops early ends the sequence with
 // `finished: false`, and the next ones don't start.

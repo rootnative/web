@@ -5,7 +5,7 @@
  */
 
 import type { Animation, EndCallback } from '../animations/Animation'
-import type { AnimatedNode, AnimatedNodeConfig } from './AnimatedNode'
+import type { AnimatedNode, AnimatedNodeConfig, ValueListenerCallback } from './AnimatedNode'
 import { AnimatedInterpolation } from './AnimatedInterpolation'
 import type {
   InterpolationConfigSupportedOutputType,
@@ -58,6 +58,10 @@ export class AnimatedValue extends AnimatedWithChildren {
 
   override __getValue(): number {
     return this.value + this.offset
+  }
+
+  override addListener(callback: ValueListenerCallback): string {
+    return super.addListener(callback)
   }
 
   setValue(value: number): void {
