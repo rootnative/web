@@ -33,6 +33,20 @@ export const flushValue = (root: AnimatedNode): void => {
   for (const leaf of leaves) leaf.update()
 }
 
+let sampled: ReadonlyMap<AnimatedValue, number> | null = null
+
+// Runs `read` with each value of `values` at its sample, so the graph gives its output at those
+// values. Nothing flushes and no listener runs. The Web Animations driver reads its keyframes so.
+export const withValues = <T>(values: ReadonlyMap<AnimatedValue, number>, read: () => T): T => {
+  const before = sampled
+  sampled = values
+  try {
+    return read()
+  } finally {
+    sampled = before
+  }
+}
+
 export class AnimatedValue extends AnimatedWithChildren {
   private value: number
   private offset = 0
@@ -57,7 +71,7 @@ export class AnimatedValue extends AnimatedWithChildren {
   }
 
   override __getValue(): number {
-    return this.value + this.offset
+    return (sampled?.get(this) ?? this.value) + this.offset
   }
 
   override addListener(callback: ValueListenerCallback): string {

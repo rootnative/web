@@ -4,6 +4,8 @@
  * Platforms, Inc. and affiliates.
  */
 
+import { FRAME_MS } from '../nativeDriver/curve'
+import type { Curve } from '../nativeDriver/curve'
 import { Animation, isMotionReduced, now } from './Animation'
 import type { AnimationConfig, EndCallback } from './Animation'
 import { fromBouncinessAndSpeed, fromOrigamiTensionAndFriction } from './springConfig'
@@ -143,11 +145,8 @@ export class SpringAnimation extends Animation {
   }
 
   // The closed form of a damped harmonic oscillator, x'' + 2ζω₀x' + ω₀²x = 0, with ω₀ = √(k/m) and
-  // ζ = c / 2√(mk). It is the model of CASpringAnimation on iOS.
-  onUpdate(): void {
-    const time = Math.min(now(), this.lastTime + MAX_STEP_MS)
-    this.frameTime += (time - this.lastTime) / 1000
-
+  // ζ = c / 2√(mk), at `t` s after the start. It is the model of CASpringAnimation on iOS.
+  private stateAt(t: number): Readonly<{ position: number; velocity: number }> {
     const c = this.damping
     const m = this.mass
     const k = this.stiffness
@@ -156,23 +155,58 @@ export class SpringAnimation extends Animation {
     const omega0 = Math.sqrt(k / m)
     const omega1 = omega0 * Math.sqrt(1 - zeta * zeta)
     const x0 = this.toValue - this.startPosition
-    const t = this.frameTime
 
-    let position: number
-    let velocity: number
     if (zeta < 1) {
       const envelope = Math.exp(-zeta * omega0 * t)
       const sin = Math.sin(omega1 * t)
       const cos = Math.cos(omega1 * t)
-      position = this.toValue - envelope * (((v0 + zeta * omega0 * x0) / omega1) * sin + x0 * cos)
-      velocity =
-        zeta * omega0 * envelope * ((sin * (v0 + zeta * omega0 * x0)) / omega1 + x0 * cos) -
-        envelope * (cos * (v0 + zeta * omega0 * x0) - omega1 * x0 * sin)
-    } else {
-      const envelope = Math.exp(-omega0 * t)
-      position = this.toValue - envelope * (x0 + (v0 + omega0 * x0) * t)
-      velocity = envelope * (v0 * (t * omega0 - 1) + t * x0 * (omega0 * omega0))
+      return {
+        position: this.toValue - envelope * (((v0 + zeta * omega0 * x0) / omega1) * sin + x0 * cos),
+        velocity:
+          zeta * omega0 * envelope * ((sin * (v0 + zeta * omega0 * x0)) / omega1 + x0 * cos) -
+          envelope * (cos * (v0 + zeta * omega0 * x0) - omega1 * x0 * sin),
+      }
     }
+    const envelope = Math.exp(-omega0 * t)
+    return {
+      position: this.toValue - envelope * (x0 + (v0 + omega0 * x0) * t),
+      velocity: envelope * (v0 * (t * omega0 - 1) + t * x0 * (omega0 * omega0)),
+    }
+  }
+
+  // At rest, or past `toValue` with `overshootClamping`.
+  private isDone(position: number, velocity: number): boolean {
+    const isOvershooting =
+      this.overshootClamping &&
+      (this.startPosition < this.toValue ? position > this.toValue : position < this.toValue)
+    const isResting =
+      Math.abs(velocity) <= this.restSpeedThreshold &&
+      Math.abs(this.toValue - position) <= this.restDisplacementThreshold
+    return isOvershooting || isResting
+  }
+
+  // For the Web Animations driver, after `start`. The curve ends on the first 60 Hz frame where the
+  // spring is done, and the frame loop ends on the same test. Null for a spring that isn't done
+  // within `maxDuration` ms. The time starts after the delay.
+  curve(maxDuration: number): Curve | null {
+    const frames = Math.floor(maxDuration / FRAME_MS)
+    for (let frame = 0; frame <= frames; frame++) {
+      const end = frame * FRAME_MS
+      const { position, velocity } = this.stateAt(end / 1000)
+      if (this.isDone(position, velocity)) {
+        return {
+          duration: end,
+          valueAt: (time) => (time >= end ? this.toValue : this.stateAt(time / 1000).position),
+        }
+      }
+    }
+    return null
+  }
+
+  onUpdate(): void {
+    const time = Math.min(now(), this.lastTime + MAX_STEP_MS)
+    this.frameTime += (time - this.lastTime) / 1000
+    const { position, velocity } = this.stateAt(this.frameTime)
 
     this.lastTime = time
     this.lastPosition = position
@@ -180,16 +214,7 @@ export class SpringAnimation extends Animation {
     this.setValue(position)
     if (!this.active) return
 
-    let isOvershooting = false
-    if (this.overshootClamping) {
-      isOvershooting =
-        this.startPosition < this.toValue ? position > this.toValue : position < this.toValue
-    }
-    const isResting =
-      Math.abs(velocity) <= this.restSpeedThreshold &&
-      Math.abs(this.toValue - position) <= this.restDisplacementThreshold
-
-    if (isOvershooting || isResting) {
+    if (this.isDone(position, velocity)) {
       this.finish()
       return
     }

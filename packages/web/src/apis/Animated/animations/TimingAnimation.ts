@@ -6,6 +6,7 @@
 
 import { Easing } from '../../Easing'
 import type { EasingFunction } from '../../Easing'
+import type { Curve } from '../nativeDriver/curve'
 import { Animation, isMotionReduced, now } from './Animation'
 import type { AnimationConfig, EndCallback } from './Animation'
 
@@ -62,17 +63,25 @@ export class TimingAnimation extends Animation {
     else start()
   }
 
+  // As in React Native, the last value uses `easing(1)`. A custom curve that doesn't end at 1 ends
+  // short of `toValue`.
+  private valueAt(time: number): number {
+    const progress = this.easing(time >= this.duration ? 1 : time / this.duration)
+    return this.fromValue + progress * (this.toValue - this.fromValue)
+  }
+
+  // For the Web Animations driver, after `start`. The time starts after the delay.
+  curve(): Curve {
+    return { duration: this.duration, valueAt: (time) => this.valueAt(time) }
+  }
+
   onUpdate(): void {
-    const time = now()
-    if (time >= this.startTime + this.duration) {
-      // As in React Native, the last value uses `easing(1)`. A custom curve that doesn't end at 1
-      // ends short of `toValue`.
-      this.setValue(this.fromValue + this.easing(1) * (this.toValue - this.fromValue))
+    const time = now() - this.startTime
+    this.setValue(this.valueAt(time))
+    if (time >= this.duration) {
       this.notifyAnimationEnd({ finished: true })
       return
     }
-    const progress = this.easing((time - this.startTime) / this.duration)
-    this.setValue(this.fromValue + progress * (this.toValue - this.fromValue))
     if (this.active) this.frame = requestAnimationFrame(() => this.onUpdate())
   }
 
