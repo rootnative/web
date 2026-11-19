@@ -87,8 +87,7 @@ const setValues = (mapping: Mapping | null | undefined, event: unknown): void =>
   }
 }
 
-// The web has no native driver, so each event runs the JavaScript handler, also with
-// `useNativeDriver: true`.
+// Each event runs the JavaScript handler, also with `useNativeDriver: true`.
 export class AnimatedEvent {
   private readonly argMapping: readonly (Mapping | null | undefined)[]
   private listeners: Listener[] = []
@@ -121,11 +120,32 @@ export class AnimatedEvent {
   }
 }
 
+const nativeEventMapping = (mapping: Mapping | null | undefined): Mapping | undefined =>
+  mapping && !(mapping instanceof AnimatedValue) && !(mapping instanceof AnimatedValueXY)
+    ? mapping['nativeEvent']
+    : undefined
+
+// React Native moves each value under `nativeEvent` to the native side.
+const markNative = (mapping: Mapping | null | undefined): void => {
+  if (mapping instanceof AnimatedValue) {
+    mapping.markNative()
+  } else if (mapping instanceof AnimatedValueXY) {
+    mapping.x.markNative()
+    mapping.y.markNative()
+  } else if (typeof mapping === 'object' && mapping !== null) {
+    for (const name in mapping) markNative(mapping[name])
+  }
+}
+
+// React Native moves the values when the event attaches to a view. `Animated.event` returns a
+// function here, which attaches to nothing, so the values move at once.
 export const event = <T>(
   argMapping: readonly (Mapping | null | undefined)[],
   config: EventConfig<T>,
-): ((...args: unknown[]) => void) =>
-  new AnimatedEvent(argMapping, config as EventConfig<unknown>).__getHandler()
+): ((...args: unknown[]) => void) => {
+  if (config.useNativeDriver) markNative(nativeEventMapping(argMapping[0]))
+  return new AnimatedEvent(argMapping, config as EventConfig<unknown>).__getHandler()
+}
 
 // Adds a listener to an event prop. `Animated.event` returns a function here, so the result is a
 // function that calls the event and then the listener. An `Animated.Event` gets the listener added.
@@ -153,16 +173,11 @@ export const unforkEvent = (
   if (handler instanceof AnimatedEvent) handler.__removeListener(listener)
 }
 
-const nativeEventMapping = (mapping: Mapping | null | undefined): Mapping | undefined =>
-  mapping && !(mapping instanceof AnimatedValue) && !(mapping instanceof AnimatedValueXY)
-    ? mapping['nativeEvent']
-    : undefined
-
 // React Native attaches the values to a native event of the view, so they change with no
-// JavaScript. The web has no native driver. For `onScroll`, a `scroll` listener on the element
-// sets the values from the same `nativeEvent` that `ScrollView` gives its `onScroll`. Any other
-// event name has no effect and warns in development. A ref with no element yet does nothing, as in
-// React Native.
+// JavaScript, and it moves them to the native side. They move here too. For `onScroll`, a `scroll`
+// listener on the element sets the values from the same `nativeEvent` that `ScrollView` gives its
+// `onScroll`. Any other event name has no effect and warns in development. A ref with no element
+// yet does nothing more, as in React Native.
 export const attachNativeEvent = (
   viewRef: unknown,
   eventName: string,
@@ -174,6 +189,7 @@ export const attachNativeEvent = (
     mapping,
     'Native driven events only support animated values contained inside `nativeEvent`.',
   )
+  markNative(mapping)
   if (eventName !== 'onScroll') {
     warnOnce(
       'animated-attach-native-event',

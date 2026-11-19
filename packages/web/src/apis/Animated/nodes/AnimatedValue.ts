@@ -59,15 +59,23 @@ export class AnimatedValue extends AnimatedWithChildren {
   private tracking: AnimatedTracking | null = null
   private movedToNative = false
 
-  // React Native moves the value to its native side at once with `useNativeDriver`. Here, only an
-  // animation with `useNativeDriver: true` does that.
-  constructor(value: number, _config?: AnimatedValueConfig | null) {
+  // As in React Native, `useNativeDriver: true` in the config moves the value to the native side at
+  // once.
+  constructor(value: number, config?: AnimatedValueConfig | null) {
     super()
     if (typeof value !== 'number') {
       throw new Error('AnimatedValue: Attempting to set value to undefined')
     }
     this.value = value
     this.startingValue = value
+    if (config?.useNativeDriver === true) this.markNative()
+  }
+
+  // React Native's `__makeNative`: after it, the JavaScript driver can't animate the value. An
+  // animation with `useNativeDriver: true`, the config of a value, and a native event call it.
+  markNative(): void {
+    checkNativeGraph(this)
+    this.movedToNative = true
   }
 
   // A value that leaves the graph stops its animation.
@@ -130,8 +138,7 @@ export class AnimatedValue extends AnimatedWithChildren {
   // JavaScript driver can't animate it after that: on native, such code throws.
   animate(animation: Animation, callback: EndCallback | null | undefined): void {
     if (animation.useNativeDriver) {
-      checkNativeGraph(this)
-      this.movedToNative = true
+      this.markNative()
     } else if (this.movedToNative) {
       throw new Error(MOVED_TO_NATIVE)
     }

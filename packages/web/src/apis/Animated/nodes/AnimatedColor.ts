@@ -82,8 +82,9 @@ export class AnimatedColor extends AnimatedWithChildren {
   nativeColor: NativeColorValue | null | undefined = null
   private suspendCallbacks = 0
 
-  // `useNativeDriver` has no effect: the web runs each animation on the JavaScript driver.
-  constructor(valueIn?: InputValue, _config?: AnimatedColorConfig | null) {
+  // As in React Native, `useNativeDriver: true` in the config moves the four channels to the native
+  // side.
+  constructor(valueIn?: InputValue, config?: AnimatedColorConfig | null) {
     super()
     const value = valueIn ?? defaultColor
     if (isRgbaAnimatedValue(value)) {
@@ -97,6 +98,9 @@ export class AnimatedColor extends AnimatedWithChildren {
       this.g = new AnimatedValue(initial.g)
       this.b = new AnimatedValue(initial.b)
       this.a = new AnimatedValue(initial.a)
+    }
+    if (config?.useNativeDriver === true) {
+      for (const channel of [this.r, this.g, this.b, this.a]) channel.markNative()
     }
   }
 

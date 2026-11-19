@@ -78,7 +78,10 @@ In these cases, the animation runs on the JavaScript driver, with the same resul
 React Native's rules for the native driver apply:
 
 - In development, a style key, a transform, or an `interpolate` option that React Native's native driver can't move logs React Native's error, such as `Style property 'width' is not supported by native animated module`. The animation still runs on the web.
-- After an animation with `useNativeDriver: true`, an animation of the same value with `useNativeDriver: false` throws React Native's error.
+- A value moves to the native side with one of these. After that, an animation of the value with `useNativeDriver: false` throws React Native's error.
+  - An animation of the value with `useNativeDriver: true`.
+  - `useNativeDriver: true` in the config of `new Animated.Value`, `new Animated.ValueXY`, or `new Animated.Color`, or of their hooks.
+  - The value is under `nativeEvent` in the mapping of `Animated.event` with `useNativeDriver: true`, or of `Animated.attachNativeEvent`. React Native moves it when the event attaches to a view. Here it moves at once, because `Animated.event` returns a function.
 
 ## Differences from React Native
 

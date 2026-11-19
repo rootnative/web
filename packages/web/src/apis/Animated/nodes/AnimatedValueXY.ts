@@ -23,13 +23,13 @@ export class AnimatedValueXY extends AnimatedWithChildren {
   y: AnimatedValue
   private listenerIds: Record<string, { x: string; y: string }> = {}
 
-  // `useNativeDriver` has no effect: the web runs each animation on the JavaScript driver.
+  // As in React Native, `useNativeDriver: true` in the config moves `x` and `y` to the native side.
   constructor(
     valueIn?: {
       readonly x: number | AnimatedValue
       readonly y: number | AnimatedValue
     } | null,
-    _config?: AnimatedValueXYConfig | null,
+    config?: AnimatedValueXYConfig | null,
   ) {
     super()
     const value = valueIn ?? { x: 0, y: 0 }
@@ -43,6 +43,10 @@ export class AnimatedValueXY extends AnimatedWithChildren {
       )
       this.x = value.x
       this.y = value.y
+    }
+    if (config?.useNativeDriver === true) {
+      this.x.markNative()
+      this.y.markNative()
     }
   }
 

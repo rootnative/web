@@ -673,18 +673,20 @@ StatusBar
   JavaScript driver, more than 3,000 frames for all elements together, decay,
   Animated.event, no Web Animations API (jsdom). In development, a style key,
   transform, or interpolate option that React Native's native driver can't
-  move logs React Native's error. An animation with useNativeDriver: false
-  on a value that ran one with useNativeDriver: true throws, as on native.
-  On the JavaScript driver, a frame writes the style to the element with no
-  React render; a value in a prop that isn't style renders the component on
-  each frame. With prefers-reduced-motion, timing and spring go to toValue at
-  once, decay goes at once to where it would stop, a delay still waits, and a
-  loop ends after one iteration. Animated.event always returns a function, so
-  forkEvent of it returns a new function. attachNativeEvent(ref, 'onScroll',
-  mapping) sets the values from each scroll event of the element (a JavaScript
-  listener); any other event name does nothing and warns in development. A
-  value in the style of Animated.FlatList or Animated.SectionList renders the
-  list on each frame; put it on an Animated.View around the list.
+  move logs React Native's error. A value moves to the native side with an
+  animation, a config, or a nativeEvent mapping of a native Animated.event or
+  of attachNativeEvent (all with useNativeDriver: true); an animation with
+  useNativeDriver: false on it then throws, as on native. On the JavaScript
+  driver, a frame writes the style to the element with no React render; a
+  value in a prop that isn't style renders the component on each frame. With
+  prefers-reduced-motion, timing and spring go to toValue at once, decay goes
+  at once to where it would stop, a delay still waits, and a loop ends after
+  one iteration. Animated.event always returns a function, so forkEvent of it
+  returns a new function. attachNativeEvent(ref, 'onScroll', mapping) sets the
+  values from each scroll event of the element (a JavaScript listener); any
+  other event name does nothing and warns in development. A value in the style
+  of Animated.FlatList or Animated.SectionList renders the list on each frame;
+  put it on an Animated.View around the list.
 - LayoutAnimation: configureNext(config, onAnimationDidEnd?,
   onAnimationDidFail?), create, Presets (easeInEaseOut 300 ms, linear 500 ms,
   spring 700 ms), easeInEaseOut(), linear(), spring(), Types, Properties,

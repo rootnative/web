@@ -571,6 +571,9 @@ describe('the composites', () => {
 
 const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 
+const MOVED =
+  'Attempting to run JS driven animation on animated node that has been moved to "native"'
+
 describe("React Native's rules for useNativeDriver", () => {
   test('logs the errors of React Native for what its native driver does not move, once', () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -615,13 +618,49 @@ describe("React Native's rules for useNativeDriver", () => {
     linear(value, 1, { useNativeDriver: true, duration: 5000 }).start()
     value.stopAnimation()
 
-    expect(() => linear(value, 0, { useNativeDriver: false }).start()).toThrow(
-      'Attempting to run JS driven animation on animated node that has been moved to "native" earlier',
-    )
+    expect(() => linear(value, 0, { useNativeDriver: false }).start()).toThrow(MOVED)
 
     const other = new Animated.Value(0)
     linear(other, 1, { useNativeDriver: false, duration: 5000 }).start()
     expect(() => linear(other, 0, { useNativeDriver: true, duration: 5000 }).start()).not.toThrow()
     other.stopAnimation()
+  })
+
+  test('useNativeDriver: true in the config of a value moves it, also for a ValueXY and a Color', () => {
+    const value = new Animated.Value(0, { useNativeDriver: true })
+    const xy = new Animated.ValueXY({ x: 0, y: 0 }, { useNativeDriver: true })
+    const color = new Animated.Color('red', { useNativeDriver: true })
+
+    expect(() => linear(value, 1, { useNativeDriver: false }).start()).toThrow(MOVED)
+    expect(() =>
+      Animated.timing(xy, { toValue: { x: 1, y: 1 }, useNativeDriver: false }).start(),
+    ).toThrow(MOVED)
+    expect(() =>
+      Animated.timing(color, {
+        toValue: { r: 0, g: 0, b: 255, a: 1 },
+        useNativeDriver: false,
+      }).start(),
+    ).toThrow(MOVED)
+    expect(() => linear(new Animated.Value(0), 1, { useNativeDriver: false }).start()).not.toThrow()
+  })
+
+  test('a native Animated.event and attachNativeEvent move the values under nativeEvent', () => {
+    const scrollY = new Animated.Value(0)
+    const offset = new Animated.ValueXY({ x: 0, y: 0 })
+    const attached = new Animated.Value(0)
+    const plain = new Animated.Value(0)
+
+    Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })
+    Animated.event([{ nativeEvent: { contentOffset: offset } }], { useNativeDriver: true })
+    Animated.attachNativeEvent(null, 'onScroll', [
+      { nativeEvent: { contentOffset: { y: attached } } },
+    ])
+    Animated.event([{ nativeEvent: { contentOffset: { y: plain } } }], { useNativeDriver: false })
+
+    for (const moved of [scrollY, offset.x, attached]) {
+      expect(() => linear(moved, 1, { useNativeDriver: false }).start()).toThrow(MOVED)
+    }
+    expect(() => linear(plain, 1, { useNativeDriver: false }).start()).not.toThrow()
+    plain.stopAnimation()
   })
 })

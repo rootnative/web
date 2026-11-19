@@ -19,7 +19,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ### Changed
 
-- **Breaking: an animation with `useNativeDriver: false` throws on a value that an animation with `useNativeDriver: true` moved before**, with React Native's error: `Attempting to run JS driven animation on animated node that has been moved to "native" earlier by starting an animation with useNativeDriver: true`. On native, such code throws too. Before, both kinds of animation ran on the same value. Use one kind for each value.
+- **Breaking: an animation with `useNativeDriver: false` throws on a value that moved to the native side before**, with React Native's error. A value moves with an animation with `useNativeDriver: true`, with `useNativeDriver: true` in the config of `Animated.Value`, `Animated.ValueXY`, or `Animated.Color`, or under `nativeEvent` in the mapping of a native `Animated.event` or of `attachNativeEvent`. The error: `Attempting to run JS driven animation on animated node that has been moved to "native" earlier by starting an animation with useNativeDriver: true`. On native, such code throws too. Before, both kinds of animation ran on the same value. Use one kind for each value.
 - **`ListRenderItem` returns any React node**, as in React Native's types. Before, it returned only an element or `null`.
 - **The listener of `addListener` on an `Animated` node** gets a value of any type, as in React Native's types, because a `ValueXY` gives `{ x, y }`. `Animated.Value` keeps `{ value: number }`. Before, each node typed it as `{ value: number }`.
 
