@@ -1,9 +1,18 @@
+import type { ReactNode, Ref } from 'react'
+
+import { FlatList as BaseFlatList } from '../../components/FlatList'
+import type { FlatListInstance, FlatListProps } from '../../components/FlatList'
+import { Image as BaseImage } from '../../components/Image'
+import type { ImageInstance, ImageProps } from '../../components/Image'
+import { SectionList as BaseSectionList } from '../../components/SectionList'
+import type { SectionListInstance, SectionListProps } from '../../components/SectionList'
 import { Text as BaseText } from '../../components/Text'
 import type { TextInstance, TextProps } from '../../components/Text'
 import { View as BaseView } from '../../components/View'
 import type { ViewInstance, ViewProps } from '../../components/View'
+import type { DefaultSectionT } from '../../components/VirtualizedSectionList/types'
 import { createAnimatedComponent } from './createAnimatedComponent'
-import type { AnimatedComponentType } from './createAnimatedComponent'
+import type { AnimatedComponentType, AnimatedProps } from './createAnimatedComponent'
 import type { AnimatedAddition } from './nodes/AnimatedAddition'
 import type { AnimatedDiffClamp } from './nodes/AnimatedDiffClamp'
 import type { AnimatedDivision } from './nodes/AnimatedDivision'
@@ -13,7 +22,13 @@ import type { AnimatedMultiplication } from './nodes/AnimatedMultiplication'
 import type { AnimatedSubtraction } from './nodes/AnimatedSubtraction'
 import type { AnimatedValue } from './nodes/AnimatedValue'
 
-export { AnimatedEvent as Event, event } from './AnimatedEvent'
+export {
+  AnimatedEvent as Event,
+  attachNativeEvent,
+  event,
+  forkEvent,
+  unforkEvent,
+} from './AnimatedEvent'
 export {
   decay,
   delay,
@@ -76,3 +91,29 @@ export const View: AnimatedComponentType<ViewProps, ViewInstance> =
 
 export const Text: AnimatedComponentType<TextProps, TextInstance> =
   /* @__PURE__ */ createAnimatedComponent(BaseText)
+
+export const Image: AnimatedComponentType<ImageProps, ImageInstance> =
+  /* @__PURE__ */ createAnimatedComponent(BaseImage)
+
+export { AnimatedScrollView as ScrollView } from './AnimatedScrollView'
+
+// The lists keep their type parameters, as in React Native.
+type AnimatedFlatListType = <ItemT>(
+  props: Omit<AnimatedProps<FlatListProps<ItemT>>, 'ref'> & {
+    ref?: Ref<FlatListInstance<ItemT>> | undefined
+  },
+) => ReactNode
+
+type AnimatedSectionListType = <ItemT, SectionT = DefaultSectionT>(
+  props: Omit<AnimatedProps<SectionListProps<ItemT, SectionT>>, 'ref'> & {
+    ref?: Ref<SectionListInstance> | undefined
+  },
+) => ReactNode
+
+export const FlatList: AnimatedFlatListType = /* @__PURE__ */ createAnimatedComponent(
+  BaseFlatList,
+) as AnimatedFlatListType
+
+export const SectionList: AnimatedSectionListType = /* @__PURE__ */ createAnimatedComponent(
+  BaseSectionList,
+) as AnimatedSectionListType

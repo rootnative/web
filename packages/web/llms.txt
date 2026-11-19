@@ -123,8 +123,6 @@ findNodeHandle, TurboModuleRegistry.
 
 NOT IMPLEMENTED, do not import:
 - LayoutAnimation.
-- Animated: forkEvent, unforkEvent, attachNativeEvent, Animated.Image,
-  Animated.ScrollView, Animated.FlatList, Animated.SectionList.
 - A Next.js plugin, and templates for a Vite app with and without server
   rendering.
 
@@ -650,8 +648,9 @@ StatusBar
   velocity, overshootClamping), decay (velocity per ms, deceleration 0.998 by
   default), sequence, parallel (stopTogether), delay, stagger, loop
   (iterations, -1 by default; resetBeforeIteration), event (a ValueXY in the
-  mapping takes { x, y }), View, Text, createAnimatedComponent, Node,
-  Interpolation. ValueXY: x and y values, the same methods with { x, y },
+  mapping takes { x, y }), forkEvent, unforkEvent, attachNativeEvent, View,
+  Text, Image, ScrollView, FlatList, SectionList, createAnimatedComponent,
+  Node, Interpolation. ValueXY: x and y values, the same methods with { x, y },
   getLayout() ({ left, top }), getTranslateTransform(). Color: r, g, b (0 to
   255) and a (0 to 1) values, from a color string, { r, g, b, a }, or four
   values; black by default and for a color it can't read (also var(--x));
@@ -669,7 +668,12 @@ StatusBar
   prop that isn't style renders the component on each frame. With
   prefers-reduced-motion, timing and spring go to toValue at once, decay goes
   at once to where it would stop, a delay still waits, and a loop ends after
-  one iteration. Animated.event always returns a function.
+  one iteration. Animated.event always returns a function, so forkEvent of it
+  returns a new function. attachNativeEvent(ref, 'onScroll', mapping) sets the
+  values from each scroll event of the element (a JavaScript listener, no
+  native driver); any other event name does nothing and warns in development.
+  A value in the style of Animated.FlatList or Animated.SectionList renders
+  the list on each frame; put it on an Animated.View around the list.
 - usePressability(config): returns pointer, keyboard, and focus handlers, not
   the native responder handlers. Spread them on a View. Memoize the config.
   A null config returns null. hitSlop doesn't grow the hit area. Set

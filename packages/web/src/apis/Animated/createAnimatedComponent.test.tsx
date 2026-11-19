@@ -1,8 +1,14 @@
 import { act, createRef, type ReactNode } from 'react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
+import type { FlatListInstance } from '../../components/FlatList'
+import { RefreshControl } from '../../components/RefreshControl'
+import type { ScrollViewInstance } from '../../components/ScrollView'
+import type { SectionListInstance } from '../../components/SectionList'
+import { Text } from '../../components/Text'
 import { View, type ViewInstance, type ViewProps } from '../../components/View'
 import { cleanup, render } from '../../test/render'
+import { resetWarnings } from '../../utils/warn'
 import * as Animated from './AnimatedExports'
 
 afterEach(cleanup)
@@ -179,6 +185,197 @@ describe('Animated.Text', () => {
     progress.setValue(1)
 
     expect(first(container).style.color).toBe('rgb(0, 0, 255)')
+  })
+})
+
+// Scroll events arrive on the next frame.
+const waitFor = (check: () => void): Promise<void> =>
+  vi.waitFor(check, { timeout: 2000, interval: 10 })
+
+const onScrollY = (value: Animated.Value) =>
+  Animated.event([{ nativeEvent: { contentOffset: { y: value } } }], { useNativeDriver: true })
+
+const tall = <View style={{ height: 1000 }} />
+
+describe('Animated.Image, Animated.ScrollView, Animated.FlatList, and Animated.SectionList', () => {
+  test('Animated.Image animates its style on the element', () => {
+    const opacity = new Animated.Value(1)
+    const { container } = render(
+      <Animated.Image
+        source={{ uri: 'data:image/png;base64,AAAA' }}
+        style={{ width: 4, height: 4, opacity }}
+      />,
+    )
+
+    opacity.setValue(0.5)
+
+    expect(first(container).style.opacity).toBe('0.5')
+  })
+
+  test('Animated.ScrollView sets a value from its scroll, and the ref gets the scroller', async () => {
+    const offset = new Animated.Value(0)
+    const ref = createRef<ScrollViewInstance>()
+    const { container } = render(
+      <Animated.ScrollView ref={ref} style={{ height: 100 }} onScroll={onScrollY(offset)}>
+        {tall}
+      </Animated.ScrollView>,
+    )
+    expect(ref.current).toBe(first(container))
+
+    first(container).scrollTop = 60
+
+    await waitFor(() => expect(offset.__getValue()).toBe(60))
+  })
+
+  test('Animated.ScrollView with a refreshControl writes the layout part of a frame to the refresh control', () => {
+    const marginTop = new Animated.Value(0)
+    const opacity = new Animated.Value(1)
+    const ref = createRef<ScrollViewInstance>()
+    const { container } = render(
+      <Animated.ScrollView
+        ref={ref}
+        style={{ height: 100, marginTop, opacity }}
+        refreshControl={<RefreshControl refreshing={false} />}
+      >
+        {tall}
+      </Animated.ScrollView>,
+    )
+    const area = first(container)
+    const scroller = ref.current as HTMLElement
+    expect(scroller).not.toBe(area)
+    expect(area.contains(scroller)).toBe(true)
+
+    marginTop.setValue(20)
+    opacity.setValue(0.5)
+
+    expect(getComputedStyle(area).marginTop).toBe('20px')
+    expect(getComputedStyle(scroller).marginTop).toBe('0px')
+    expect(scroller.style.opacity).toBe('0.5')
+  })
+
+  test('Animated.FlatList renders its items with a value in its style, and the ref gets the list', () => {
+    const opacity = new Animated.Value(1)
+    const ref = createRef<FlatListInstance<string>>()
+    const { container } = render(
+      <Animated.FlatList
+        ref={ref}
+        data={['a', 'b']}
+        renderItem={({ item }) => <Text>{String(item)}</Text>}
+        style={{ opacity }}
+      />,
+    )
+    expect(container.textContent).toBe('ab')
+    expect(typeof ref.current?.scrollToIndex).toBe('function')
+
+    act(() => opacity.setValue(0.25))
+
+    expect(getComputedStyle(first(container)).opacity).toBe('0.25')
+  })
+
+  test('Animated.SectionList renders its sections and sets a value from its scroll', async () => {
+    const offset = new Animated.Value(0)
+    const ref = createRef<SectionListInstance>()
+    const { container } = render(
+      <Animated.SectionList
+        ref={ref}
+        sections={[{ title: 'A', data: ['a1', 'a2'] }]}
+        renderItem={({ item }) => <Text>{String(item)}</Text>}
+        renderSectionHeader={({ section }) => <Text>{String(section.title)}</Text>}
+        ListFooterComponent={tall}
+        style={{ height: 100 }}
+        onScroll={onScrollY(offset)}
+      />,
+    )
+    expect(container.textContent).toBe('Aa1a2')
+    expect(typeof ref.current?.scrollToLocation).toBe('function')
+
+    const scroller = ref.current?.getScrollableNode() as HTMLElement
+    scroller.scrollTop = 40
+
+    await waitFor(() => expect(offset.__getValue()).toBe(40))
+  })
+})
+
+describe('forkEvent and unforkEvent', () => {
+  test('forkEvent of a handler calls the handler and then the listener', () => {
+    const calls: string[] = []
+    const forked = Animated.forkEvent(
+      () => calls.push('handler'),
+      () => calls.push('listener'),
+    ) as (...args: unknown[]) => void
+
+    forked({ nativeEvent: {} })
+
+    expect(calls).toEqual(['handler', 'listener'])
+  })
+
+  test('forkEvent of nothing gives the listener', () => {
+    const listener = vi.fn()
+    expect(Animated.forkEvent(null, listener)).toBe(listener)
+  })
+
+  test('forkEvent adds the listener to an Animated.Event, and unforkEvent removes it', () => {
+    const value = new Animated.Value(0)
+    const animatedEvent = new Animated.Event([{ nativeEvent: { y: value } }], {
+      useNativeDriver: false,
+    })
+    const listener = vi.fn()
+    const handler = animatedEvent.__getHandler()
+
+    expect(Animated.forkEvent(animatedEvent, listener)).toBe(animatedEvent)
+    handler({ nativeEvent: { y: 5 } })
+    expect(value.__getValue()).toBe(5)
+    expect(listener).toHaveBeenCalledOnce()
+
+    Animated.unforkEvent(animatedEvent, listener)
+    handler({ nativeEvent: { y: 6 } })
+    expect(listener).toHaveBeenCalledOnce()
+  })
+})
+
+describe('attachNativeEvent', () => {
+  test('sets the values from the scroll of the element until detach', async () => {
+    const offset = new Animated.Value(0)
+    const ref = createRef<ScrollViewInstance>()
+    const { container } = render(
+      <Animated.ScrollView ref={ref} style={{ height: 100 }}>
+        {tall}
+      </Animated.ScrollView>,
+    )
+    const attached = Animated.attachNativeEvent(ref.current, 'onScroll', [
+      { nativeEvent: { contentOffset: { y: offset } } },
+    ])
+
+    first(container).scrollTop = 30
+    await waitFor(() => expect(offset.__getValue()).toBe(30))
+
+    attached.detach()
+    first(container).scrollTop = 70
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    expect(offset.__getValue()).toBe(30)
+  })
+
+  test('warns once in development and does nothing for an event that is not onScroll', () => {
+    resetWarnings()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const value = new Animated.Value(0)
+    const { container } = render(<View />)
+
+    const attached = Animated.attachNativeEvent(first(container), 'onLayout', [
+      { nativeEvent: { layout: { width: value } } },
+    ])
+
+    expect(warn).toHaveBeenCalledOnce()
+    expect(warn.mock.calls[0]?.[0]).toContain('attachNativeEvent supports only onScroll')
+    attached.detach()
+    warn.mockRestore()
+  })
+
+  test('throws when the mapping has no nativeEvent, as in React Native', () => {
+    const value = new Animated.Value(0)
+    expect(() => Animated.attachNativeEvent(null, 'onScroll', [{ y: value }])).toThrow(
+      'Native driven events only support animated values contained inside `nativeEvent`.',
+    )
   })
 })
 

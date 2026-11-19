@@ -22,16 +22,11 @@ import { webStyle } from '../../style/webStyle'
 import { hasDOM } from '../../utils/env'
 import { useViewElement, View } from '../View'
 import type { LayoutChangeEvent } from '../View/types'
+import { describeScroll } from './describeScroll'
 import { HORIZONTAL, ScrollViewContext, VERTICAL } from './ScrollViewContext'
 import { snapTarget } from './snap'
 import type { HostInstance } from '../View/types'
-import type {
-  NativeScrollEvent,
-  ScrollEvent,
-  ScrollToOptions,
-  ScrollViewInstance,
-  ScrollViewProps,
-} from './types'
+import type { ScrollEvent, ScrollToOptions, ScrollViewInstance, ScrollViewProps } from './types'
 
 export type {
   NativeScrollEvent,
@@ -88,14 +83,6 @@ const SCROLL_END_DELAY = 150
 
 const behaviorFor = (animated: boolean | undefined): ScrollBehavior =>
   animated !== false && !Platform.isDisableAnimations ? 'smooth' : 'auto'
-
-const describe = (element: HTMLElement): NativeScrollEvent => ({
-  contentInset: { top: 0, left: 0, bottom: 0, right: 0 },
-  contentOffset: { x: element.scrollLeft, y: element.scrollTop },
-  contentSize: { width: element.scrollWidth, height: element.scrollHeight },
-  layoutMeasurement: { width: element.clientWidth, height: element.clientHeight },
-  zoomScale: 1,
-})
 
 const isReactNativeScrollTo = (value: unknown): value is ScrollToOptions =>
   typeof value === 'object' &&
@@ -342,7 +329,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     const state = sequence.current
     const element = scroller.current
     if (state.lastEvent === null || element === null) return null
-    Object.assign(state.lastEvent.nativeEvent, describe(element))
+    Object.assign(state.lastEvent.nativeEvent, describeScroll(element))
     return state.lastEvent
   }, [])
 
@@ -387,7 +374,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     if (event.target !== element) return
     const state = sequence.current
     const scrollEvent = event as unknown as ScrollEvent
-    Object.assign(scrollEvent.nativeEvent, describe(element))
+    Object.assign(scrollEvent.nativeEvent, describeScroll(element))
     state.lastEvent = scrollEvent
 
     const config = snap.current

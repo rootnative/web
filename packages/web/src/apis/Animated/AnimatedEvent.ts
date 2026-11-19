@@ -1,11 +1,16 @@
 /**
  * @license MIT
- * A port of `Libraries/Animated/AnimatedEvent.js` of React Native, Copyright (c) Meta Platforms,
+ * A port of `Libraries/Animated/AnimatedEvent.js`, and of `forkEvent` and `unforkEvent` of
+ * `Libraries/Animated/AnimatedImplementation.js`, of React Native, Copyright (c) Meta Platforms,
  * Inc. and affiliates.
  */
 
+import { findNodeHandle } from '../../compat/findNodeHandle'
+import { describeScroll } from '../../components/ScrollView/describeScroll'
 import type { NativeSyntheticEvent } from '../../events/types'
 import { isProductionEnv } from '../../utils/env'
+import { invariant } from '../../utils/invariant'
+import { warnOnce } from '../../utils/warn'
 import type { PlatformConfig } from './animations/Animation'
 import { AnimatedValue } from './nodes/AnimatedValue'
 import { AnimatedValueXY } from './nodes/AnimatedValueXY'
@@ -27,6 +32,10 @@ export type EventConfig<T> = {
 }
 
 type Listener = (...args: unknown[]) => unknown
+
+// Any function fits this type, so a handler with typed parameters fits too. React Native types it
+// as `Function`.
+type AnyHandler = (...args: never[]) => unknown
 
 const fail = (message: string): never => {
   throw new Error(message)
@@ -82,11 +91,19 @@ const setValues = (mapping: Mapping | null | undefined, event: unknown): void =>
 // `useNativeDriver: true`.
 export class AnimatedEvent {
   private readonly argMapping: readonly (Mapping | null | undefined)[]
-  private readonly listeners: Listener[] = []
+  private listeners: Listener[] = []
 
   constructor(argMapping: readonly (Mapping | null | undefined)[], config: EventConfig<unknown>) {
     this.argMapping = argMapping
-    if (config.listener) this.listeners.push(config.listener as Listener)
+    if (config.listener) this.__addListener(config.listener)
+  }
+
+  __addListener(callback: AnyHandler): void {
+    this.listeners.push(callback as Listener)
+  }
+
+  __removeListener(callback: AnyHandler): void {
+    this.listeners = this.listeners.filter((listener) => listener !== callback)
   }
 
   // A handler that sets each mapped value from the event, then calls the listener. In
@@ -109,3 +126,64 @@ export const event = <T>(
   config: EventConfig<T>,
 ): ((...args: unknown[]) => void) =>
   new AnimatedEvent(argMapping, config as EventConfig<unknown>).__getHandler()
+
+// Adds a listener to an event prop. `Animated.event` returns a function here, so the result is a
+// function that calls the event and then the listener. An `Animated.Event` gets the listener added.
+export const forkEvent = (
+  handler: AnimatedEvent | AnyHandler | null | undefined,
+  listener: AnyHandler,
+): AnimatedEvent | AnyHandler => {
+  if (!handler) return listener
+  if (handler instanceof AnimatedEvent) {
+    handler.__addListener(listener)
+    return handler
+  }
+  return (...args: unknown[]) => {
+    if (typeof handler === 'function') (handler as Listener)(...args)
+    ;(listener as Listener)(...args)
+  }
+}
+
+// Removes a listener that `forkEvent` added to an `Animated.Event`. A function from `forkEvent`
+// can't lose its listener, as in React Native.
+export const unforkEvent = (
+  handler: AnimatedEvent | AnyHandler | null | undefined,
+  listener: AnyHandler,
+): void => {
+  if (handler instanceof AnimatedEvent) handler.__removeListener(listener)
+}
+
+const nativeEventMapping = (mapping: Mapping | null | undefined): Mapping | undefined =>
+  mapping && !(mapping instanceof AnimatedValue) && !(mapping instanceof AnimatedValueXY)
+    ? mapping['nativeEvent']
+    : undefined
+
+// React Native attaches the values to a native event of the view, so they change with no
+// JavaScript. The web has no native driver. For `onScroll`, a `scroll` listener on the element
+// sets the values from the same `nativeEvent` that `ScrollView` gives its `onScroll`. Any other
+// event name has no effect and warns in development. A ref with no element yet does nothing, as in
+// React Native.
+export const attachNativeEvent = (
+  viewRef: unknown,
+  eventName: string,
+  argMapping: readonly (Mapping | null | undefined)[],
+  _platformConfig?: PlatformConfig | null,
+): { detach: () => void } => {
+  const mapping = nativeEventMapping(argMapping[0])
+  invariant(
+    mapping,
+    'Native driven events only support animated values contained inside `nativeEvent`.',
+  )
+  if (eventName !== 'onScroll') {
+    warnOnce(
+      'animated-attach-native-event',
+      `Animated: attachNativeEvent supports only onScroll on the web, so ${eventName} has no effect. Use Animated.event in the event prop.`,
+    )
+    return { detach: () => {} }
+  }
+  const element = findNodeHandle(viewRef)
+  if (!(element instanceof HTMLElement)) return { detach: () => {} }
+  const onScroll = (): void => setValues(mapping, describeScroll(element))
+  element.addEventListener('scroll', onScroll, { passive: true })
+  return { detach: () => element.removeEventListener('scroll', onScroll) }
+}

@@ -11,6 +11,7 @@ import {
   type ComponentType,
   type ReactNode,
   type Ref,
+  type RefCallback,
 } from 'react'
 
 import type { ViewProps } from '../../components/View/types'
@@ -82,6 +83,27 @@ const composeStyles = (style: unknown, passthrough: unknown): unknown => {
   return [style, passthrough]
 }
 
+// The ref of the inner component. The `ref` prop gets the instance of the inner component, and the
+// animated props get it too.
+export const useInnerRef = (
+  forwardedRef: unknown,
+  animatedRef: RefCallback<unknown>,
+): RefCallback<unknown> => {
+  const instance = useRef<unknown>(null)
+  useImperativeHandle(forwardedRef as Ref<unknown> | undefined, () => instance.current, [])
+  return useCallback(
+    (current: unknown) => {
+      instance.current = current
+      const cleanUp = animatedRef(current)
+      return () => {
+        instance.current = null
+        if (typeof cleanUp === 'function') cleanUp()
+      }
+    },
+    [animatedRef],
+  )
+}
+
 export function createAnimatedComponent<Props extends object>(
   Component: ComponentType<Props>,
 ): AnimatedComponentType<Props, InstanceOf<Props>> {
@@ -89,21 +111,7 @@ export function createAnimatedComponent<Props extends object>(
     const Base = Component as unknown as ComponentType<Record<string, unknown>>
     const { ref: forwardedRef, ...rest } = props
     const [reducedProps, animatedRef] = useAnimatedProps<unknown>(rest)
-
-    // The `ref` prop gets the instance of the inner component.
-    const instance = useRef<unknown>(null)
-    useImperativeHandle(forwardedRef as Ref<unknown> | undefined, () => instance.current, [])
-    const ref = useCallback(
-      (current: unknown) => {
-        instance.current = current
-        const cleanUp = animatedRef(current)
-        return () => {
-          instance.current = null
-          if (typeof cleanUp === 'function') cleanUp()
-        }
-      },
-      [animatedRef],
-    )
+    const ref = useInnerRef(forwardedRef, animatedRef)
 
     const { passthroughAnimatedPropExplicitValues: passthrough, ...componentProps } =
       reducedProps as Record<string, unknown> & {

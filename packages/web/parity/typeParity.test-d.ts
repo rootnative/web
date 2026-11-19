@@ -269,16 +269,6 @@ type HostMethodMismatches =
 
 export type HostInstanceParity = [None<HostMethodMismatches>]
 
-// What React Native's `Animated` has and this package doesn't yet.
-type AnimatedGaps =
-  | 'FlatList'
-  | 'Image'
-  | 'ScrollView'
-  | 'SectionList'
-  | 'attachNativeEvent'
-  | 'forkEvent'
-  | 'unforkEvent'
-
 // The name, when a value of our type doesn't fit React Native's type.
 type Misfit<Name extends string, OurType, NativeType> = [OurType] extends [NativeType]
   ? never
@@ -287,7 +277,7 @@ type Misfit<Name extends string, OurType, NativeType> = [OurType] extends [Nativ
 // From React Native's side, `toValue` never fits: our node classes have private members, so React
 // Native's classes don't fit them. From our side, each `toValue` must fit.
 export type AnimatedParity = [
-  None<Diff<keyof typeof Native.Animated, keyof typeof Web.Animated, AnimatedGaps>>,
+  None<Diff<keyof typeof Native.Animated, keyof typeof Web.Animated, never>>,
   None<
     PropDiff<
       ComponentProps<typeof Native.Animated.View>,
@@ -300,6 +290,34 @@ export type AnimatedParity = [
       ComponentProps<typeof Native.Animated.Text>,
       ComponentProps<typeof Web.Animated.Text>,
       TextGaps
+    >
+  >,
+  None<
+    PropDiff<
+      ComponentProps<typeof Native.Animated.Image>,
+      ComponentProps<typeof Web.Animated.Image>,
+      ImageGaps
+    >
+  >,
+  None<
+    PropDiff<
+      ComponentProps<typeof Native.Animated.ScrollView>,
+      ComponentProps<typeof Web.Animated.ScrollView>,
+      ScrollViewGaps
+    >
+  >,
+  None<
+    PropDiff<
+      ComponentProps<typeof Native.Animated.FlatList>,
+      ComponentProps<typeof Web.Animated.FlatList>,
+      ScrollViewGaps | 'children'
+    >
+  >,
+  None<
+    PropDiff<
+      ComponentProps<typeof Native.Animated.SectionList>,
+      ComponentProps<typeof Web.Animated.SectionList>,
+      ScrollViewGaps | 'children'
     >
   >,
   None<

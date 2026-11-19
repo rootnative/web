@@ -42,6 +42,7 @@
             "allow": [
               "__DEV__",
               "__addChild",
+              "__addListener",
               "__attach",
               "__callListeners",
               "__detach",
@@ -53,6 +54,7 @@
               "__getValueWithStaticProps",
               "__getValueWithStaticTransforms",
               "__removeChild",
+              "__removeListener",
               "__replaceAnimatedNodeWithValues"
             ]
           }
