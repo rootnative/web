@@ -16,9 +16,13 @@ import {
 import type { ViewProps } from '../../components/View/types'
 import type { NativeColorValue } from '../StyleSheet/types'
 import type { AnimatedAddition } from './nodes/AnimatedAddition'
+import type { AnimatedDiffClamp } from './nodes/AnimatedDiffClamp'
+import type { AnimatedDivision } from './nodes/AnimatedDivision'
 import type { AnimatedInterpolation } from './nodes/AnimatedInterpolation'
+import type { AnimatedModulo } from './nodes/AnimatedModulo'
 import type { AnimatedMultiplication } from './nodes/AnimatedMultiplication'
 import type { AnimatedNode } from './nodes/AnimatedNode'
+import type { AnimatedSubtraction } from './nodes/AnimatedSubtraction'
 import type { AnimatedValue } from './nodes/AnimatedValue'
 import { useAnimatedProps } from './useAnimatedProps'
 
@@ -32,7 +36,11 @@ export type WithAnimatedValue<T> = T extends Builtin | Nullable
     ? | T
       | AnimatedNode
       | AnimatedAddition
+      | AnimatedSubtraction
+      | AnimatedDivision
       | AnimatedMultiplication
+      | AnimatedModulo
+      | AnimatedDiffClamp
       | AnimatedValue
       | AnimatedInterpolation<number | string>
       | AnimatedInterpolation<number>

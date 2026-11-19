@@ -11,6 +11,7 @@ import type {
   InterpolationConfigSupportedOutputType,
   InterpolationConfigType,
 } from './AnimatedInterpolation'
+import type { AnimatedTracking } from './AnimatedTracking'
 import { AnimatedWithChildren } from './AnimatedWithChildren'
 
 export type AnimatedValueConfig = Readonly<AnimatedNodeConfig & { useNativeDriver: boolean }>
@@ -37,6 +38,7 @@ export class AnimatedValue extends AnimatedWithChildren {
   private offset = 0
   private readonly startingValue: number
   private animation: Animation | null = null
+  private tracking: AnimatedTracking | null = null
 
   // `useNativeDriver` has no effect: the web runs each animation on the JavaScript driver.
   constructor(value: number, _config?: AnimatedValueConfig | null) {
@@ -79,7 +81,9 @@ export class AnimatedValue extends AnimatedWithChildren {
     this.value = 0
   }
 
+  // Also ends the tracking of another node. `setValue` doesn't, as in React Native.
   stopAnimation(callback?: ((value: number) => void) | null): void {
+    this.stopTracking()
     this.animation?.stop()
     this.animation = null
     callback?.(this.__getValue())
@@ -111,6 +115,18 @@ export class AnimatedValue extends AnimatedWithChildren {
       },
       previous,
     )
+  }
+
+  stopTracking(): void {
+    this.tracking?.__detach()
+    this.tracking = null
+  }
+
+  // Starts an animation to the current output of the tracked node at once.
+  track(tracking: AnimatedTracking): void {
+    this.stopTracking()
+    this.tracking = tracking
+    tracking.update()
   }
 
   // React Native skips the flush only for a value that the native driver moves.

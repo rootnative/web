@@ -2,8 +2,12 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { resetWarnings } from '../../../utils/warn'
 import { add } from './AnimatedAddition'
+import { diffClamp } from './AnimatedDiffClamp'
+import { divide } from './AnimatedDivision'
+import { modulo } from './AnimatedModulo'
 import { multiply } from './AnimatedMultiplication'
 import { AnimatedNode } from './AnimatedNode'
+import { subtract } from './AnimatedSubtraction'
 import { AnimatedValue } from './AnimatedValue'
 
 // A leaf of the graph, as the props of an animated component are.
@@ -193,5 +197,82 @@ describe('add and multiply', () => {
     a.setValue(2)
 
     expect(listener).toHaveBeenCalledExactlyOnceWith({ value: 7 })
+  })
+})
+
+describe('subtract, divide, modulo, and diffClamp', () => {
+  test('subtract and divide combine nodes and numbers', () => {
+    const a = new AnimatedValue(6)
+    const b = new AnimatedValue(3)
+    expect(subtract(a, b).__getValue()).toBe(3)
+    expect(subtract(10, a).__getValue()).toBe(4)
+    expect(divide(a, b).__getValue()).toBe(2)
+    expect(divide(a, 4).__getValue()).toBe(1.5)
+    expect(
+      subtract(a, b)
+        .interpolate({ inputRange: [0, 6], outputRange: [0, 1] })
+        .__getValue(),
+    ).toBe(0.5)
+  })
+
+  test('a division by zero gives 0 and warns once', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const b = new AnimatedValue(2)
+    const quotient = divide(10, b)
+    expect(warn).not.toHaveBeenCalled()
+
+    b.setValue(0)
+    expect(quotient.__getValue()).toBe(0)
+    expect(quotient.__getValue()).toBe(0)
+    expect(warn).toHaveBeenCalledOnce()
+    expect(warn.mock.calls[0]?.[0]).toContain('Detected division by zero')
+
+    divide(1, 0)
+    expect(warn).toHaveBeenCalledTimes(2)
+    expect(warn.mock.calls[1]?.[0]).toContain('Detected potential division by zero')
+  })
+
+  test('modulo gives a result from 0 up to the modulus, also for a negative input', () => {
+    const a = new AnimatedValue(7)
+    const rest = modulo(a, 3)
+    expect(rest.__getValue()).toBe(1)
+    a.setValue(-1)
+    expect(rest.__getValue()).toBe(2)
+    a.setValue(-6)
+    expect(rest.__getValue()).toBe(0)
+  })
+
+  test('diffClamp adds each change of its input and clamps the sum, and a second read adds nothing', () => {
+    const scroll = new AnimatedValue(0)
+    const header = diffClamp(scroll, 0, 50)
+    leafUnder(header)
+    const steps: [input: number, output: number][] = [
+      [30, 30],
+      [200, 50],
+      [180, 30],
+      [-100, 0],
+      [-80, 20],
+    ]
+    for (const [input, output] of steps) {
+      scroll.setValue(input)
+      expect(header.__getValue()).toBe(output)
+      expect(header.__getValue()).toBe(output)
+    }
+  })
+
+  test('each node follows its inputs, and leaves them with its last child', () => {
+    const a = new AnimatedValue(1)
+    const b = new AnimatedValue(2)
+    const pairs = [subtract(a, b), divide(a, b), modulo(a, 2), diffClamp(a, 0, 10)].map(
+      (node) => [node, leafUnder(node)] as const,
+    )
+
+    a.setValue(3)
+    b.setValue(4)
+    expect(pairs.map(([, leaf]) => leaf.update.mock.calls.length)).toEqual([2, 2, 1, 1])
+
+    for (const [node, leaf] of pairs) node.__removeChild(leaf)
+    expect(a.__getChildren()).toHaveLength(0)
+    expect(b.__getChildren()).toHaveLength(0)
   })
 })

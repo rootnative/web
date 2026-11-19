@@ -2,7 +2,16 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { installFakeMatchMedia } from '../../test/matchMedia'
 import { Easing } from '../Easing'
-import { parallel, spring, timing } from './AnimatedImplementation'
+import {
+  decay,
+  delay,
+  loop,
+  parallel,
+  sequence,
+  spring,
+  stagger,
+  timing,
+} from './AnimatedImplementation'
 import { SpringAnimation } from './animations/SpringAnimation'
 import { fromBouncinessAndSpeed, fromOrigamiTensionAndFriction } from './animations/springConfig'
 import { AnimatedNode } from './nodes/AnimatedNode'
@@ -173,11 +182,14 @@ describe('timing', () => {
     expect(calls).toEqual(['onComplete', 'start'])
   })
 
-  test('throws for a toValue that is not a number', () => {
+  test('throws for a toValue that is not a number or a node, such as the one of a ValueXY', () => {
     const value = new AnimatedValue(0)
-    const toValue = new AnimatedValue(1) as unknown as number
+    const toValue = { x: 1, y: 2 } as unknown as number
     expect(() => timing(value, { toValue, useNativeDriver: false }).start()).toThrow(
-      'Animated: a toValue that is not a number is not in @rootnative/web yet',
+      'Animated: a toValue that is not a number or an Animated node is not in @rootnative/web yet',
+    )
+    expect(() => spring(value, { toValue, useNativeDriver: false }).start()).toThrow(
+      'Animated: a toValue that is not a number or an Animated node is not in @rootnative/web yet',
     )
   })
 })
@@ -365,6 +377,35 @@ describe('with reduced motion', () => {
     expect(values(samples)).toEqual([1])
     expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
   })
+
+  test('decay goes at once to the value where the motion comes to rest', () => {
+    const value = new AnimatedValue(10)
+    const samples = record(value)
+    const done = vi.fn()
+    decay(value, { velocity: 1, deceleration: 0.99, useNativeDriver: false }).start(done)
+    expect(samples).toHaveLength(1)
+    expect(value.__getValue()).toBeCloseTo(110, 6)
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
+  })
+
+  test('an endless loop ends after one iteration', () => {
+    const value = new AnimatedValue(0)
+    const samples = record(value)
+    const done = vi.fn()
+    loop(timing(value, { toValue: 1, duration: 300, useNativeDriver: false })).start(done)
+    expect(values(samples)).toEqual([1])
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
+  })
+
+  test('a loop with a delay in it ends after one iteration too', () => {
+    const value = new AnimatedValue(0)
+    const samples = record(value)
+    const done = vi.fn()
+    loop(sequence([delay(100), timing(value, { toValue: 1, useNativeDriver: false })])).start(done)
+    vi.advanceTimersByTime(500)
+    expect(values(samples)).toEqual([1])
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
+  })
 })
 
 const run = (value: AnimatedValue, duration: number) =>
@@ -435,5 +476,276 @@ describe('parallel', () => {
     const done = vi.fn()
     parallel([]).start(done)
     expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
+  })
+})
+
+describe('decay', () => {
+  test('slows from velocity by deceleration each millisecond, and ends on a frame that moves less than 0.1', () => {
+    const value = new AnimatedValue(10)
+    const samples = record(value)
+    const done = vi.fn()
+    const startTime = performance.now()
+    decay(value, { velocity: 1, deceleration: 0.99, useNativeDriver: false }).start(done)
+
+    vi.advanceTimersByTime(2000)
+
+    for (const { time, value: current } of samples) {
+      expect(current).toBeCloseTo(10 + 100 * (1 - Math.exp(-0.01 * (time - startTime))), 6)
+    }
+    const list = [10, ...values(samples)]
+    const steps = list.slice(1).map((current, i) => current - (list[i] ?? 0))
+    expect(steps.at(-1)).toBeLessThan(0.1)
+    expect(steps.slice(0, -1).every((step) => step >= 0.1)).toBe(true)
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
+  })
+
+  test('uses a deceleration of 0.998 by default', () => {
+    const value = new AnimatedValue(0)
+    const samples = record(value)
+    const startTime = performance.now()
+    decay(value, { velocity: -0.5, useNativeDriver: false }).start()
+    vi.advanceTimersByTime(100)
+
+    expect(samples.length).toBeGreaterThan(0)
+    for (const { time, value: current } of samples) {
+      expect(current).toBeCloseTo(-250 * (1 - Math.exp(-0.002 * (time - startTime))), 6)
+    }
+  })
+
+  test('stop ends it with finished: false where it is', () => {
+    const value = new AnimatedValue(0)
+    const done = vi.fn()
+    const animation = decay(value, { velocity: 1, useNativeDriver: false })
+    animation.start(done)
+    vi.advanceTimersByTime(50)
+    const at = value.__getValue()
+
+    animation.stop()
+    vi.advanceTimersByTime(100)
+
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: false })
+    expect(value.__getValue()).toBe(at)
+  })
+})
+
+describe('sequence', () => {
+  test('starts each animation when the one before it ends', () => {
+    const a = new AnimatedValue(0)
+    const b = new AnimatedValue(0)
+    const done = vi.fn()
+    sequence([run(a, 100), run(b, 100)]).start(done)
+
+    vi.advanceTimersByTime(120)
+    expect(a.__getValue()).toBe(100)
+    expect(b.__getValue()).toBe(0)
+    expect(done).not.toHaveBeenCalled()
+
+    vi.advanceTimersByTime(120)
+    expect(b.__getValue()).toBe(100)
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
+  })
+
+  test('one that stops early ends the sequence, and the next ones do not start', () => {
+    const a = new AnimatedValue(0)
+    const b = new AnimatedValue(0)
+    const done = vi.fn()
+    const both = sequence([run(a, 100), run(b, 100)])
+    both.start(done)
+    vi.advanceTimersByTime(50)
+
+    both.stop()
+    vi.advanceTimersByTime(300)
+
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: false })
+    expect(b.__getValue()).toBe(0)
+  })
+
+  test('reset sets back each animation up to the current one', () => {
+    const a = new AnimatedValue(0)
+    const b = new AnimatedValue(0)
+    const both = sequence([run(a, 100), run(b, 100)])
+    both.start()
+    vi.advanceTimersByTime(150)
+    expect(b.__getValue()).toBeGreaterThan(0)
+
+    both.reset()
+
+    expect([a.__getValue(), b.__getValue()]).toEqual([0, 0])
+  })
+
+  test('a new start after the end begins at the first animation', () => {
+    const a = new AnimatedValue(0)
+    const b = new AnimatedValue(0)
+    const both = sequence([run(a, 100), run(b, 100)])
+    both.start()
+    vi.advanceTimersByTime(300)
+    a.setValue(0)
+    b.setValue(0)
+
+    both.start()
+    vi.advanceTimersByTime(50)
+
+    expect(a.__getValue()).toBeGreaterThan(0)
+    expect(b.__getValue()).toBe(0)
+  })
+
+  test('an empty list ends at once', () => {
+    const done = vi.fn()
+    sequence([]).start(done)
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
+  })
+})
+
+describe('delay and stagger', () => {
+  test('delay ends after the time, with finished: true', () => {
+    const done = vi.fn()
+    delay(100).start(done)
+    vi.advanceTimersByTime(99)
+    expect(done).not.toHaveBeenCalled()
+
+    vi.advanceTimersByTime(1)
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
+  })
+
+  test('stagger starts animation i after time * i milliseconds', () => {
+    const [a, b, c] = [new AnimatedValue(0), new AnimatedValue(0), new AnimatedValue(0)]
+    const done = vi.fn()
+    stagger(50, [run(a, 100), run(b, 100), run(c, 100)]).start(done)
+
+    vi.advanceTimersByTime(49)
+    expect([a.__getValue() > 0, b.__getValue(), c.__getValue()]).toEqual([true, 0, 0])
+
+    vi.advanceTimersByTime(50)
+    expect([b.__getValue() > 0, c.__getValue()]).toEqual([true, 0])
+
+    vi.advanceTimersByTime(200)
+    expect([a.__getValue(), b.__getValue(), c.__getValue()]).toEqual([100, 100, 100])
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
+  })
+})
+
+describe('loop', () => {
+  test('runs the animation again from the start until stop()', () => {
+    const value = new AnimatedValue(0)
+    const samples = record(value)
+    const done = vi.fn()
+    const looped = loop(run(value, 100))
+    looped.start(done)
+
+    // The iterations end on the frames at 112, 224, and 336 ms.
+    vi.advanceTimersByTime(350)
+    expect(values(samples).filter((current) => current === 100)).toHaveLength(3)
+    expect(done).not.toHaveBeenCalled()
+
+    looped.stop()
+    vi.advanceTimersByTime(200)
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: false })
+    expect(values(samples).filter((current) => current === 100)).toHaveLength(3)
+  })
+
+  test('with iterations, runs that many times, then ends with finished: true', () => {
+    const value = new AnimatedValue(0)
+    const samples = record(value)
+    const done = vi.fn()
+    loop(run(value, 100), { iterations: 2 }).start(done)
+
+    vi.advanceTimersByTime(500)
+
+    expect(values(samples).filter((current) => current === 100)).toHaveLength(2)
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
+  })
+
+  test('with resetBeforeIteration: false, the next iteration starts where the last one ended', () => {
+    const value = new AnimatedValue(0)
+    const samples = record(value)
+    loop(run(value, 100), { iterations: 2, resetBeforeIteration: false }).start()
+
+    vi.advanceTimersByTime(500)
+
+    const list = values(samples)
+    expect(list.slice(list.indexOf(100)).every((current) => current === 100)).toBe(true)
+  })
+
+  test('with iterations: 0, ends at once and runs nothing', () => {
+    const value = new AnimatedValue(0)
+    const done = vi.fn()
+    loop(run(value, 100), { iterations: 0 }).start(done)
+    vi.advanceTimersByTime(200)
+
+    expect(done).toHaveBeenCalledExactlyOnceWith({ finished: true })
+    expect(value.__getValue()).toBe(0)
+  })
+})
+
+const follow = (follower: AnimatedValue, leader: AnimatedValue) =>
+  timing(follower, {
+    toValue: leader,
+    duration: 100,
+    easing: Easing.linear,
+    useNativeDriver: false,
+  })
+
+describe('a node as toValue', () => {
+  test('the value follows the node: each change starts a new animation to it', () => {
+    const leader = new AnimatedValue(0)
+    const follower = new AnimatedValue(0)
+    const done = vi.fn()
+    follow(follower, leader).start(done)
+    vi.advanceTimersByTime(200)
+
+    leader.setValue(50)
+    vi.advanceTimersByTime(50)
+    const halfway = follower.__getValue()
+    expect(halfway).toBeGreaterThan(0)
+    expect(halfway).toBeLessThan(50)
+
+    leader.setValue(80)
+    expect(done).toHaveBeenLastCalledWith({ finished: false })
+    vi.advanceTimersByTime(200)
+
+    expect(follower.__getValue()).toBeCloseTo(80, 6)
+    expect(done).toHaveBeenLastCalledWith({ finished: true })
+  })
+
+  test('a spring follows the output of an interpolation', () => {
+    const leader = new AnimatedValue(0)
+    const follower = new AnimatedValue(0)
+    spring(follower, {
+      toValue: leader.interpolate({ inputRange: [0, 1], outputRange: [0, 100] }),
+      useNativeDriver: false,
+    }).start()
+
+    leader.setValue(1)
+    vi.advanceTimersByTime(3000)
+
+    expect(follower.__getValue()).toBeCloseTo(100, 2)
+  })
+
+  test('stopAnimation and a new animation of the value end the tracking', () => {
+    const leader = new AnimatedValue(0)
+    const follower = new AnimatedValue(0)
+    follow(follower, leader).start()
+    follower.stopAnimation()
+    expect(leader.__getChildren()).toHaveLength(0)
+
+    follow(follower, leader).start()
+    timing(follower, { toValue: 10, duration: 100, useNativeDriver: false }).start()
+    expect(leader.__getChildren()).toHaveLength(0)
+
+    leader.setValue(50)
+    vi.advanceTimersByTime(200)
+    expect(follower.__getValue()).toBe(10)
+  })
+
+  test('setValue of the value does not end the tracking, as in React Native', () => {
+    const leader = new AnimatedValue(0)
+    const follower = new AnimatedValue(0)
+    follow(follower, leader).start()
+
+    follower.setValue(5)
+    leader.setValue(50)
+    vi.advanceTimersByTime(200)
+
+    expect(follower.__getValue()).toBeCloseTo(50, 6)
   })
 })

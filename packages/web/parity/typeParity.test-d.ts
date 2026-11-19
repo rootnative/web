@@ -281,22 +281,11 @@ type AnimatedGaps =
   | 'SectionList'
   | 'ValueXY'
   | 'attachNativeEvent'
-  | 'decay'
-  | 'delay'
-  | 'diffClamp'
-  | 'divide'
   | 'forkEvent'
-  | 'loop'
-  | 'modulo'
-  | 'sequence'
-  | 'stagger'
-  | 'subtract'
   | 'unforkEvent'
 
-// A value can't track another node yet, so `toValue` takes only a number, and a spring's
-// `velocity` too.
-type AnimatedValueGaps = 'stopTracking' | 'track'
-
+// With no `ValueXY` and no `Color` yet, `toValue` takes no `{ x, y }` and no color, and a
+// `velocity` takes no `{ x, y }`.
 export type AnimatedParity = [
   None<Diff<keyof typeof Native.Animated, keyof typeof Web.Animated, AnimatedGaps>>,
   None<
@@ -334,13 +323,22 @@ export type AnimatedParity = [
     >
   >,
   None<FitDiff<Web.Animated.SpringAnimationConfig, Native.Animated.SpringAnimationConfig, never>>,
+  None<PropDiff<Native.Animated.DecayAnimationConfig, Web.Animated.DecayAnimationConfig, never>>,
+  None<
+    FitDiff<Native.Animated.DecayAnimationConfig, Web.Animated.DecayAnimationConfig, 'velocity'>
+  >,
+  None<FitDiff<Web.Animated.DecayAnimationConfig, Native.Animated.DecayAnimationConfig, never>>,
   None<PropDiff<Native.Animated.AnimatedNode, Web.Animated.AnimatedNode, never>>,
-  None<PropDiff<Native.Animated.Value, Web.Animated.Value, AnimatedValueGaps>>,
+  None<PropDiff<Native.Animated.Value, Web.Animated.Value, never>>,
   None<PropDiff<Native.Animated.Interpolation<number>, Web.Animated.Interpolation<number>, never>>,
   None<PropDiff<Native.Animated.AnimatedAddition, Web.Animated.AnimatedAddition, never>>,
+  None<PropDiff<Native.Animated.AnimatedSubtraction, Web.Animated.AnimatedSubtraction, never>>,
   None<
     PropDiff<Native.Animated.AnimatedMultiplication, Web.Animated.AnimatedMultiplication, never>
   >,
+  None<PropDiff<Native.Animated.AnimatedDivision, Web.Animated.AnimatedDivision, never>>,
+  None<PropDiff<Native.Animated.AnimatedModulo, Web.Animated.AnimatedModulo, never>>,
+  None<PropDiff<Native.Animated.AnimatedDiffClamp, Web.Animated.AnimatedDiffClamp, never>>,
   None<Mismatch<'AnimatedConfig', Native.Animated.AnimatedConfig, Web.Animated.AnimatedConfig>>,
   None<
     Mismatch<

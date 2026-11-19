@@ -122,8 +122,7 @@ findNodeHandle, TurboModuleRegistry.
 
 NOT IMPLEMENTED, do not import:
 - LayoutAnimation.
-- Animated: ValueXY, Color, decay, sequence, stagger, loop, delay, subtract,
-  divide, modulo, diffClamp, forkEvent, unforkEvent, attachNativeEvent,
+- Animated: ValueXY, Color, forkEvent, unforkEvent, attachNativeEvent,
   Animated.Image, Animated.ScrollView, Animated.FlatList,
   Animated.SectionList, useAnimatedValue, useAnimatedValueXY,
   useAnimatedColor.
@@ -645,17 +644,24 @@ StatusBar
   an x out of [0, 1]. Type of a curve: EasingFunction. Pass a curve as the
   easing of Animated.timing.
 - Animated: Value (setValue, setOffset, flattenOffset, extractOffset,
-  stopAnimation, resetAnimation, interpolate, listeners), add, multiply,
-  timing (500 ms and Easing.inOut(Easing.ease) by default), spring (all
-  three kinds of config, velocity, overshootClamping), parallel
-  (stopTogether), event, View, Text, createAnimatedComponent, Node,
-  Interpolation. interpolate takes numbers, strings with numbers ('90deg'),
-  and colors (out as rgba()). NO native driver: useNativeDriver: true runs
-  the same JavaScript driver on the main thread. A frame writes the style to
-  the element with no React render; a value in a prop that isn't style
-  renders the component on each frame. With prefers-reduced-motion, timing
-  and spring go to toValue at once, after their delay. toValue and velocity
-  take only a number. Animated.event always returns a function.
+  stopAnimation, resetAnimation, stopTracking, interpolate, listeners), add,
+  subtract, multiply, divide (by zero gives 0), modulo (0 up to the modulus,
+  also for a negative input), diffClamp, timing (500 ms and
+  Easing.inOut(Easing.ease) by default), spring (all three kinds of config,
+  velocity, overshootClamping), decay (velocity per ms, deceleration 0.998 by
+  default), sequence, parallel (stopTogether), delay, stagger, loop
+  (iterations, -1 by default; resetBeforeIteration), event, View, Text,
+  createAnimatedComponent, Node, Interpolation. interpolate takes numbers,
+  strings with numbers ('90deg'), and colors (out as rgba()). toValue of
+  timing and spring: a number, or an Animated value or interpolation that the
+  value follows until stopAnimation() or a new animation; NOT { x, y } or a
+  color yet. velocity takes only a number. NO native driver:
+  useNativeDriver: true runs the same JavaScript driver on the main thread. A
+  frame writes the style to the element with no React render; a value in a
+  prop that isn't style renders the component on each frame. With
+  prefers-reduced-motion, timing and spring go to toValue at once, decay goes
+  at once to where it would stop, a delay still waits, and a loop ends after
+  one iteration. Animated.event always returns a function.
 - usePressability(config): returns pointer, keyboard, and focus handlers, not
   the native responder handlers. Spread them on a View. Memoize the config.
   A null config returns null. hitSlop doesn't grow the hit area. Set
