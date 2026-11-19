@@ -61,9 +61,11 @@ const MIN_CHANGE = 0.5
 
 let pending: { observer: MutationObserver; lapse: ReturnType<typeof setTimeout> } | null = null
 
-// The layout animations that play now. A new one stops them, and its first boxes are where they
-// were, so an element goes on from where it is. A stopped ghost goes away before the next paint.
-const running = new Set<Animation>()
+// The layout animations that play now, each with its ghost. A new one stops them, and its first
+// boxes are where they were, so an element goes on from where it is. A stopped ghost goes away at
+// once, not in the callback of its `finished` promise: WebKit runs that callback too late, after
+// the microtasks that wait for the commit.
+const running = new Map<Animation, HTMLElement | null>()
 
 // A ghost is a removed element that the engine put back to animate its `delete`. Its old parent
 // keeps its inherited styles. Its removal isn't a commit, so `ghosts` keeps each one. A new layout
@@ -183,7 +185,10 @@ const play = (
   records: readonly MutationRecord[],
   onEnd: () => void,
 ): void => {
-  for (const animation of running) animation.cancel()
+  for (const [animation, ghost] of running) {
+    animation.cancel()
+    ghost?.remove()
+  }
   running.clear()
   const last = measure()
   const moves = new Map<HTMLElement, Offset>()
@@ -242,7 +247,7 @@ const play = (
   }
 
   for (const [animation, ghost] of started) {
-    running.add(animation)
+    running.set(animation, ghost)
     const forget = (): void => {
       running.delete(animation)
       ghost?.remove()
