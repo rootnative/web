@@ -5,47 +5,61 @@
  */
 
 import { hasDOM } from '../../utils/env'
+import { Platform } from '../Platform'
+import { animateNextLayout, cancelNextLayout, parseConfig } from './engine'
+import type {
+  LayoutAnimationConfig,
+  LayoutAnimationProperties,
+  LayoutAnimationProperty,
+  LayoutAnimationType,
+  LayoutAnimationTypes,
+} from './types'
 
-export type LayoutAnimationType =
-  'spring' | 'linear' | 'easeInEaseOut' | 'easeIn' | 'easeOut' | 'keyboard'
-
-export type LayoutAnimationProperty = 'opacity' | 'scaleX' | 'scaleY' | 'scaleXY'
-
-export type LayoutAnimationAnimationConfig = Readonly<{
-  duration?: number | undefined
-  delay?: number | undefined
-  springDamping?: number | undefined
-  initialVelocity?: number | undefined
-  type?: LayoutAnimationType | undefined
-  property?: LayoutAnimationProperty | undefined
-}>
-
-export type LayoutAnimationAnim = LayoutAnimationAnimationConfig
-
-export type LayoutAnimationConfig = Readonly<{
-  duration: number
-  create?: LayoutAnimationAnimationConfig | undefined
-  update?: LayoutAnimationAnimationConfig | undefined
-  delete?: LayoutAnimationAnimationConfig | undefined
-}>
-
-export type LayoutAnimationTypes = Readonly<{ [type in LayoutAnimationType]: type }>
-
-export type LayoutAnimationProperties = Readonly<{ [prop in LayoutAnimationProperty]: prop }>
+export type {
+  LayoutAnimationAnim,
+  LayoutAnimationConfig,
+  LayoutAnimationProperties,
+  LayoutAnimationProperty,
+  LayoutAnimationType,
+  LayoutAnimationTypes,
+} from './types'
 
 type OnAnimationDidEndCallback = () => void
 type OnAnimationDidFailCallback = () => void
 
-// Nothing animates yet: the next layout shows at once. The callback runs once, one frame and 1 ms
-// after the duration, as React Native's JavaScript side calls it when the native side doesn't.
-// React Native never calls `onAnimationDidFail` for a valid config.
+let isEnabled = true
+
+// As in React Native, `onAnimationDidEnd` runs once: when the animations end, or one frame and
+// 1 ms after the duration, whichever is first. A config that React Native can't read calls
+// `onAnimationDidFail` and animates nothing.
+//
+// React Native returns at once with reduced motion (`Platform.isDisableAnimations`, a test switch
+// on native) and never calls `onAnimationDidEnd`. Here the switch follows the user's setting, so
+// nothing animates, and the callback still runs: an app that waits for it goes on. The same holds
+// after `setEnabled(false)`.
 const configureNext = (
   config: LayoutAnimationConfig,
   onAnimationDidEnd?: OnAnimationDidEndCallback,
-  _onAnimationDidFail?: OnAnimationDidFailCallback,
+  onAnimationDidFail?: OnAnimationDidFailCallback,
 ): void => {
   if (!hasDOM()) return
-  setTimeout(() => onAnimationDidEnd?.(), (config.duration ?? 0) + 17)
+  const wait = (config.duration ?? 0) + 17
+  let ended = false
+  const end = (): void => {
+    if (ended) return
+    ended = true
+    clearTimeout(timer)
+    onAnimationDidEnd?.()
+  }
+  const timer = setTimeout(end, wait)
+
+  const parsed = parseConfig(config)
+  if (parsed === null) {
+    queueMicrotask(() => onAnimationDidFail?.())
+    return
+  }
+  if (!isEnabled || Platform.isDisableAnimations) return
+  animateNextLayout(parsed, wait, end)
 }
 
 const create = (
@@ -75,8 +89,8 @@ const Presets: {
 }
 
 /**
- * React Native's `LayoutAnimation`: the next commit animates the layout changes. On the web,
- * nothing animates yet. `configureNext` calls `onAnimationDidEnd` after the duration.
+ * React Native's `LayoutAnimation`: after `configureNext`, the next commit animates the layout
+ * changes. An element that moves animates from its old place, and a new element animates in.
  */
 export const LayoutAnimation: {
   configureNext: typeof configureNext
@@ -113,6 +127,9 @@ export const LayoutAnimation: {
   easeInEaseOut: (onAnimationDidEnd) => configureNext(Presets.easeInEaseOut, onAnimationDidEnd),
   linear: (onAnimationDidEnd) => configureNext(Presets.linear, onAnimationDidEnd),
   spring: (onAnimationDidEnd) => configureNext(Presets.spring, onAnimationDidEnd),
-  // Nothing animates yet, so there is nothing to turn off.
-  setEnabled() {},
+  // React Native's `setEnabled` does nothing, because of a bug. Here it works.
+  setEnabled(value) {
+    isEnabled = value
+    if (!value) cancelNextLayout()
+  },
 }

@@ -46,7 +46,7 @@ A hardware keyboard and a desktop browser give no event.
 | `Keyboard.dismiss()`                          | Takes the focus from the focused text field, so the keyboard hides. Other elements keep the focus. |
 | `Keyboard.isVisible()`                        | `true` while the keyboard shows.                                                                   |
 | `Keyboard.metrics()`                          | The `endCoordinates` of the keyboard while it shows, else `undefined`.                             |
-| `Keyboard.scheduleLayoutAnimation(event)`     | Does nothing. The web has no layout animation, and its events have no duration.                    |
+| `Keyboard.scheduleLayoutAnimation(event)`     | Does nothing. Keyboard events on the web have no duration, so there is nothing to animate.         |
 
 ## The event
 
