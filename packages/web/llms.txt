@@ -678,10 +678,13 @@ StatusBar
   spring 700 ms), easeInEaseOut(), linear(), spring(), Types, Properties,
   setEnabled, checkConfig. Call configureNext in the same handler as the state
   change: the next commit animates each element that moves (from its old
-  place, CSS translate) and each new element (create property: opacity, or
-  scale from 0); children move with their parent. React Native's curves and
-  per-kind duration and delay. NOT YET: size changes show at once, and a
-  removed element goes away at once (no delete animation). onAnimationDidEnd
+  place, CSS translate), each box that grows (a clip-path opens from the old
+  size; a box that shrinks takes its new size at once), each new element
+  (create property: opacity, or scale from 0), and each removed element (it
+  stays in its old parent at its old place, inert, out of the flow, and
+  animates the delete property to 0, then goes away); children move with
+  their parent. React Native's curves and per-kind duration and delay.
+  onAnimationDidEnd
   runs once, when the animations end or duration + 17 ms later. A config that
   React Native can't read (no duration, a kind with no valid type, a create or
   delete with no valid property; create(duration) with no type) calls

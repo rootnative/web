@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
+import { Text } from '../../components/Text'
 import { View } from '../../components/View'
 import { installFakeMatchMedia } from '../../test/matchMedia'
 import { cleanup, render } from '../../test/render'
@@ -47,11 +48,43 @@ const Column = ({ gap, extra = false }: { gap: number; extra?: boolean }): React
 )
 
 // A box at `top` px.
-const Far = ({ top }: { top: number }): ReactNode => (
+const Far = ({ top, show = true }: { top: number; show?: boolean }): ReactNode => (
   <View>
-    <View testID="far" style={{ position: 'absolute', top, height: 10, width: 10 }} />
+    {show ? (
+      <View testID="far" style={{ position: 'absolute', top, height: 10, width: 10 }} />
+    ) : null}
   </View>
 )
+
+// A box with rounded corners and a height.
+const Grow = ({ height }: { height: number }): ReactNode => (
+  <View style={{ position: 'absolute', top: 0, left: 0 }}>
+    <View testID="grow" style={{ width: 100, height, borderRadius: 8, backgroundColor: 'red' }} />
+  </View>
+)
+
+// Two boxes, in either order.
+const Pair = ({ swap }: { swap: boolean }): ReactNode => (
+  <View style={{ position: 'absolute', top: 0, left: 0, width: 50 }}>
+    {(swap ? ['b', 'a'] : ['a', 'b']).map((id) => (
+      <View key={id} testID={id} style={{ height: 10 }} />
+    ))}
+  </View>
+)
+
+// A red text with a word in it that inherits the color.
+const Colored = ({ show }: { show: boolean }): ReactNode => (
+  <View style={{ position: 'absolute', top: 0, left: 0 }}>
+    <Text style={{ color: 'rgb(255, 0, 0)' }}>
+      red {show ? <Text testID="word">word</Text> : null}
+    </Text>
+  </View>
+)
+
+const fadeOut = { duration: 300, delete: { type: 'linear', property: 'opacity' } } as const
+
+const roundBox = (box: DOMRect): number[] =>
+  [box.left, box.top, box.width, box.height].map(Math.round)
 
 describe('a move', () => {
   test('starts at the old place, with the duration, easing, and fill of update', async () => {
@@ -271,5 +304,163 @@ describe('the callback and the switches', () => {
     await afterCommit()
 
     expect(timingOf(byTestId(container, 'group'))?.duration).toBe(100)
+  })
+})
+
+describe('a change of size', () => {
+  test('a box that grows shows its old size at the start, and its new size at the end', async () => {
+    const { container, rerender } = render(<Grow height={20} />)
+    const grow = byTestId(container, 'grow')
+    const { left, top } = grow.getBoundingClientRect()
+
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.linear)
+    rerender(<Grow height={60} />)
+    await afterCommit()
+
+    for (const animation of document.getAnimations()) {
+      animation.pause()
+      animation.currentTime = 0
+    }
+    expect(document.elementFromPoint(left + 50, top + 10)).toBe(grow)
+    expect(document.elementFromPoint(left + 50, top + 40)).not.toBe(grow)
+
+    // The parent shrink-wraps the box, so it grows and clips too.
+    for (const animation of document.getAnimations()) animation.finish()
+    expect(document.elementFromPoint(left + 50, top + 40)).toBe(grow)
+  })
+
+  test('the clip keeps the rounded corners', async () => {
+    const { container, rerender } = render(<Grow height={20} />)
+    const grow = byTestId(container, 'grow')
+
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.linear)
+    rerender(<Grow height={60} />)
+    await afterCommit()
+
+    const effect = grow.getAnimations()[0]?.effect as KeyframeEffect
+    expect(String(effect.getKeyframes()[0]?.['clipPath'])).toContain('round')
+  })
+
+  test('a box that shrinks takes its new size at once', async () => {
+    const { container, rerender } = render(<Grow height={60} />)
+    const grow = byTestId(container, 'grow')
+
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.linear)
+    rerender(<Grow height={20} />)
+    await afterCommit()
+
+    expect(grow.getAnimations()).toHaveLength(0)
+  })
+})
+
+describe('a removed element', () => {
+  test('fades out at its old place, in its old parent, then goes away', async () => {
+    const { container, rerender } = render(<Column gap={0} extra />)
+    const removed = byTestId(container, 'new')
+    const parent = removed.parentElement
+    const before = removed.getBoundingClientRect()
+
+    LayoutAnimation.configureNext(fadeOut)
+    rerender(<Column gap={0} />)
+    await afterCommit()
+
+    expect(removed.parentElement).toBe(parent)
+    expect(removed.hasAttribute('inert')).toBe(true)
+    expect(removed.getAttribute('aria-hidden')).toBe('true')
+    expect(roundBox(boxAtStart(removed))).toEqual(roundBox(before))
+    expect(getComputedStyle(removed).opacity).toBe('1')
+    expect(document.elementFromPoint(before.left + 5, before.top + 5)).not.toBe(removed)
+
+    for (const animation of removed.getAnimations()) animation.finish()
+    await vi.waitFor(() => expect(removed.isConnected).toBe(false))
+  })
+
+  test('keeps the styles that it inherits from its old parent', async () => {
+    const { container, rerender } = render(<Colored show />)
+    const word = byTestId(container, 'word')
+
+    LayoutAnimation.configureNext(fadeOut)
+    rerender(<Colored show={false} />)
+    await afterCommit()
+
+    expect(word.isConnected).toBe(true)
+    expect(getComputedStyle(word).color).toBe('rgb(255, 0, 0)')
+  })
+
+  test('with scaleXY, shrinks to nothing', async () => {
+    const { container, rerender } = render(<Column gap={0} extra />)
+    const removed = byTestId(container, 'new')
+    const before = removed.getBoundingClientRect()
+
+    LayoutAnimation.configureNext({
+      duration: 100,
+      delete: { type: 'linear', property: 'scaleXY' },
+    })
+    rerender(<Column gap={0} />)
+    await afterCommit()
+
+    expect(roundBox(boxAtStart(removed))).toEqual(roundBox(before))
+    for (const animation of removed.getAnimations()) animation.currentTime = 99
+    expect(removed.getBoundingClientRect().width).toBeLessThan(2)
+  })
+
+  test('with no delete kind, or out of the window, goes away at once', async () => {
+    const { container, rerender } = render(<Column gap={0} extra />)
+    const removed = byTestId(container, 'new')
+    LayoutAnimation.configureNext({ duration: 300, update: { type: 'linear' } })
+    rerender(<Column gap={0} />)
+    await afterCommit()
+    expect(removed.isConnected).toBe(false)
+
+    const far = render(<Far top={window.innerHeight + 100} />)
+    const farBox = byTestId(far.container, 'far')
+    LayoutAnimation.configureNext(fadeOut)
+    far.rerender(<Far top={window.innerHeight + 100} show={false} />)
+    await afterCommit()
+    expect(farBox.isConnected).toBe(false)
+  })
+
+  test('an element that React moves is no ghost', async () => {
+    const { container, rerender } = render(<Pair swap={false} />)
+
+    LayoutAnimation.configureNext({ ...LayoutAnimation.Presets.easeInEaseOut })
+    rerender(<Pair swap />)
+    await afterCommit()
+
+    for (const id of ['a', 'b']) {
+      const boxes = container.querySelectorAll(`[data-testid="${id}"]`)
+      expect(boxes).toHaveLength(1)
+      expect(boxes[0]?.hasAttribute('inert')).toBe(false)
+    }
+  })
+
+  test('a new layout animation removes the ghost at once', async () => {
+    const { container, rerender } = render(<Column gap={0} extra />)
+    const removed = byTestId(container, 'new')
+    LayoutAnimation.configureNext({ ...fadeOut, duration: 1000 })
+    rerender(<Column gap={0} />)
+    await afterCommit()
+    expect(removed.isConnected).toBe(true)
+
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.linear)
+    rerender(<Column gap={50} />)
+    await afterCommit()
+    expect(removed.isConnected).toBe(false)
+  })
+
+  test("the removal of a ghost isn't the commit of a waiting config", async () => {
+    const { container, rerender } = render(<Column gap={0} extra />)
+    const removed = byTestId(container, 'new')
+    LayoutAnimation.configureNext(fadeOut)
+    rerender(<Column gap={0} />)
+    await afterCommit()
+
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.linear)
+    for (const animation of removed.getAnimations()) animation.finish()
+    await vi.waitFor(() => expect(removed.isConnected).toBe(false))
+    rerender(<Column gap={50} />)
+    await afterCommit()
+
+    expect(byTestId(container, 'group').getAnimations()).toHaveLength(1)
   })
 })

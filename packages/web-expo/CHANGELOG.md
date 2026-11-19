@@ -10,7 +10,7 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 - **`VirtualizedList` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
 - **`SectionList` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
-- **`LayoutAnimation` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use. Moves and new elements animate.
+- **`LayoutAnimation` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
 - **`UIManager.configureNextLayoutAnimation` calls `LayoutAnimation.configureNext` of `@rootnative/web`**, so the next commit animates, and `onAnimationDidEnd` runs when the animation ends. Before, it ran at once.
 
 ## [0.0.0-alpha.6] - 2026-11-18

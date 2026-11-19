@@ -56,14 +56,19 @@ type Offset = Readonly<{ x: number; y: number }>
 
 const NO_OFFSET: Offset = { x: 0, y: 0 }
 
-// A move smaller than this doesn't animate.
-const MIN_MOVE = 0.5
+// A move or a growth smaller than this doesn't animate.
+const MIN_CHANGE = 0.5
 
 let pending: { observer: MutationObserver; lapse: ReturnType<typeof setTimeout> } | null = null
 
 // The layout animations that play now. A new one stops them, and its first boxes are where they
-// were, so an element goes on from where it is.
+// were, so an element goes on from where it is. A stopped ghost goes away before the next paint.
 const running = new Set<Animation>()
+
+// A ghost is a removed element that the engine put back to animate its `delete`. Its old parent
+// keeps its inherited styles. Its removal isn't a commit, so `ghosts` keeps each one. A new layout
+// animation removes the ghosts before it measures, so the last boxes have none.
+const ghosts = new WeakSet<Element>()
 
 export const cancelNextLayout = (): void => {
   if (pending === null) return
@@ -99,39 +104,90 @@ const offsetFromAncestors = (element: HTMLElement, moves: Map<HTMLElement, Offse
 const isInWindow = (box: DOMRect): boolean =>
   box.bottom > 0 && box.right > 0 && box.top < window.innerHeight && box.left < window.innerWidth
 
-const timingOf = (kind: Kind): KeyframeAnimationOptions => ({
+// `backwards` holds the first frame during a `delay`. A ghost also holds the last frame until the
+// engine removes it.
+const timingOf = (kind: Kind, fill: FillMode = 'backwards'): KeyframeAnimationOptions => ({
   duration: kind.duration,
   delay: kind.delay,
   easing: kind.easing,
-  fill: 'backwards',
+  fill,
 })
 
 // The CSS `scale` and `translate` properties apply before `transform`, so the element keeps its
 // own transform, such as the one of an `Animated` value.
-const createKeyframes = (
+const SCALE_FROM = { scaleX: '0 1', scaleY: '1 0', scaleXY: '0 0' } as const
+
+// From nothing to the element for a create, and back for a delete.
+const appearKeyframes = (
   element: HTMLElement,
-  property: LayoutAnimationProperty | undefined,
-): PropertyIndexedKeyframes | null => {
-  switch (property) {
-    case 'opacity':
-      return { opacity: ['0', getComputedStyle(element).opacity] }
-    case 'scaleX':
-      return { scale: ['0 1', '1 1'] }
-    case 'scaleY':
-      return { scale: ['1 0', '1 1'] }
-    case 'scaleXY':
-      return { scale: ['0 0', '1 1'] }
-    default:
-      return null
+  property: LayoutAnimationProperty,
+  appear: boolean,
+): PropertyIndexedKeyframes => {
+  const [none, full] =
+    property === 'opacity'
+      ? ['0', getComputedStyle(element).opacity]
+      : [SCALE_FROM[property], '1 1']
+  return { [property === 'opacity' ? 'opacity' : 'scale']: appear ? [none, full] : [full, none] }
+}
+
+// A box that grows shows only its old size at the start, and the clip opens to its new size, so
+// the content doesn't stretch. The clip keeps the rounded corners of the box.
+const growKeyframes = (
+  element: HTMLElement,
+  width: number,
+  height: number,
+): PropertyIndexedKeyframes => {
+  const radius = getComputedStyle(element).borderRadius
+  const round = radius === '' || radius === '0px' ? '' : ` round ${radius}`
+  return {
+    clipPath: [`inset(0px ${width}px ${height}px 0px${round})`, `inset(0px 0px 0px 0px${round})`],
   }
 }
 
-const play = (config: ParsedConfig, first: Map<HTMLElement, DOMRect>, onEnd: () => void): void => {
+// Puts a removed element back in its old parent, out of the flow, at its old box. It takes no
+// pointer, focus, or screen reader.
+const placeGhost = (element: HTMLElement, record: MutationRecord, box: DOMRect): void => {
+  ghosts.add(element)
+  element.setAttribute('inert', '')
+  element.setAttribute('aria-hidden', 'true')
+  Object.assign(element.style, {
+    position: 'absolute',
+    inset: 'auto',
+    left: '0px',
+    top: '0px',
+    margin: '0px',
+    boxSizing: 'border-box',
+    width: `${box.width}px`,
+    height: `${box.height}px`,
+    minWidth: '0px',
+    minHeight: '0px',
+    maxWidth: 'none',
+    maxHeight: 'none',
+    pointerEvents: 'none',
+  })
+  const next = record.nextSibling?.parentNode === record.target ? record.nextSibling : null
+  record.target.insertBefore(element, next)
+  const placed = element.getBoundingClientRect()
+  element.style.left = `${box.left - placed.left}px`
+  element.style.top = `${box.top - placed.top}px`
+}
+
+const isGhostRecord = (record: MutationRecord): boolean =>
+  record.type === 'childList' &&
+  record.addedNodes.length === 0 &&
+  [...record.removedNodes].every((node) => ghosts.has(node as Element))
+
+const play = (
+  config: ParsedConfig,
+  first: Map<HTMLElement, DOMRect>,
+  records: readonly MutationRecord[],
+  onEnd: () => void,
+): void => {
   for (const animation of running) animation.cancel()
   running.clear()
   const last = measure()
   const moves = new Map<HTMLElement, Offset>()
-  const animations: Animation[] = []
+  const started: [Animation, HTMLElement | null][] = []
 
   for (const [element, box] of last) {
     const before = first.get(element)
@@ -142,9 +198,10 @@ const play = (config: ParsedConfig, first: Map<HTMLElement, DOMRect>, onEnd: () 
       // Only the top element of a new subtree animates. Its children come with it.
       const parent = element.parentElement
       const parentIsNew = parent !== null && last.has(parent) && !first.has(parent)
-      if (config.create === null || parentIsNew) continue
-      const keyframes = createKeyframes(element, config.create.property)
-      if (keyframes !== null) animations.push(element.animate(keyframes, timingOf(config.create)))
+      const property = config.create?.property
+      if (config.create === null || property === undefined || parentIsNew) continue
+      const keyframes = appearKeyframes(element, property, true)
+      started.push([element.animate(keyframes, timingOf(config.create)), null])
       continue
     }
 
@@ -153,21 +210,46 @@ const play = (config: ParsedConfig, first: Map<HTMLElement, DOMRect>, onEnd: () 
     const offset = offsetFromAncestors(element, moves)
     const x = move.x - offset.x
     const y = move.y - offset.y
-    if (Math.abs(x) < MIN_MOVE && Math.abs(y) < MIN_MOVE) continue
-    moves.set(element, move)
-    animations.push(
-      element.animate({ translate: [`${x}px ${y}px`, '0px 0px'] }, timingOf(config.update)),
-    )
+    if (Math.abs(x) >= MIN_CHANGE || Math.abs(y) >= MIN_CHANGE) {
+      moves.set(element, move)
+      const keyframes = { translate: [`${x}px ${y}px`, '0px 0px'] }
+      started.push([element.animate(keyframes, timingOf(config.update)), null])
+    }
+    // A box that shrinks takes its new size at once.
+    const width = Math.max(0, box.width - before.width)
+    const height = Math.max(0, box.height - before.height)
+    if (width >= MIN_CHANGE || height >= MIN_CHANGE) {
+      const keyframes = growKeyframes(element, width, height)
+      started.push([element.animate(keyframes, timingOf(config.update)), null])
+    }
   }
 
-  for (const animation of animations) {
+  // React removed these elements before this point. Only the top element of a removed subtree is
+  // in the records, and an element that React moved is still in the page.
+  const removal = config.delete
+  if (removal !== null && removal.property !== undefined) {
+    for (const record of records) {
+      if (record.type !== 'childList' || !record.target.isConnected) continue
+      for (const node of record.removedNodes) {
+        if (!(node instanceof HTMLElement) || node.isConnected || ghosts.has(node)) continue
+        const box = first.get(node)
+        if (box === undefined || !isInWindow(box)) continue
+        placeGhost(node, record, box)
+        const keyframes = appearKeyframes(node, removal.property, false)
+        started.push([node.animate(keyframes, timingOf(removal, 'both')), node])
+      }
+    }
+  }
+
+  for (const [animation, ghost] of started) {
     running.add(animation)
     const forget = (): void => {
       running.delete(animation)
+      ghost?.remove()
     }
     animation.finished.then(forget, forget)
   }
-  Promise.allSettled(animations.map((animation) => animation.finished)).then(onEnd, onEnd)
+  Promise.allSettled(started.map(([animation]) => animation.finished)).then(onEnd, onEnd)
 }
 
 /**
@@ -182,9 +264,10 @@ export const animateNextLayout = (
 ): void => {
   cancelNextLayout()
   const first = measure()
-  const observer = new MutationObserver(() => {
+  const observer = new MutationObserver((records) => {
+    if (records.every(isGhostRecord)) return
     cancelNextLayout()
-    play(config, first, onEnd)
+    play(config, first, records, onEnd)
   })
   observer.observe(document.body, {
     attributes: true,
