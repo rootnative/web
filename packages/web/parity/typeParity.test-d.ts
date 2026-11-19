@@ -41,7 +41,6 @@ type Mismatch<Name extends string, NativeType, OurType> = [NativeType] extends [
 type ExportGaps =
   // Not built yet.
   | 'ImageBackground'
-  | 'LayoutAnimation'
   | 'SafeAreaView'
   // Native platform, native modules, and development tools.
   | 'ActionSheetIOS'
@@ -442,6 +441,9 @@ export type TypeParity = [
   None<PropDiff<Native.StatusBarProps, Web.StatusBarProps, never>>,
   None<PropDiff<typeof Native.AppState, typeof Web.AppState, never>>,
   None<PropDiff<typeof Native.Linking, typeof Web.Linking, never>>,
+  None<PropDiff<typeof Native.LayoutAnimation, typeof Web.LayoutAnimation, never>>,
+  None<Misfit<'LayoutAnimation', typeof Web.LayoutAnimation, typeof Native.LayoutAnimation>>,
+  None<Mismatch<'LayoutAnimationConfig', Native.LayoutAnimationConfig, Web.LayoutAnimationConfig>>,
   // A class on native, a plain object here.
   None<PropDiff<typeof Native.Share, typeof Web.Share, 'prototype'>>,
   None<PropDiff<typeof Native.Vibration, typeof Web.Vibration, never>>,

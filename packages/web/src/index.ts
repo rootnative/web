@@ -44,6 +44,15 @@ export type {
   KeyboardEventName,
   KeyboardMetrics,
 } from './apis/Keyboard'
+export { LayoutAnimation } from './apis/LayoutAnimation'
+export type {
+  LayoutAnimationAnim,
+  LayoutAnimationConfig,
+  LayoutAnimationProperties,
+  LayoutAnimationProperty,
+  LayoutAnimationType,
+  LayoutAnimationTypes,
+} from './apis/LayoutAnimation'
 export { Linking } from './apis/Linking'
 export { PanResponder } from './apis/PanResponder'
 export type {

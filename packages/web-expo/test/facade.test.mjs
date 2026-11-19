@@ -74,19 +74,17 @@ describe('the generated files', () => {
   })
 
   test('gives a missing name a stub, and the index exports it by name', () => {
-    expect(files.get('exports/LayoutAnimation/index.js')).toContain(`missing('LayoutAnimation')`)
+    expect(files.get('exports/CheckBox/index.js')).toContain(`missing('CheckBox')`)
     expect(files.get('index.js')).toContain(
-      `export { default as LayoutAnimation } from './exports/LayoutAnimation/index.js'`,
+      `export { default as CheckBox } from './exports/CheckBox/index.js'`,
     )
   })
 })
 
 describe('a missing export', () => {
   test('throws an error with its name on a use, not on the import', () => {
-    const LayoutAnimation = missingExport('LayoutAnimation')
-    expect(() => LayoutAnimation.configureNext).toThrow(
-      'LayoutAnimation is not in @rootnative/web yet',
-    )
-    expect(() => LayoutAnimation()).toThrow('LayoutAnimation is not in @rootnative/web yet')
+    const CheckBox = missingExport('CheckBox')
+    expect(() => CheckBox.propTypes).toThrow('CheckBox is not in @rootnative/web yet')
+    expect(() => CheckBox()).toThrow('CheckBox is not in @rootnative/web yet')
   })
 })

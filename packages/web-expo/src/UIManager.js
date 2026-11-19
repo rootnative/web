@@ -1,3 +1,4 @@
+import { LayoutAnimation } from '@rootnative/web/internal/apis/LayoutAnimation/index.js'
 import { withHostMethods } from '@rootnative/web/internal/render/hostMethods.js'
 
 // A node is a DOM element, as `findNodeHandle` gives it. Anything else has no layout to measure.
@@ -28,9 +29,9 @@ export const UIManager = {
   updateView(node, props) {
     if (isElement(node)) withHostMethods(node).setNativeProps(props)
   },
-  // The web has no layout animation, so the next layout is the end of it.
-  configureNextLayoutAnimation(_config, onAnimationDidEnd) {
-    onAnimationDidEnd?.()
+  // react-native-web's `LayoutAnimation` calls this, so both run the one of `@rootnative/web`.
+  configureNextLayoutAnimation(config, onAnimationDidEnd, onAnimationDidFail) {
+    LayoutAnimation.configureNext(config, onAnimationDidEnd, onAnimationDidFail)
   },
   setLayoutAnimationEnabledExperimental() {},
 }

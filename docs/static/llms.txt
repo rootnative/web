@@ -80,8 +80,8 @@ or 'static' (each route renders on the server, then hydrates), Expo Router
 preset adds the Worklets plugin), image imports, react-native-svg.
 web-expo depends on the exact same version of @rootnative/web: install that
 version if the app imports @rootnative/web too.
-A name that @rootnative/web lacks (LayoutAnimation, ImageBackground,
-SafeAreaView, and more) loads as a stub that throws
+A name that @rootnative/web lacks (ImageBackground, SafeAreaView, and
+more) loads as a stub that throws
 "<Name> is not in @rootnative/web yet" on use;
 node_modules/react-native-web/expo-exports.json lists them under "missing".
 
@@ -116,13 +116,12 @@ APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AppState, Keyboard, Linking, Alert, Share, Vibration, Clipboard,
 AccessibilityInfo, I18nManager, BackHandler, PixelRatio, processColor,
 PanResponder, Animated, useAnimatedValue, useAnimatedValueXY, useAnimatedColor,
-Easing, usePressability.
+Easing, LayoutAnimation, usePressability.
 
 Compat, for libraries only, do not call in app code: unstable_createElement,
 findNodeHandle, TurboModuleRegistry.
 
 NOT IMPLEMENTED, do not import:
-- LayoutAnimation.
 - A Next.js plugin, and templates for a Vite app with and without server
   rendering.
 
@@ -674,6 +673,13 @@ StatusBar
   native driver); any other event name does nothing and warns in development.
   A value in the style of Animated.FlatList or Animated.SectionList renders
   the list on each frame; put it on an Animated.View around the list.
+- LayoutAnimation: configureNext(config, onAnimationDidEnd?,
+  onAnimationDidFail?), create, Presets (easeInEaseOut 300 ms, linear 500 ms,
+  spring 700 ms), easeInEaseOut(), linear(), spring(), Types, Properties,
+  setEnabled, checkConfig. NOTHING ANIMATES YET: the next layout shows at
+  once. configureNext calls onAnimationDidEnd once, duration + 17 ms later;
+  onAnimationDidFail never runs. setEnabled does nothing. In a server render,
+  configureNext does nothing.
 - usePressability(config): returns pointer, keyboard, and focus handlers, not
   the native responder handlers. Spread them on a View. Memoize the config.
   A null config returns null. hitSlop doesn't grow the hit area. Set

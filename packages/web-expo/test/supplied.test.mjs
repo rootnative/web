@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { getAssetByID } from '@rootnative/web/assets-registry'
+import { LayoutAnimation } from '@rootnative/web/internal/apis/LayoutAnimation/index.js'
 
 import { AssetRegistry } from '../src/AssetRegistry.js'
 import { DeviceEventEmitter } from '../src/DeviceEventEmitter.js'
@@ -161,10 +162,16 @@ describe('UIManager', () => {
     expect(onFail).toHaveBeenCalledOnce()
   })
 
-  test('the next layout animation ends at once', () => {
+  test('configureNextLayoutAnimation calls LayoutAnimation.configureNext of the runtime', () => {
+    const configureNext = vi.spyOn(LayoutAnimation, 'configureNext').mockImplementation(() => {})
+    const config = { duration: 300 }
     const onEnd = vi.fn()
-    UIManager.configureNextLayoutAnimation({ duration: 300 }, onEnd)
-    expect(onEnd).toHaveBeenCalledOnce()
+    const onFail = vi.fn()
+
+    UIManager.configureNextLayoutAnimation(config, onEnd, onFail)
+
+    expect(configureNext).toHaveBeenCalledExactlyOnceWith(config, onEnd, onFail)
     expect(UIManager.setLayoutAnimationEnabledExperimental(true)).toBeUndefined()
+    configureNext.mockRestore()
   })
 })

@@ -64,6 +64,7 @@ const sidebars: SidebarsConfig = {
         'panresponder',
         'animated',
         'easing',
+        'layoutanimation',
         'usepressability',
         'compat',
       ],

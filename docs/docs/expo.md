@@ -48,6 +48,6 @@ Expo's libraries import `UIManager`, `NativeModules`, `LogBox`, `DeviceEventEmit
 
 ## Names that aren't there yet
 
-A name of `react-native` that `@rootnative/web` doesn't have yet loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `LayoutAnimation is not in @rootnative/web yet`.
+A name of `react-native` that `@rootnative/web` doesn't have yet loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `ImageBackground is not in @rootnative/web yet`.
 
-The largest ones today are `LayoutAnimation`, `ImageBackground`, and `SafeAreaView`. The file `node_modules/react-native-web/expo-exports.json` lists all of them under `missing`.
+The largest ones today are `ImageBackground` and `SafeAreaView`. The file `node_modules/react-native-web/expo-exports.json` lists all of them under `missing`.
