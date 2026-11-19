@@ -92,7 +92,8 @@ class Track implements LeafTrack {
   }
 
   // The keyframes go from now to the latest end, so a build in the middle of the runs goes on from
-  // where the values are. A run that ends first keeps its end value in the later keyframes.
+  // where the values are. A run that ends first keeps its end value in the later keyframes, until
+  // it leaves the track.
   build(): void {
     const element = this.leaf.host?.element()
     const staticStyle = this.leaf.host?.staticStyle()
@@ -106,9 +107,14 @@ class Track implements LeafTrack {
     }
     const remaining = end - now
     if (remaining <= 0) return
+    // Each run has ended at the last sample. A time sum can round a little short of the end of a
+    // run, and a spring there isn't at `toValue` yet, so the last sample takes each end value.
     const curves = [...this.runs.keys()].map((run) => ({
       value: run.value,
-      curve: { duration: remaining, valueAt: (time: number) => run.valueAt(now + time) },
+      curve: {
+        duration: remaining,
+        valueAt: (time: number) => (time >= remaining ? run.endValue() : run.valueAt(now + time)),
+      },
     }))
     const keyframes = buildKeyframes(this.leaf, staticStyle, [...properties], curves, remaining)
     this.animation?.cancel()
@@ -162,6 +168,10 @@ export class NativeRun {
 
   elapsed(): number {
     return Math.max(0, clock() - this.start)
+  }
+
+  endValue(): number {
+    return this.curve.valueAt(this.curve.duration)
   }
 
   // The value at the time `time` of the clock.
@@ -223,7 +233,7 @@ export class NativeRun {
   private readonly onFrame = (): void => {
     const elapsed = this.elapsed()
     if (elapsed >= this.curve.duration) {
-      this.end(this.curve.valueAt(this.curve.duration))
+      this.end(this.endValue())
       this.onFinish()
       return
     }

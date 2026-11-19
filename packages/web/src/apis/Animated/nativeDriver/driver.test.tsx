@@ -412,6 +412,32 @@ describe('more than one value on one element', () => {
     expect(box.style.transform).toBe('translateX(100px) translateY(50px)')
   })
 
+  // With these clock times, the sum for the last sample of `move` is 599.9999999999999 ms. The test
+  // reads the keyframes that the track gives, because `getKeyframes` in Chromium rounds to 6 digits.
+  test('the last keyframe has the exact end value of each run', () => {
+    const fade = new Animated.Value(0)
+    const move = new Animated.Value(0)
+    const box = byTestId(render(<FadeAndMove fade={fade} move={move} />).container, 'box')
+    const animate = vi.spyOn(box, 'animate')
+    const now = vi.spyOn(performance, 'now').mockReturnValue(1000.1)
+    try {
+      linear(move, 100, { useNativeDriver: true, duration: 600 }).start()
+      now.mockReturnValue(1003.4)
+      linear(fade, 1, { useNativeDriver: true, duration: 100 }).start()
+    } finally {
+      now.mockRestore()
+    }
+
+    const keyframes = animate.mock.lastCall?.[0]
+    expect(Array.isArray(keyframes) ? keyframes.at(-1) : undefined).toMatchObject({
+      opacity: '1',
+      transform: 'translateX(100px)',
+    })
+    animate.mockRestore()
+    move.stopAnimation()
+    fade.stopAnimation()
+  })
+
   test('a run that ends first keeps its end value, and the other goes on', async () => {
     const fade = new Animated.Value(0)
     const move = new Animated.Value(0)
