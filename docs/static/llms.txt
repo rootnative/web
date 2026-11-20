@@ -90,8 +90,9 @@ node_modules/react-native-web/expo-exports.json lists them under "missing".
 - @rootnative/web: the React Native components and APIs. Import it as
   react-native through the plugin.
 - @rootnative/web/dom: web-only features. Head.
-- @rootnative/web/server: createStyleRegistry, StyleRegistryProvider,
-  renderStyleTags, styleTagsHTML, StyleRegistry.
+- @rootnative/web/server: deprecated, gone before 1.0. A server render needs
+  nothing from it: createStyleRegistry, StyleRegistryProvider,
+  renderStyleTags, and styleTagsHTML do nothing now.
 - @rootnative/web/vite: rootnative(), the Vite plugin. Only in vite.config.ts.
 
 Libraries: react-native-svg, react-native-safe-area-context, and
@@ -102,7 +103,7 @@ the package with ?url, then document.fonts.add(new FontFace(name, url)).
 Set skipLibCheck: true, because the type files of a native library import
 the real react-native types.
 
-Import /dom and /server only in code that runs on the web.
+Import /dom only in code that runs on the web.
 
 ## What ships
 
@@ -733,28 +734,30 @@ StatusBar
 
 Render the whole <html> document with React, not only the app:
 
-  const registry = createStyleRegistry()
   const html = renderToString(
     <html lang="en">
       <head>...</head>
       <body>
-        <div id="root">
-          <StyleRegistryProvider registry={registry}><App /></StyleRegistryProvider>
-        </div>
+        <div id="root"><App /></div>
         <script type="module" src="/client.js" />
       </body>
     </html>,
   )
-  const page = `<!doctype html>${html.replace('</head>', `${styleTagsHTML(registry)}</head>`)}`
+  const page = `<!doctype html>${html}`
 
-- One registry per request.
-- Write the style tags after the render ends.
-- Render <head> with React, so the tags of Head land in it. Pasted into a
-  template, they land at the start of <body>.
-- renderStyleTags(registry) returns the same three <style> elements as React
-  elements.
-- The client calls hydrateRoot(root, <App />) with no provider. It adopts the
-  server's <style> elements, so it inserts no rule twice.
+- Each component puts its CSS into the render as React 19 <style> elements.
+  React puts them in <head>, in three groups: component defaults, shorthands,
+  longhands. No provider, no registry, no step after the render.
+- Render <head> with React, so the tags of Head land in it too.
+- Pasted into a template (renderToString(<App />)), the style elements land
+  at the start of the app's HTML, and they apply there. The tags of Head land
+  there too, not in <head>.
+- The client calls hydrateRoot(root, <App />). It finds the groups by
+  data-precedence (rootnative-reset, rootnative-shorthand,
+  rootnative-longhand), adopts their rules, and inserts no rule twice. A new
+  rule goes into the group of its kind.
+- A server render under a DOM emulation (jsdom) takes the browser path: no
+  style elements in its HTML.
 
 On the server and during hydration, useWindowDimensions() returns
 { width: 0, height: 0, scale: 1, fontScale: 1 } and useColorScheme() returns

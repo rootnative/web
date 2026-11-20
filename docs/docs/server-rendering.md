@@ -1,12 +1,12 @@
 ---
 id: server-rendering
 title: Server rendering
-description: Render a React Native app to HTML on the server, collect its CSS, and hydrate it in the browser without a flash or a duplicate rule.
+description: Render a React Native app to HTML on the server, with the CSS of each component in the page, and hydrate it in the browser without a flash or a duplicate rule.
 ---
 
 # Server rendering
 
-The server renders your app to HTML with React DOM. A style registry collects the CSS of that render, and you write it into `<head>`. The browser then hydrates the same app.
+The server renders your app to HTML with React DOM. Each component puts its CSS into the render as React 19 `<style>` elements, and React puts them in the page. The browser then hydrates the same app.
 
 ## On the server
 
@@ -14,12 +14,10 @@ Render the whole document with React, not only the app:
 
 ```tsx title="server.tsx"
 import { renderToString } from 'react-dom/server'
-import { createStyleRegistry, StyleRegistryProvider, styleTagsHTML } from '@rootnative/web/server'
 
 import { App } from './App'
 
 export function renderPage(): string {
-  const registry = createStyleRegistry()
   const html = renderToString(
     <html lang="en">
       <head>
@@ -28,29 +26,34 @@ export function renderPage(): string {
       </head>
       <body>
         <div id="root">
-          <StyleRegistryProvider registry={registry}>
-            <App />
-          </StyleRegistryProvider>
+          <App />
         </div>
         <script type="module" src="/client.js" />
       </body>
     </html>,
   )
-  return `<!doctype html>${html.replace('</head>', `${styleTagsHTML(registry)}</head>`)}`
+  return `<!doctype html>${html}`
 }
 ```
 
 The script path depends on your bundler. Put the root CSS from [Installation](/installation#mount-your-app) in the head too.
 
-Three rules:
+React puts the CSS of the render into `<head>`, in three groups, in this order: the defaults of the components, the shorthands, then the longhands. Each render gets only the CSS that it uses. You need no provider, no registry, and no step after the render.
 
-- **One registry per request.** A shared registry mixes the CSS of two requests.
-- **Write the style tags after the render ends.** The registry fills while React renders. A head that you send before the body renders misses the CSS of that body.
-- **Render the `<head>` with React.** React 19 puts the `<title>` and `<meta>` elements of [`Head`](/seo) into the `<head>` that it renders. If you render only the app and paste it into a template, they land at the start of `<body>`.
+React 19 also puts the `<title>` and `<meta>` elements of [`Head`](/seo) into the `<head>` that it renders. So render the `<head>` with React.
 
 Your server code needs the same setup, so that `App` and its imports resolve to `@rootnative/web`. With Vite's server rendering, the [Vite plugin](/vite-plugin#server-rendering) does it.
 
-`renderStyleTags(registry)` returns the same three `<style>` elements as React elements. Use it when your framework takes head elements, not a string.
+## Into a template
+
+If your server pastes the app into an HTML template, render only the app:
+
+```tsx title="server.tsx"
+const app = renderToString(<App />)
+const page = template.replace('<!--app-->', app)
+```
+
+React then puts the style elements at the start of the app's HTML, inside `<div id="root">`. They apply there, and the client hydrates past them. The `<title>` and `<meta>` elements of `Head` also land there, not in `<head>`. For them, render the whole document.
 
 ## In the browser
 
@@ -64,7 +67,13 @@ import { App } from './App'
 hydrateRoot(document.getElementById('root')!, <App />)
 ```
 
-The client needs no provider. It finds the three `<style>` elements by their `data-precedence` and adopts their rules, so it inserts no rule twice. Keep them in their order: the defaults of the components, then the shorthands, then the longhands.
+The client finds the three groups of the server by their `data-precedence`: `rootnative-reset`, `rootnative-shorthand`, and `rootnative-longhand`. It adopts their rules, so it inserts no rule twice. A rule that the client needs later goes into the group of its kind, so the order holds. A page with no server render gets the three groups from the client.
+
+A server render under a DOM emulation, such as jsdom, takes the browser path. Its HTML then has no style elements.
+
+## The old API
+
+`createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, and `styleTagsHTML` from `@rootnative/web/server` are deprecated. A server render needs none of them. They do nothing now, so code that still calls them keeps its styles. Remove the calls: the functions go away before 1.0.
 
 ## Values that differ on the server
 

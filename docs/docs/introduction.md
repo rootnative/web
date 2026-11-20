@@ -30,9 +30,9 @@ Your app imports `react-native`. The [Vite plugin](/vite-plugin) resolves that n
 | ------ | ------------------------ | --------------------------------------------------------------- |
 | Parity | `@rootnative/web`        | The React Native components and APIs                            |
 | Web    | `@rootnative/web/dom`    | Browser features that native doesn't have, for example `<Head>` |
-| Server | `@rootnative/web/server` | Server rendering helpers                                        |
+| Server | `@rootnative/web/server` | Deprecated: a server render needs nothing from it               |
 
-Import `@rootnative/web/dom` and `@rootnative/web/server` only in code that runs on the web. The rest of your app stays the same code that runs on iOS and Android. A fourth entry, `@rootnative/web/vite`, is the Vite plugin, for `vite.config.ts` only.
+Import `@rootnative/web/dom` only in code that runs on the web. The rest of your app stays the same code that runs on iOS and Android. A fourth entry, `@rootnative/web/vite`, is the Vite plugin, for `vite.config.ts` only.
 
 ## Next steps
 

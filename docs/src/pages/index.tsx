@@ -214,9 +214,36 @@ const APP_LINES: readonly Line[] = [
   [['</'], ['View', 'tag'], ['>']],
 ]
 
-// The real server output of APP_LINES. Render it again when a reset class or the style compiler
-// changes: the atomic class names are hashes of the declarations.
+// The real server output of APP_LINES, cut short: React puts the style elements of the render
+// first, one for each group. Render it again when a reset class or the style compiler changes:
+// the atomic class names are hashes of the declarations.
 const HTML_LINES: readonly Line[] = [
+  [
+    ['<'],
+    ['style', 'tag'],
+    [' '],
+    ['data-precedence', 'attr'],
+    ['='],
+    ['"rootnative-reset"', 'string'],
+    ['>'],
+    ['…', 'muted'],
+    ['</'],
+    ['style', 'tag'],
+    ['>'],
+  ],
+  [
+    ['<'],
+    ['style', 'tag'],
+    [' '],
+    ['data-precedence', 'attr'],
+    ['='],
+    ['"rootnative-shorthand"', 'string'],
+    ['>.rn-hst5or{padding:'],
+    ['16px', 'number'],
+    ['}</'],
+    ['style', 'tag'],
+    ['>'],
+  ],
   [
     ['<'],
     ['main', 'tag'],
@@ -253,17 +280,6 @@ const HTML_LINES: readonly Line[] = [
     ['>'],
   ],
   [['</'], ['main', 'tag'], ['>']],
-  [
-    ['<'],
-    ['style', 'tag'],
-    ['>.rn-hst5or{padding:'],
-    ['16px', 'number'],
-    ['} '],
-    ['…', 'muted'],
-    ['</'],
-    ['style', 'tag'],
-    ['>'],
-  ],
 ]
 
 const VITE_LINES: readonly Line[] = [
@@ -388,7 +404,10 @@ const features = [
   {
     title: 'Server rendering',
     description: (
-      <>Render the whole page on the server with its style tags, then hydrate it in the browser.</>
+      <>
+        Render the page on the server, and React puts the CSS of each component in it. Then hydrate
+        it in the browser.
+      </>
     ),
     to: '/server-rendering',
     Icon: IconServer,
