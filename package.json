@@ -23,6 +23,7 @@
     "check:artifact": "node scripts/check-artifact.mjs",
     "check:consumer": "node e2e/check-consumer.mjs",
     "check:expo": "node e2e/check-expo.mjs",
+    "bench:styles": "node e2e/bench-styles.mjs",
     "preflight": "pnpm lint && pnpm format:check && pnpm check:llms && pnpm check:versions && pnpm typecheck && pnpm build && pnpm check:artifact && pnpm check:consumer && pnpm check:expo && pnpm test",
     "build:brand": "node scripts/build-brand.mjs"
   },

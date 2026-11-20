@@ -4,6 +4,7 @@
     { "path": "packages/web" },
     { "path": "packages/web/parity" },
     { "path": "packages/playground" },
-    { "path": "packages/expo-demo" }
+    { "path": "packages/expo-demo" },
+    { "path": "e2e/bench-styles" }
   ]
 }

@@ -1,0 +1,48 @@
+name: Bench
+
+# Measures the style delivery of `View` in the three engines, in a production build. The table
+# goes to the job summary. It doesn't gate anything: run it by hand, or let a push that changes
+# the style code or the benchmark run it.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'e2e/bench-styles/**'
+      - 'e2e/bench-styles.mjs'
+      - 'packages/web/src/style/**'
+      - 'packages/web/src/components/View/**'
+      - '.github/workflows/bench.yml'
+
+concurrency:
+  group: bench-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  styles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # v6.1.0 is the first release that can install pnpm 12.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install the browsers
+        run: pnpm --filter @rootnative/web exec playwright install chromium firefox webkit --with-deps
+
+      - name: Benchmark
+        run: pnpm bench:styles
