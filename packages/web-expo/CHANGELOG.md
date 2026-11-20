@@ -6,11 +6,15 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.0-alpha.7] - 2026-11-20
+
+The lists and `LayoutAnimation` of `@rootnative/web` load, and a static render of Expo Router gets its CSS from React 19's style groups.
+
 ### Changed
 
-- **`VirtualizedList` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
-- **`SectionList` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
-- **`LayoutAnimation` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
+- **`VirtualizedList` loads from `@rootnative/web` `0.0.0-alpha.7`.** Before, it was a stub that threw an error on use.
+- **`SectionList` loads from `@rootnative/web` `0.0.0-alpha.7`.** Before, it was a stub that threw an error on use.
+- **`LayoutAnimation` loads from `@rootnative/web` `0.0.0-alpha.7`.** Before, it was a stub that threw an error on use.
 - **`UIManager.configureNextLayoutAnimation` calls `LayoutAnimation.configureNext` of `@rootnative/web`**, so the next commit animates, and `onAnimationDidEnd` runs when the animation ends. Before, it ran at once.
 - **`getStyleElement` gives nothing, and `getApplication` gives the app with no provider.** The components of `@rootnative/web` put their CSS into React 19's style groups during the server render. Expo Router renders the whole document with React, so the styles land in `<head>`. Before, `getStyleElement` gave three style elements with ids.
 
