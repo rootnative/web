@@ -1,6 +1,7 @@
 import { type CSSProperties, type ReactElement, useEffect, useLayoutEffect, useRef } from 'react'
 
 import { StyleSheet } from '../../apis/StyleSheet'
+import { withServerStyles } from '../../render/serverStyles'
 import { toCSSColor } from '../../style/color'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { View } from '../View'
@@ -190,28 +191,31 @@ export function RefreshControl(props: RefreshControlProps): ReactElement {
   return (
     <View {...rest} aria-busy={refreshing} style={[styles.area, style]}>
       {children}
-      <div
-        ref={indicator}
-        aria-hidden={!refreshing}
-        aria-label={title}
-        className={indicatorClass}
-        data-refreshing={refreshing ? '' : undefined}
-        data-size={size === 'large' ? 'large' : undefined}
-        role="progressbar"
-        style={indicatorStyle}
-      >
-        <svg aria-hidden viewBox="0 0 40 40">
-          <circle
-            cx="20"
-            cy="20"
-            fill="none"
-            r="8.75"
-            stroke={arcColor}
-            strokeLinecap="round"
-            strokeWidth="2.5"
-          />
-        </svg>
-      </div>
+      {withServerStyles(
+        registry,
+        <div
+          ref={indicator}
+          aria-hidden={!refreshing}
+          aria-label={title}
+          className={indicatorClass}
+          data-refreshing={refreshing ? '' : undefined}
+          data-size={size === 'large' ? 'large' : undefined}
+          role="progressbar"
+          style={indicatorStyle}
+        >
+          <svg aria-hidden viewBox="0 0 40 40">
+            <circle
+              cx="20"
+              cy="20"
+              fill="none"
+              r="8.75"
+              stroke={arcColor}
+              strokeLinecap="round"
+              strokeWidth="2.5"
+            />
+          </svg>
+        </div>,
+      )}
     </View>
   )
 }

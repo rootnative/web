@@ -1,6 +1,7 @@
 import { createElement, type ElementType, type Key, type ReactElement } from 'react'
 
 import { isNativeHandler, toDOMProps } from '../../render/domProps'
+import { withServerStyles } from '../../render/serverStyles'
 import { compileStyle } from '../../style/compile'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import type { FlatStyle, StyleProp } from '../../style/types'
@@ -34,7 +35,7 @@ function Host({ type, props }: HostProps): ReactElement {
   if (compiled !== '') classes.push(compiled)
   if (classes.length > 0) domProps['className'] = classes.join(' ')
 
-  return createElement(type, domProps)
+  return withServerStyles(registry, createElement(type, domProps))
 }
 
 /**

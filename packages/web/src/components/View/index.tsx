@@ -3,6 +3,7 @@ import { createElement, useImperativeHandle, useRef, type ReactElement } from 'r
 import { toDOMProps } from '../../render/domProps'
 import { withHostMethods } from '../../render/hostMethods'
 import { resolveTag } from '../../render/resolveTag'
+import { withServerStyles } from '../../render/serverStyles'
 import { useElementLayout } from '../../render/useElementLayout'
 import { compileReset, compileStyle, joinClassNames, pointerEventsStyle } from '../../style/compile'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
@@ -80,5 +81,5 @@ export function useViewElement(props: ViewProps, extraClassName?: string): React
   domProps['className'] = className
   domProps['ref'] = element
 
-  return createElement(tag, domProps, children)
+  return withServerStyles(registry, createElement(tag, domProps, children))
 }

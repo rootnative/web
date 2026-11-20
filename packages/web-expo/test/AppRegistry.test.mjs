@@ -9,41 +9,36 @@ const Padded = () => createElement(View, { style: { paddingTop: 7 } })
 const Empty = () => null
 
 describe('getApplication', () => {
-  test('gives the three style groups with the CSS of the render', () => {
+  test('the element renders its CSS in the three style groups, in order', () => {
     AppRegistry.registerComponent('Padded', () => Padded)
-    const { element, getStyleElement } = AppRegistry.getApplication('Padded')
-    const html = renderToString(element)
-    const css = renderToStaticMarkup(getStyleElement())
+    const html = renderToString(AppRegistry.getApplication('Padded').element)
 
-    expect(
-      css.match(/<style data-precedence="rootnative-(reset|shorthand|longhand)"/g),
-    ).toHaveLength(3)
-    expect(css).toContain('padding-top:7px')
-    const classNames = html.match(/class="([^"]*)"/)?.[1].split(' ') ?? []
-    expect(classNames.some((name) => css.includes(`.${name}`))).toBe(true)
+    const groups = html.match(/<style data-precedence="rootnative-[a-z]+"/g) ?? []
+    expect(groups.map((tag) => tag.slice(35, -1))).toEqual(['reset', 'shorthand', 'longhand'])
+    expect(html).toContain('padding-top:7px')
+    const classNames = html.match(/<div [^>]*class="([^"]*)"/)?.[1].split(' ') ?? []
+    expect(classNames.length).toBeGreaterThan(0)
+    for (const name of classNames) expect(html).toContain(`.${name}`)
   })
 
   test('keeps the CSS of one render out of the next', () => {
     AppRegistry.registerComponent('Padded', () => Padded)
     AppRegistry.registerComponent('Empty', () => Empty)
-    const padded = AppRegistry.getApplication('Padded')
-    const empty = AppRegistry.getApplication('Empty')
-    renderToString(padded.element)
-    renderToString(empty.element)
+    renderToString(AppRegistry.getApplication('Padded').element)
 
-    expect(renderToStaticMarkup(empty.getStyleElement())).not.toContain('padding-top:7px')
+    expect(renderToString(AppRegistry.getApplication('Empty').element)).not.toContain(
+      'padding-top:7px',
+    )
   })
 
-  test('puts the key of getStyleElement on the fragment, so its three groups stay', () => {
+  test('gives no style element, because React puts the styles of the render in <head>', () => {
     AppRegistry.registerComponent('Padded', () => Padded)
-    const { element, getStyleElement } = AppRegistry.getApplication('Padded')
-    renderToString(element)
+    const { getStyleElement } = AppRegistry.getApplication('Padded')
 
-    const tags = getStyleElement({ key: 'react-native-style' })
-    expect(tags.key).toBe('react-native-style')
-    expect(
-      renderToStaticMarkup(tags).match(/<style data-precedence="rootnative-[a-z]+"/g),
-    ).toHaveLength(3)
+    expect(getStyleElement({ key: 'react-native-style' })).toBeNull()
+    expect(renderToStaticMarkup(createElement('head', null, getStyleElement()))).toBe(
+      '<head></head>',
+    )
   })
 
   test('passes the initial props to the component', () => {

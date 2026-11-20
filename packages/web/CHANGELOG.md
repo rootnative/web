@@ -23,7 +23,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 - **`ListRenderItem` returns any React node**, as in React Native's types. Before, it returned only an element or `null`.
 - **The listener of `addListener` on an `Animated` node** gets a value of any type, as in React Native's types, because a `ValueXY` gives `{ x, y }`. `Animated.Value` keeps `{ value: number }`. Before, each node typed it as `{ value: number }`.
 - **Breaking: a `Text` inside a `View` inside a `Text` starts from the defaults of a `Text`**, as on native. Before, it took the font, color, alignment, and decoration of the outer `Text`. The parent element, not a React context, now tells a nested `Text` from the others. So a nested `Text` has the class `rn-text`, and the class `rn-text-nested` is gone.
-- **Breaking: the three style elements are React 19's style groups.** `renderStyleTags` returns `<style href precedence>` elements, and `styleTagsHTML` writes `<style data-precedence data-href>`, the markup that React writes for them. The ids `rootnative-style-reset`, `rootnative-style-shorthand`, and `rootnative-style-longhand` are gone. The client finds the groups by `data-precedence`, adopts the rules of every element of a group, and writes new rules into the last one. React doesn't hydrate these elements, so the client tree doesn't need them.
+- **Breaking: a server render puts the CSS of each component into React 19's style groups, with no provider.** On a server, each component renders its classes as `<style href precedence>` elements. React puts them in the `<head>` of a full document, or at the start of a fragment. On the client, components render no style element. The registry finds the three groups by `data-precedence` (`rootnative-reset`, `rootnative-shorthand`, `rootnative-longhand`), adopts their rules, and writes each new rule into the last element of its group. A page with no server render gets the three groups from the registry. The ids `rootnative-style-reset`, `rootnative-style-shorthand`, and `rootnative-style-longhand` are gone. A server render under a DOM emulation, such as jsdom, takes the client path and puts no style element in the HTML.
 
 - **Breaking: `FlatList` renders a window of its items**, on top of `VirtualizedList`, as on native. Before, it rendered every item. What changes for your app:
   - A long list mounts faster, and an item outside the window unmounts, so keep its state in the item data or in a store.
@@ -34,6 +34,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
   - With no `renderItem` and no `ListItemComponent`, the cells are empty, as on native. Before, the list threw.
   - `ListEmptyComponent` gets the flip of `inverted` in its own `style`, as on native, not in a wrapper `View`.
   - `setNativeProps` on the ref writes the style on the scroll element. Before, it did nothing.
+
+### Deprecated
+
+- **`createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, and `styleTagsHTML`** of `@rootnative/web/server`. A server render needs none of them now. The provider renders its children only, `renderStyleTags` renders nothing, and `styleTagsHTML` returns an empty string, so an app that still calls them keeps its styles. They go away before 1.0.
 
 ### Fixed
 

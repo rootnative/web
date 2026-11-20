@@ -13,6 +13,7 @@ import type { PressabilityConfig } from '../../events/press/types'
 import { toDOMProps } from '../../render/domProps'
 import { withHostMethods } from '../../render/hostMethods'
 import { resolveTag } from '../../render/resolveTag'
+import { withServerStyles } from '../../render/serverStyles'
 import { useElementLayout } from '../../render/useElementLayout'
 import { toCSSColor } from '../../style/color'
 import {
@@ -207,5 +208,5 @@ export function Text(props: TextProps): ReactElement {
   const content = nested
     ? children
     : createElement(TextAncestorContext.Provider, { value: true }, children)
-  return createElement(tag, domProps, content)
+  return withServerStyles(registry, createElement(tag, domProps, content))
 }

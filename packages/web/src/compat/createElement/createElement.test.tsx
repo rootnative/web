@@ -3,8 +3,8 @@ import { renderToString } from 'react-dom/server.browser'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { StyleSheet } from '../../apis/StyleSheet'
-import { createStyleRegistry, StyleRegistryProvider } from '../../server'
 import { cleanup, render } from '../../test/render'
+import { renderAsServer } from '../../utils/env'
 import { unstable_createElement } from './index'
 
 afterEach(cleanup)
@@ -85,14 +85,11 @@ describe('unstable_createElement', () => {
     expect((container.firstElementChild as HTMLElement).tagName).toBe('SPAN')
   })
 
-  test('puts its rules in the registry of a server render', () => {
-    const registry = createStyleRegistry()
-    const html = renderToString(
-      <StyleRegistryProvider registry={registry}>
-        {unstable_createElement('div', { style: { width: 37 } })}
-      </StyleRegistryProvider>,
+  test('gives its rules as style elements in a server render', () => {
+    const html = renderAsServer(() =>
+      renderToString(unstable_createElement('div', { style: { width: 37 } })),
     )
     expect(html).toContain('class="')
-    expect(registry.cssText().longhand).toContain('{width:37px}')
+    expect(html).toMatch(/<style data-precedence="rootnative-longhand"[^>]*>[^<]*\{width:37px\}/)
   })
 })

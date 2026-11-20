@@ -1,5 +1,4 @@
-import { createStyleRegistry, renderStyleTags, StyleRegistryProvider } from '@rootnative/web/server'
-import { cloneElement, createElement } from 'react'
+import { createElement } from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 
 const providers = new Map()
@@ -21,21 +20,14 @@ export const AppRegistry = {
     providers.set(appKey, componentProvider)
     return appKey
   },
-  // For a render on a server. The styles of this render go into a registry of its own, so two
-  // requests never share CSS. Expo Router renders `element` first and then asks for the style
-  // element, which it puts in `<head>`. The runtime has three style groups, so the "element" is
-  // a fragment of three, and the browser adopts them by their `data-precedence` on hydration.
-  // React writes a hoisted style with the nonce of the render, not of the element, so only the
-  // key of `props` has a use. It goes on the fragment, because three children with the same key
-  // are an error.
+  // For a render on a server. Each component of the runtime renders its CSS as React 19
+  // `<style href precedence>` elements, and Expo Router renders the whole document with React,
+  // so React puts them in `<head>`. The style element that Expo Router asks for has nothing to
+  // add. The browser adopts the three style groups by their `data-precedence` on hydration.
   getApplication(appKey, parameters) {
-    const registry = createStyleRegistry()
     return {
-      element: createElement(StyleRegistryProvider, { registry }, elementOf(appKey, parameters)),
-      getStyleElement: (props) => {
-        const tags = renderStyleTags(registry)
-        return props?.key === undefined ? tags : cloneElement(tags, { key: props.key })
-      },
+      element: elementOf(appKey, parameters),
+      getStyleElement: () => null,
     }
   },
   runApplication(appKey, parameters) {

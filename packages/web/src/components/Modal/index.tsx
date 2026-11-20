@@ -20,6 +20,7 @@ import { Platform } from '../../apis/Platform'
 import { StyleSheet } from '../../apis/StyleSheet'
 import { claimPress } from '../../events/press/Pressability'
 import { toDOMProps } from '../../render/domProps'
+import { withServerStyles } from '../../render/serverStyles'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { lockScroll, unlockScroll } from '../../utils/scrollLock'
 import { ScrollViewContext } from '../ScrollView/ScrollViewContext'
@@ -335,7 +336,8 @@ function ModalDialog(props: DialogProps): ReactElement {
       ? { backgroundColor: backdropColor }
       : undefined
 
-  return (
+  return withServerStyles(
+    registry,
     <dialog
       {...domProps}
       ref={dialog}
@@ -372,7 +374,7 @@ function ModalDialog(props: DialogProps): ReactElement {
           </ScrollViewContext.Provider>
         </VirtualizedListContextResetter>
       </HostContext.Provider>
-    </dialog>
+    </dialog>,
   )
 }
 

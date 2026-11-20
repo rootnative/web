@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react'
 
 import { StyleSheet } from '../../apis/StyleSheet'
+import { withServerStyles } from '../../render/serverStyles'
 import { toCSSColor } from '../../style/color'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { webStyle } from '../../style/webStyle'
@@ -54,34 +55,37 @@ export function ActivityIndicator(props: ActivityIndicatorProps): ReactElement {
         ref={ref}
         style={[sizeStyle, !animating && hidesWhenStopped && hiddenStyle]}
       >
-        <svg
-          aria-hidden
-          className={spinClass}
-          height="100%"
-          style={animating ? undefined : pausedStyle}
-          viewBox="0 0 32 32"
-          width="100%"
-        >
-          <circle
-            cx="16"
-            cy="16"
-            fill="none"
-            opacity="0.2"
-            r="14"
-            stroke={stroke}
-            strokeWidth="4"
-          />
-          <circle
-            cx="16"
-            cy="16"
-            fill="none"
-            r="14"
-            stroke={stroke}
-            strokeDasharray="80"
-            strokeDashoffset="60"
-            strokeWidth="4"
-          />
-        </svg>
+        {withServerStyles(
+          registry,
+          <svg
+            aria-hidden
+            className={spinClass}
+            height="100%"
+            style={animating ? undefined : pausedStyle}
+            viewBox="0 0 32 32"
+            width="100%"
+          >
+            <circle
+              cx="16"
+              cy="16"
+              fill="none"
+              opacity="0.2"
+              r="14"
+              stroke={stroke}
+              strokeWidth="4"
+            />
+            <circle
+              cx="16"
+              cy="16"
+              fill="none"
+              r="14"
+              stroke={stroke}
+              strokeDasharray="80"
+              strokeDashoffset="60"
+              strokeWidth="4"
+            />
+          </svg>,
+        )}
       </View>
     </View>
   )

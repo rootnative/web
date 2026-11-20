@@ -2,8 +2,13 @@ import { playwright } from '@vitest/browser-playwright'
 import react from '@vitejs/plugin-react'
 import { configDefaults, defineConfig } from 'vitest/config'
 
-// The bundler plugins run in Node at build time, so their tests run in Node too.
-const nodeTests = ['src/bundler/**/*.test.ts', 'src/vite/**/*.test.ts']
+// The bundler plugins run in Node at build time, so their tests run in Node too. So does each
+// `*.node.test.*` file: a server render with no DOM.
+const nodeTests = [
+  'src/bundler/**/*.test.ts',
+  'src/vite/**/*.test.ts',
+  'src/**/*.node.test.{ts,tsx}',
+]
 
 // CI sets TEST_BROWSERS to all three engines. The default is Chromium only, so a local run
 // needs one browser download.
@@ -46,6 +51,7 @@ export default defineConfig({
         },
       },
       {
+        extends: true,
         test: {
           name: 'node',
           include: nodeTests,

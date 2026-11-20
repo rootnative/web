@@ -12,6 +12,7 @@ import {
 import { toDOMProps } from '../../render/domProps'
 import { withHostMethods } from '../../render/hostMethods'
 import { resolveTag } from '../../render/resolveTag'
+import { withServerStyles } from '../../render/serverStyles'
 import { useElementLayout } from '../../render/useElementLayout'
 import { compileReset, compileStyle, flattenStyle, joinClassNames } from '../../style/compile'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
@@ -379,7 +380,11 @@ function ImageComponent(props: ImageProps): ReactElement {
     )
   }
 
-  return createElement(tag, domProps, ...children)
+  return withServerStyles(
+    registry,
+    createElement(tag, domProps, ...children),
+    ...children.map((child) => (child.props as { className?: string }).className),
+  )
 }
 
 const loadSize = (uri: string): Promise<ImageSize> =>

@@ -2,6 +2,7 @@ import type { ChangeEvent, ReactElement } from 'react'
 
 import { StyleSheet } from '../../apis/StyleSheet'
 import { toDOMProps } from '../../render/domProps'
+import { withServerStyles } from '../../render/serverStyles'
 import { toCSSColor } from '../../style/color'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { View } from '../View'
@@ -85,15 +86,18 @@ export function Switch(props: SwitchProps): ReactElement {
       pointerEvents={pointerEvents}
       style={[styles.root, style, resolvedDisabled === true && styles.disabled]}
     >
-      <input
-        {...inputProps}
-        checked={on}
-        className={inputClass}
-        disabled={resolvedDisabled === true}
-        onChange={handleChange}
-        ref={ref}
-        type="checkbox"
-      />
+      {withServerStyles(
+        registry,
+        <input
+          {...inputProps}
+          checked={on}
+          className={inputClass}
+          disabled={resolvedDisabled === true}
+          onChange={handleChange}
+          ref={ref}
+          type="checkbox"
+        />,
+      )}
       <div className="rn-switch-track" style={{ backgroundColor: track }} />
       <div className="rn-switch-row">
         <div className="rn-switch-spacer" />

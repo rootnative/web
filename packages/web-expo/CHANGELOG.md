@@ -12,7 +12,7 @@ Each version works only with the same version of `@rootnative/web`. The package 
 - **`SectionList` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
 - **`LayoutAnimation` loads from `@rootnative/web`.** Before, it was a stub that threw an error on use.
 - **`UIManager.configureNextLayoutAnimation` calls `LayoutAnimation.configureNext` of `@rootnative/web`**, so the next commit animates, and `onAnimationDidEnd` runs when the animation ends. Before, it ran at once.
-- **`getStyleElement` gives the three style groups of `@rootnative/web`** as React 19 `<style href precedence>` elements. Before, it gave three style elements with ids. Expo Router puts them in `<head>`, as before.
+- **`getStyleElement` gives nothing, and `getApplication` gives the app with no provider.** The components of `@rootnative/web` put their CSS into React 19's style groups during the server render. Expo Router renders the whole document with React, so the styles land in `<head>`. Before, `getStyleElement` gave three style elements with ids.
 
 ## [0.0.0-alpha.6] - 2026-11-18
 

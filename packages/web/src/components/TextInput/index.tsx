@@ -16,6 +16,7 @@ import {
 
 import { toDOMProps } from '../../render/domProps'
 import { applyNativeProps, withHostMethods } from '../../render/hostMethods'
+import { withServerStyles } from '../../render/serverStyles'
 import { useElementLayout } from '../../render/useElementLayout'
 import { toCSSColor } from '../../style/color'
 import { compileReset, compileStyle, flattenStyle, joinClassNames } from '../../style/compile'
@@ -415,10 +416,16 @@ function TextInputComponent(props: TextInputProps): ReactElement {
   if (multiline) {
     domProps['rows'] = numberOfLines ?? 1
     domProps['onScroll'] = handleScroll
-    return <textarea {...domProps} ref={field as RefObject<HTMLTextAreaElement | null>} />
+    return withServerStyles(
+      registry,
+      <textarea {...domProps} ref={field as RefObject<HTMLTextAreaElement | null>} />,
+    )
   }
   domProps['type'] = secureTextEntry === true ? 'password' : 'text'
-  return <input {...domProps} ref={field as RefObject<HTMLInputElement | null>} />
+  return withServerStyles(
+    registry,
+    <input {...domProps} ref={field as RefObject<HTMLInputElement | null>} />,
+  )
 }
 
 const State: TextInputState = {

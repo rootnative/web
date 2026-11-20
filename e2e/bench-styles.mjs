@@ -1,6 +1,6 @@
 // Benchmark of the style delivery of `View`. Four variants render the same views:
-// - registry: today's `View`. Its registry inserts each new rule into its own style sheets.
-// - hybrid: the body of `View`. A server render gives each class as a React 19
+// - registry: the library's `View`, which delivers its styles as `hybrid` does.
+// - hybrid: a copy of the body of `View`. A server render gives each class as a React 19
 //   `<style href precedence>` element. On the client, a registry writes new rules into React's
 //   groups, and the view renders no style element.
 // - hoisted: the body of `View`, with each class as a `<style href precedence>` element, also on

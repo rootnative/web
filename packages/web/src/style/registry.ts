@@ -1,4 +1,4 @@
-import { hasDOM } from '../utils/env'
+import { hasDOM, isServerRender } from '../utils/env'
 import type { CSSDeclarations } from './types'
 
 // Three groups of style elements, and with equal specificity the later group wins:
@@ -65,8 +65,14 @@ export type StyleSheets = {
   longhand: CSSStyleSheet | null
 }
 
+// The place of a rule in `PRECEDENCE_ORDER`: reset, shorthand, or longhand.
+export type StyleLevel = 0 | 1 | 2
+
+export type ClassRules = { level: StyleLevel; css: string }
+
 export class StyleRegistry {
   private readonly classNames = new Map<string, string>()
+  private readonly classRules = new Map<string, ClassRules>()
   private readonly adopted = new Set<string>()
   private readonly resetRules: string[] = []
   private readonly shorthandRules: string[] = []
@@ -98,6 +104,7 @@ export class StyleRegistry {
     const rule = `.${className}{${toKebab(property)}:${value}}`
     const rules = shorthand ? this.shorthandRules : this.longhandRules
     rules.push(rule)
+    this.classRules.set(className, { level: shorthand ? 1 : 2, css: rule })
 
     if (!this.adopted.has(className)) {
       const sheet = shorthand ? this.sheets.shorthand : this.sheets.longhand
@@ -126,6 +133,7 @@ export class StyleRegistry {
         sheet?.insertRule(rule, sheet.cssRules.length)
       }
     }
+    this.classRules.set(className, { level: 2, css: rules.join('') })
     return className
   }
 
@@ -151,18 +159,30 @@ export class StyleRegistry {
   ): string {
     if (this.classNames.has(className)) return className
     this.classNames.set(className, className)
+    const css: string[] = []
     for (const [selector, declarations] of rules) {
       const body = Object.entries(declarations)
         .map(([property, value]) => `${toKebab(property)}:${value}`)
         .join(';')
       const rule = `${selector}{${body}}`
+      css.push(rule)
       this.resetRules.push(rule)
       if (!this.adopted.has(className)) {
         const sheet = this.sheets.reset
         sheet?.insertRule(rule, sheet.cssRules.length)
       }
     }
+    this.classRules.set(className, { level: 0, css: css.join('') })
     return className
+  }
+
+  // The CSS of a class of this registry and its level, for the style element of a server render.
+  rulesOf(className: string): ClassRules | undefined {
+    return this.classRules.get(className)
+  }
+
+  get size(): number {
+    return this.classNames.size
   }
 
   // The rules of each sheet, for server rendering.
@@ -191,19 +211,32 @@ export class StyleRegistry {
   }
 }
 
-let defaultRegistry: StyleRegistry | null = null
+let clientRegistry: StyleRegistry | null = null
+let serverRegistry: StyleRegistry | null = null
+
+// On a server, one registry serves each render of the process: a class name is a hash of its
+// declaration, so its rule never differs between two renders. Past this many classes it starts
+// again, so that a server with many dynamic values doesn't grow without end.
+export const MAX_SERVER_CLASSES = 20_000
 
 export const getStyleRegistry = (): StyleRegistry => {
-  defaultRegistry ??= hasDOM() ? domRegistry() : new StyleRegistry()
-  return defaultRegistry
+  if (isServerRender()) {
+    if (serverRegistry === null || serverRegistry.size > MAX_SERVER_CLASSES) {
+      serverRegistry = new StyleRegistry()
+    }
+    return serverRegistry
+  }
+  clientRegistry ??= domRegistry()
+  return clientRegistry
 }
 
 const groupElements = (precedence: string): HTMLStyleElement[] =>
   Array.from(document.querySelectorAll<HTMLStyleElement>(`style[data-precedence="${precedence}"]`))
 
-// For tests, so each file starts with an empty registry.
+// For tests, so each file starts with empty registries.
 export const resetStyleRegistry = (): void => {
-  defaultRegistry = null
+  clientRegistry = null
+  serverRegistry = null
   if (!hasDOM()) return
   for (const element of PRECEDENCE_ORDER.flatMap(groupElements)) element.remove()
 }

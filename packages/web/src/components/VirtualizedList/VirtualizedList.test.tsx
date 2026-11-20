@@ -2,9 +2,9 @@ import { createRef, type ReactElement } from 'react'
 import { renderToString } from 'react-dom/server.browser'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
-import { createStyleRegistry, StyleRegistryProvider } from '../../server'
 import { mount, renderOutsideAct } from '../../test/mount'
 import { render } from '../../test/render'
+import { renderAsServer } from '../../utils/env'
 import { resetWarnings } from '../../utils/warn'
 import { Modal } from '../Modal'
 import { ScrollView } from '../ScrollView'
@@ -463,11 +463,7 @@ describe('VirtualizedList', () => {
   })
 
   test('a server render has the first batch and the spacers', () => {
-    const html = renderToString(
-      <StyleRegistryProvider registry={createStyleRegistry()}>
-        {list(100, { getItemLayout })}
-      </StyleRegistryProvider>,
-    )
+    const html = renderAsServer(() => renderToString(list(100, { getItemLayout })))
     expect(html.match(/data-index=/g)).toHaveLength(10)
     expect(html).toContain('height:4500px')
   })

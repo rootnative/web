@@ -8,12 +8,8 @@ import { renderToString } from 'react-dom/server'
 
 import { View } from '../../../packages/web/src/components/View'
 import type { ViewProps } from '../../../packages/web/src/components/View/types'
-import {
-  createStyleRegistry,
-  StyleRegistryProvider,
-  styleTagsHTML,
-} from '../../../packages/web/src/server'
 import { StyleRegistryContext } from '../../../packages/web/src/style/StyleRegistryContext'
+import { renderAsServer as renderLibraryAsServer } from '../../../packages/web/src/utils/env'
 import { HoistedView, hoistingRegistry, StyleOrder } from './HoistedView'
 import { getHybridRegistry, HybridView, isServerRender, renderAsServer } from './HybridView'
 
@@ -118,17 +114,12 @@ const measureCommit = (start: () => void): Promise<Sample> =>
     start()
   })
 
-// The HTML that a server sends: today's three style elements in <head> for `registry`, and
-// React's hoisted styles at the start of the markup for the others.
-const serverHTML = (variant: Variant, element: ReactElement): string => {
-  if (variant !== 'registry') return renderAsServer(() => renderToString(element))
-  const registry = createStyleRegistry()
-  const html = renderToString(
-    <StyleRegistryProvider registry={registry}>{element}</StyleRegistryProvider>,
-  )
-  document.head.insertAdjacentHTML('beforeend', styleTagsHTML(registry))
-  return html
-}
+// The HTML that a server sends, with React's hoisted styles at the start of the markup. The
+// library's `View` takes its server path in `renderLibraryAsServer`.
+const serverHTML = (variant: Variant, element: ReactElement): string =>
+  variant === 'registry'
+    ? renderLibraryAsServer(() => renderToString(element))
+    : renderAsServer(() => renderToString(element))
 
 async function run(scenario: Scenario, variant: Variant, n: number): Promise<Sample> {
   const grid = (values: Values, label: string): ReactElement => (
