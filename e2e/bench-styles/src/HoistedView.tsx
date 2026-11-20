@@ -1,7 +1,7 @@
 // The body of `View` with another style delivery: its classes go to the page as React 19
-// `<style href precedence>` elements, not as rules that a registry inserts into its own sheets.
-// React moves each element into <head>, keeps one for each href, and keeps the three groups in
-// the order that it first meets them.
+// `<style href precedence>` elements also on the client, not as rules that the registry writes
+// with CSSOM. React moves each element into <head>, keeps one for each href, and keeps the three
+// groups in the order that it first meets them.
 
 import type { ReactElement } from 'react'
 
@@ -10,11 +10,7 @@ import type { ViewProps } from '../../../packages/web/src/components/View/types'
 import { isShorthandProperty, StyleRegistry } from '../../../packages/web/src/style/registry'
 import type { CSSDeclarations } from '../../../packages/web/src/style/types'
 
-export const PRECEDENCE = [
-  'rootnative-reset',
-  'rootnative-shorthand',
-  'rootnative-longhand',
-] as const
+const PRECEDENCE = ['rootnative-reset', 'rootnative-shorthand', 'rootnative-longhand'] as const
 type Level = 0 | 1 | 2
 
 const toKebab = (name: string): string => name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)
@@ -59,7 +55,7 @@ export const hoistingRegistry = new HoistingRegistry()
 // The same class list gives the same elements, so React skips them on a render that keeps them.
 const elementsByClassName = new Map<string, readonly ReactElement[]>()
 
-export const styleElements = (className: string): readonly ReactElement[] => {
+const styleElements = (className: string): readonly ReactElement[] => {
   let elements = elementsByClassName.get(className)
   if (elements === undefined) {
     elements = className.split(' ').flatMap((name) => {

@@ -9,14 +9,14 @@ import { renderToString } from 'react-dom/server'
 import { View } from '../../../packages/web/src/components/View'
 import type { ViewProps } from '../../../packages/web/src/components/View/types'
 import { StyleRegistryContext } from '../../../packages/web/src/style/StyleRegistryContext'
-import { renderAsServer as renderLibraryAsServer } from '../../../packages/web/src/utils/env'
+import { renderAsServer } from '../../../packages/web/src/utils/env'
 import { HoistedView, hoistingRegistry, StyleOrder } from './HoistedView'
-import { getHybridRegistry, HybridView, isServerRender, renderAsServer } from './HybridView'
 
-export type Variant = 'registry' | 'hybrid' | 'hoisted' | 'plain'
-export type Scenario = 'mount' | 'mount-unique' | 'rerender' | 'update-new' | 'hydrate'
+export type Variant = 'library' | 'hoisted' | 'plain'
+export type Scenario = 'mount' | 'mount-unique' | 'rerender' | 'update-new' | 'hydrate' | 'server'
 // `width` is the computed width of the first view after the sample, so the driver can check that
-// the styles reached the page.
+// the styles reached the page. For `server`, it is `10px` when the HTML has the rule of the
+// first view.
 export type Sample = { script: number; total: number; width: string }
 
 const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6']
@@ -38,12 +38,7 @@ function PlainView({ children }: ViewProps): ReactElement {
   return <div className="plain">{children}</div>
 }
 
-const components = {
-  registry: View,
-  hybrid: HybridView,
-  hoisted: HoistedView,
-  plain: PlainView,
-} as const
+const components = { library: View, hoisted: HoistedView, plain: PlainView } as const
 
 // A hydration is a render that React schedules, so its sample ends in the layout phase of the
 // commit, where this calls `onCommit`.
@@ -67,20 +62,13 @@ function Grid(props: { n: number; variant: Variant; values: Values; label: strin
     )
   }
   items.push(<Committed key="committed" />)
-
-  const hoisting = props.variant === 'hoisted' || (props.variant === 'hybrid' && isServerRender())
-  if (hoisting) {
-    return (
-      <StyleRegistryContext value={hoistingRegistry}>
-        <StyleOrder />
-        {items}
-      </StyleRegistryContext>
-    )
-  }
-  if (props.variant === 'hybrid') {
-    return <StyleRegistryContext value={getHybridRegistry()}>{items}</StyleRegistryContext>
-  }
-  return items
+  if (props.variant !== 'hoisted') return items
+  return (
+    <StyleRegistryContext value={hoistingRegistry}>
+      <StyleOrder />
+      {items}
+    </StyleRegistryContext>
+  )
 }
 
 const container = document.getElementById('root') as HTMLElement
@@ -114,24 +102,31 @@ const measureCommit = (start: () => void): Promise<Sample> =>
     start()
   })
 
-// The HTML that a server sends, with React's hoisted styles at the start of the markup. The
-// library's `View` takes its server path in `renderLibraryAsServer`.
+// The HTML that a server sends. The library's `View` takes its server path inside
+// `renderAsServer`, and `hoisted` renders its style elements in each render.
 const serverHTML = (variant: Variant, element: ReactElement): string =>
-  variant === 'registry'
-    ? renderLibraryAsServer(() => renderToString(element))
-    : renderAsServer(() => renderToString(element))
+  variant === 'library' ? renderAsServer(() => renderToString(element)) : renderToString(element)
 
 async function run(scenario: Scenario, variant: Variant, n: number): Promise<Sample> {
   const grid = (values: Values, label: string): ReactElement => (
     <Grid n={n} variant={variant} values={values} label={label} />
   )
+  const warmValues: Values = { kind: 'unique', offset: 5 * n }
   // A warm-up with values that no scenario uses, so the code paths run once before the sample.
   const warmUp = (target: HTMLElement) => {
     const root = createRoot(target)
-    flushSync(() => root.render(grid({ kind: 'unique', offset: 5 * n }, 'w')))
+    flushSync(() => root.render(grid(warmValues, 'w')))
     flushSync(() => root.render(null))
     void target.offsetHeight
     return root
+  }
+
+  if (scenario === 'server') {
+    serverHTML(variant, grid(warmValues, 'w'))
+    const start = performance.now()
+    const html = serverHTML(variant, grid({ kind: 'pool' }, 'a'))
+    const time = performance.now() - start
+    return { script: time, total: time, width: html.includes('{width:10px}') ? '10px' : '' }
   }
 
   if (scenario === 'hydrate') {
