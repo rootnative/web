@@ -1,17 +1,24 @@
 // The page of the style delivery benchmark. `bench-styles.mjs` opens a new page for each sample,
 // so each sample starts with no style rule, and calls `window.bench.run` one time.
 
-import type { ReactElement, ReactNode } from 'react'
+import { useLayoutEffect, type ReactElement, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
+import { renderToString } from 'react-dom/server'
 
 import { View } from '../../../packages/web/src/components/View'
 import type { ViewProps } from '../../../packages/web/src/components/View/types'
+import {
+  createStyleRegistry,
+  StyleRegistryProvider,
+  styleTagsHTML,
+} from '../../../packages/web/src/server'
 import { StyleRegistryContext } from '../../../packages/web/src/style/StyleRegistryContext'
 import { HoistedView, hoistingRegistry, StyleOrder } from './HoistedView'
+import { getHybridRegistry, HybridView, isServerRender, renderAsServer } from './HybridView'
 
-export type Variant = 'registry' | 'hoisted' | 'plain'
-export type Scenario = 'mount' | 'mount-unique' | 'rerender' | 'update-new'
+export type Variant = 'registry' | 'hybrid' | 'hoisted' | 'plain'
+export type Scenario = 'mount' | 'mount-unique' | 'rerender' | 'update-new' | 'hydrate'
 // `width` is the computed width of the first view after the sample, so the driver can check that
 // the styles reached the page.
 export type Sample = { script: number; total: number; width: string }
@@ -35,7 +42,23 @@ function PlainView({ children }: ViewProps): ReactElement {
   return <div className="plain">{children}</div>
 }
 
-const components = { registry: View, hoisted: HoistedView, plain: PlainView } as const
+const components = {
+  registry: View,
+  hybrid: HybridView,
+  hoisted: HoistedView,
+  plain: PlainView,
+} as const
+
+// A hydration is a render that React schedules, so its sample ends in the layout phase of the
+// commit, where this calls `onCommit`.
+let onCommit: (() => void) | null = null
+
+function Committed(): null {
+  useLayoutEffect(() => {
+    onCommit?.()
+  })
+  return null
+}
 
 function Grid(props: { n: number; variant: Variant; values: Values; label: string }): ReactNode {
   const Component = components[props.variant]
@@ -47,16 +70,30 @@ function Grid(props: { n: number; variant: Variant; values: Values; label: strin
       </Component>,
     )
   }
-  if (props.variant !== 'hoisted') return items
-  return (
-    <StyleRegistryContext value={hoistingRegistry}>
-      <StyleOrder />
-      {items}
-    </StyleRegistryContext>
-  )
+  items.push(<Committed key="committed" />)
+
+  const hoisting = props.variant === 'hoisted' || (props.variant === 'hybrid' && isServerRender())
+  if (hoisting) {
+    return (
+      <StyleRegistryContext value={hoistingRegistry}>
+        <StyleOrder />
+        {items}
+      </StyleRegistryContext>
+    )
+  }
+  if (props.variant === 'hybrid') {
+    return <StyleRegistryContext value={getHybridRegistry()}>{items}</StyleRegistryContext>
+  }
+  return items
 }
 
 const container = document.getElementById('root') as HTMLElement
+
+// A server render can put style elements before the first view.
+const firstViewWidth = (): string => {
+  const first = container.querySelector(':scope > :not(style)')
+  return first === null ? '' : getComputedStyle(first).width
+}
 
 // The time of the render and the commit, and the time with the style and layout work that a
 // read of `offsetHeight` forces.
@@ -65,23 +102,60 @@ const measure = (render: () => void): Sample => {
   flushSync(render)
   const committed = performance.now()
   void container.offsetHeight
-  const total = performance.now() - start
-  const first = container.firstElementChild
-  const width = first === null ? '' : getComputedStyle(first).width
-  return { script: committed - start, total, width }
+  return { script: committed - start, total: performance.now() - start, width: firstViewWidth() }
 }
 
-function run(scenario: Scenario, variant: Variant, n: number): Sample {
-  const root = createRoot(container)
+const measureCommit = (start: () => void): Promise<Sample> =>
+  new Promise((resolve) => {
+    const begin = performance.now()
+    onCommit = () => {
+      onCommit = null
+      const committed = performance.now()
+      void container.offsetHeight
+      const total = performance.now() - begin
+      resolve({ script: committed - begin, total, width: firstViewWidth() })
+    }
+    start()
+  })
+
+// The HTML that a server sends: today's three style elements in <head> for `registry`, and
+// React's hoisted styles at the start of the markup for the others.
+const serverHTML = (variant: Variant, element: ReactElement): string => {
+  if (variant !== 'registry') return renderAsServer(() => renderToString(element))
+  const registry = createStyleRegistry()
+  const html = renderToString(
+    <StyleRegistryProvider registry={registry}>{element}</StyleRegistryProvider>,
+  )
+  document.head.insertAdjacentHTML('beforeend', styleTagsHTML(registry))
+  return html
+}
+
+async function run(scenario: Scenario, variant: Variant, n: number): Promise<Sample> {
   const grid = (values: Values, label: string): ReactElement => (
     <Grid n={n} variant={variant} values={values} label={label} />
   )
-
   // A warm-up with values that no scenario uses, so the code paths run once before the sample.
-  flushSync(() => root.render(grid({ kind: 'unique', offset: 5 * n }, 'w')))
-  flushSync(() => root.render(null))
-  void container.offsetHeight
+  const warmUp = (target: HTMLElement) => {
+    const root = createRoot(target)
+    flushSync(() => root.render(grid({ kind: 'unique', offset: 5 * n }, 'w')))
+    flushSync(() => root.render(null))
+    void target.offsetHeight
+    return root
+  }
 
+  if (scenario === 'hydrate') {
+    const element = grid({ kind: 'pool' }, 'a')
+    container.innerHTML = serverHTML(variant, element)
+    // The warm-up runs in its own element, after the server HTML is in the page, as the client
+    // code of a real page starts.
+    const other = document.createElement('div')
+    document.body.append(other)
+    warmUp(other).unmount()
+    other.remove()
+    return measureCommit(() => hydrateRoot(container, element))
+  }
+
+  const root = warmUp(container)
   switch (scenario) {
     case 'mount':
       return measure(() => root.render(grid({ kind: 'pool' }, 'a')))

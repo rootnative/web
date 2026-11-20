@@ -10,7 +10,11 @@ import type { ViewProps } from '../../../packages/web/src/components/View/types'
 import { isShorthandProperty, StyleRegistry } from '../../../packages/web/src/style/registry'
 import type { CSSDeclarations } from '../../../packages/web/src/style/types'
 
-const PRECEDENCE = ['rootnative-reset', 'rootnative-shorthand', 'rootnative-longhand'] as const
+export const PRECEDENCE = [
+  'rootnative-reset',
+  'rootnative-shorthand',
+  'rootnative-longhand',
+] as const
 type Level = 0 | 1 | 2
 
 const toKebab = (name: string): string => name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)
@@ -55,7 +59,7 @@ export const hoistingRegistry = new HoistingRegistry()
 // The same class list gives the same elements, so React skips them on a render that keeps them.
 const elementsByClassName = new Map<string, readonly ReactElement[]>()
 
-const styleElements = (className: string): readonly ReactElement[] => {
+export const styleElements = (className: string): readonly ReactElement[] => {
   let elements = elementsByClassName.get(className)
   if (elements === undefined) {
     elements = className.split(' ').flatMap((name) => {

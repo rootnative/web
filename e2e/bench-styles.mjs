@@ -1,8 +1,13 @@
-// Benchmark of the style delivery of `View`. Three variants render the same views:
+// Benchmark of the style delivery of `View`. Four variants render the same views:
 // - registry: today's `View`. Its registry inserts each new rule into its own style sheets.
-// - hoisted: the body of `View`, with each class as a React 19 `<style href precedence>` element.
+// - hybrid: the body of `View`. A server render gives each class as a React 19
+//   `<style href precedence>` element. On the client, a registry writes new rules into React's
+//   groups, and the view renders no style element.
+// - hoisted: the body of `View`, with each class as a `<style href precedence>` element, also on
+//   the client.
 // - plain: a `<div>` with a fixed class and no style work, as the floor.
-// Each sample opens a new page, so it starts with no style rule. The page is ./bench-styles.
+// Each sample opens a new page, so it starts with no style rule. The page is ./bench-styles. The
+// `hydrate` scenario renders the server HTML in the page, then hydrates it.
 //
 // CI builds the page in production mode and runs it in the three engines (bench.yml). On the
 // Mac, `--url` points at a running dev server of the page. That checks the script, but its
@@ -31,8 +36,8 @@ const { values: options } = parseArgs({
   },
 })
 
-const scenarios = ['mount', 'mount-unique', 'rerender', 'update-new']
-const variants = ['registry', 'hoisted', 'plain']
+const scenarios = ['mount', 'mount-unique', 'rerender', 'update-new', 'hydrate']
+const variants = ['registry', 'hybrid', 'hoisted', 'plain']
 const samples = Number(options.samples)
 const n = Number(options.n)
 
@@ -42,6 +47,7 @@ const expectedWidth = {
   'mount-unique': '1000px',
   rerender: '10px',
   'update-new': `${1000 + n}px`,
+  hydrate: '10px',
 }
 
 const median = (values) => {
@@ -107,8 +113,10 @@ function report(results) {
     `Style delivery: ${n} views, ${samples} samples for each cell.`,
     'Median ms: render and commit / with the style and layout work.',
     '',
-    '| Engine | Scenario | registry | hoisted | plain | hoisted ÷ registry (total) |',
-    '| --- | --- | ---: | ---: | ---: | ---: |',
+    'The last two columns divide the totals.',
+    '',
+    '| Engine | Scenario | registry | hybrid | hoisted | plain | hybrid ÷ registry | hoisted ÷ registry |',
+    '| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |',
   ]
   for (const engine of new Set(results.map((result) => result.engine))) {
     for (const scenario of scenarios) {
@@ -117,9 +125,9 @@ function report(results) {
           .filter((result) => result.engine === engine && result.scenario === scenario)
           .map((result) => [result.variant, result]),
       )
-      const ratio = row.hoisted.total / row.registry.total
+      const ratio = (variant) => (row[variant].total / row.registry.total).toFixed(2)
       lines.push(
-        `| ${engine} ${row.registry.version} | ${scenario} | ${cell(row.registry)} | ${cell(row.hoisted)} | ${cell(row.plain)} | ${ratio.toFixed(2)} |`,
+        `| ${engine} ${row.registry.version} | ${scenario} | ${cell(row.registry)} | ${cell(row.hybrid)} | ${cell(row.hoisted)} | ${cell(row.plain)} | ${ratio('hybrid')} | ${ratio('hoisted')} |`,
       )
     }
   }
