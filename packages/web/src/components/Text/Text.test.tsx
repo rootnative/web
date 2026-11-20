@@ -2,7 +2,7 @@ import { act, createRef } from 'react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { userEvent } from 'vitest/browser'
 
-import { LONGHAND_STYLE_ID } from '../../style/registry'
+import { LONGHAND_PRECEDENCE } from '../../style/registry'
 import { cleanup, render } from '../../test/render'
 import { Pressable } from '../Pressable'
 import { View } from '../View'
@@ -209,8 +209,11 @@ describe('Text', () => {
       const { container } = render(<Text selectionColor="red">Hello</Text>)
       const className = Array.from(first(container).classList).find((c) => c.startsWith('rn-sel-'))
       expect(className).toBeDefined()
-      const sheet = (document.getElementById(LONGHAND_STYLE_ID) as HTMLStyleElement).sheet
-      const rules = Array.from(sheet?.cssRules ?? []).map((r) => r.cssText)
+      const rules = Array.from(
+        document.querySelectorAll<HTMLStyleElement>(
+          `style[data-precedence="${LONGHAND_PRECEDENCE}"]`,
+        ),
+      ).flatMap((element) => Array.from(element.sheet?.cssRules ?? []).map((r) => r.cssText))
       expect(rules).toContain(`.${className}::selection { background-color: rgb(255, 0, 0); }`)
     })
   })

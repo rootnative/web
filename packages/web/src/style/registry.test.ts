@@ -3,17 +3,35 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { compileReset, compileStyle, MAX_VALUE_NODES } from './compile'
 import {
   getStyleRegistry,
-  LONGHAND_STYLE_ID,
-  RESET_STYLE_ID,
+  LONGHAND_PRECEDENCE,
+  PRECEDENCE_ORDER,
+  RESET_PRECEDENCE,
   resetStyleRegistry,
-  SHORTHAND_STYLE_ID,
+  SHORTHAND_PRECEDENCE,
   StyleRegistry,
 } from './registry'
 
-const domRules = (id: string): string[] => {
-  const element = document.getElementById(id) as HTMLStyleElement
-  return Array.from((element.sheet as CSSStyleSheet).cssRules).map((r) => r.cssText)
+const groupElements = (precedence: string): HTMLStyleElement[] =>
+  Array.from(document.querySelectorAll<HTMLStyleElement>(`style[data-precedence="${precedence}"]`))
+
+// The rules of all the elements of a group, in order.
+const groupRules = (precedence: string): string[] =>
+  groupElements(precedence).flatMap((element) =>
+    Array.from((element.sheet as CSSStyleSheet).cssRules).map((r) => r.cssText),
+  )
+
+// A group element as a server render gives it.
+const serverGroup = (precedence: string, css: string): HTMLStyleElement => {
+  const element = document.createElement('style')
+  element.dataset['precedence'] = precedence
+  element.dataset['href'] = precedence
+  element.textContent = css
+  document.head.appendChild(element)
+  return element
 }
+
+const follows = (first: Node, second: Node): boolean =>
+  (first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
 
 // The order of the classes in an attribute has no effect on the style.
 const classSet = (classes: string): Set<string> => new Set(classes.split(' '))
@@ -74,20 +92,21 @@ describe('StyleRegistry', () => {
     expect(registry.ruleCount).toBe(2)
   })
 
-  test('the default registry inserts rules into three style elements: reset, shorthand, longhand', () => {
+  test('the default registry makes the three groups, in order, and writes into them', () => {
     const registry = getStyleRegistry()
     const opacity = registry.classFor('opacity', '0.5')
     const margin = registry.classFor('margin', '0')
     registry.resetClass('rn-box', { flexShrink: '0' })
-    expect(domRules(RESET_STYLE_ID)).toEqual(['.rn-box { flex-shrink: 0; }'])
-    expect(domRules(SHORTHAND_STYLE_ID)).toEqual([`.${margin} { margin: 0px; }`])
-    expect(domRules(LONGHAND_STYLE_ID)).toEqual([`.${opacity} { opacity: 0.5; }`])
+    expect(groupRules(RESET_PRECEDENCE)).toEqual(['.rn-box { flex-shrink: 0; }'])
+    expect(groupRules(SHORTHAND_PRECEDENCE)).toEqual([`.${margin} { margin: 0px; }`])
+    expect(groupRules(LONGHAND_PRECEDENCE)).toEqual([`.${opacity} { opacity: 0.5; }`])
 
-    const [reset, short, long] = [RESET_STYLE_ID, SHORTHAND_STYLE_ID, LONGHAND_STYLE_ID].map(
-      (id) => document.getElementById(id) as HTMLElement,
+    const [reset, short, long] = PRECEDENCE_ORDER.map(
+      (precedence) => groupElements(precedence)[0] as HTMLElement,
     ) as [HTMLElement, HTMLElement, HTMLElement]
-    expect(reset.compareDocumentPosition(short) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(short.compareDocumentPosition(long) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(reset.parentElement).toBe(document.head)
+    expect(follows(reset, short)).toBe(true)
+    expect(follows(short, long)).toBe(true)
   })
 
   test('a shorthand of the app beats a longhand of a reset', () => {
@@ -104,16 +123,39 @@ describe('StyleRegistry', () => {
     element.remove()
   })
 
-  test('puts a new reset sheet before the sheets of an older server page', () => {
-    for (const id of [SHORTHAND_STYLE_ID, LONGHAND_STYLE_ID]) {
-      const element = document.createElement('style')
-      element.id = id
-      document.head.appendChild(element)
-    }
+  test('puts a missing reset group before the groups of a server page', () => {
+    const short = serverGroup(SHORTHAND_PRECEDENCE, '')
+    serverGroup(LONGHAND_PRECEDENCE, '')
     getStyleRegistry()
-    const reset = document.getElementById(RESET_STYLE_ID) as HTMLElement
-    const short = document.getElementById(SHORTHAND_STYLE_ID) as HTMLElement
-    expect(reset.compareDocumentPosition(short) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    const [reset] = groupElements(RESET_PRECEDENCE)
+    expect(follows(reset as HTMLElement, short)).toBe(true)
+  })
+
+  test('puts a missing shorthand group between the groups around it', () => {
+    const reset = serverGroup(RESET_PRECEDENCE, '')
+    const long = serverGroup(LONGHAND_PRECEDENCE, '')
+    getStyleRegistry()
+    const [short] = groupElements(SHORTHAND_PRECEDENCE)
+    expect(follows(reset, short as HTMLElement)).toBe(true)
+    expect(follows(short as HTMLElement, long)).toBe(true)
+  })
+
+  test('adopts the rules of each element of a group, and writes into the last one', () => {
+    const server = new StyleRegistry()
+    const first = server.classFor('width', '1px')
+    serverGroup(LONGHAND_PRECEDENCE, server.cssText().longhand)
+    const second = new StyleRegistry().classFor('height', '2px')
+    const last = serverGroup(LONGHAND_PRECEDENCE, `.${second}{height:2px}`)
+
+    const client = getStyleRegistry()
+    expect(client.classFor('width', '1px')).toBe(first)
+    expect(client.classFor('height', '2px')).toBe(second)
+    expect(groupRules(LONGHAND_PRECEDENCE)).toHaveLength(2)
+
+    const third = client.classFor('opacity', '0.5')
+    expect(Array.from(last.sheet?.cssRules ?? []).map((r) => r.cssText)).toContain(
+      `.${third} { opacity: 0.5; }`,
+    )
   })
 
   test('longhand wins over shorthand in the DOM, whatever the insertion order', () => {
@@ -134,27 +176,21 @@ describe('StyleRegistry', () => {
     const color = server.classFor('color', 'rgb(255,0,0)')
     const margin = server.classFor('margin', '0')
     server.resetClass('rn-box', { flexShrink: '0' })
-    for (const [id, text] of [
-      [RESET_STYLE_ID, server.cssText().reset],
-      [SHORTHAND_STYLE_ID, server.cssText().shorthand],
-      [LONGHAND_STYLE_ID, server.cssText().longhand],
-    ] as const) {
-      const element = document.createElement('style')
-      element.id = id
-      element.textContent = text
-      document.head.appendChild(element)
-    }
+    serverGroup(RESET_PRECEDENCE, server.cssText().reset)
+    serverGroup(SHORTHAND_PRECEDENCE, server.cssText().shorthand)
+    serverGroup(LONGHAND_PRECEDENCE, server.cssText().longhand)
 
     const client = getStyleRegistry()
     expect(client.classFor('color', 'rgb(255,0,0)')).toBe(color)
     expect(client.classFor('margin', '0')).toBe(margin)
     expect(client.resetClass('rn-box', { flexShrink: '0' })).toBe('rn-box')
-    expect(domRules(RESET_STYLE_ID)).toHaveLength(1)
-    expect(domRules(SHORTHAND_STYLE_ID)).toHaveLength(1)
-    expect(domRules(LONGHAND_STYLE_ID)).toHaveLength(1)
+    expect(groupRules(RESET_PRECEDENCE)).toHaveLength(1)
+    expect(groupRules(SHORTHAND_PRECEDENCE)).toHaveLength(1)
+    expect(groupRules(LONGHAND_PRECEDENCE)).toHaveLength(1)
+    expect(document.querySelectorAll('style[data-precedence]')).toHaveLength(3)
 
     client.classFor('width', '1px')
-    expect(domRules(LONGHAND_STYLE_ID)).toHaveLength(2)
+    expect(groupRules(LONGHAND_PRECEDENCE)).toHaveLength(2)
   })
 
   test('adopts a server rule by the class at the start of its selector', () => {
@@ -162,21 +198,14 @@ describe('StyleRegistry', () => {
     const selectionRules = ['.rn-sel::selection{background-color:red}']
     server.resetClassRules('rn-pair', pairRules)
     server.staticClass('rn-sel', selectionRules)
-    for (const [id, text] of [
-      [RESET_STYLE_ID, server.cssText().reset],
-      [LONGHAND_STYLE_ID, server.cssText().longhand],
-    ] as const) {
-      const element = document.createElement('style')
-      element.id = id
-      element.textContent = text
-      document.head.appendChild(element)
-    }
+    serverGroup(RESET_PRECEDENCE, server.cssText().reset)
+    serverGroup(LONGHAND_PRECEDENCE, server.cssText().longhand)
 
     const client = getStyleRegistry()
     expect(client.resetClassRules('rn-pair', pairRules)).toBe('rn-pair')
     expect(client.staticClass('rn-sel', selectionRules)).toBe('rn-sel')
-    expect(domRules(RESET_STYLE_ID)).toHaveLength(2)
-    expect(domRules(LONGHAND_STYLE_ID)).toHaveLength(1)
+    expect(groupRules(RESET_PRECEDENCE)).toHaveLength(2)
+    expect(groupRules(LONGHAND_PRECEDENCE)).toHaveLength(1)
   })
 })
 

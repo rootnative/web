@@ -1,9 +1,9 @@
 import { createElement, Fragment, type ReactElement, type ReactNode } from 'react'
 
 import {
-  LONGHAND_STYLE_ID,
-  RESET_STYLE_ID,
-  SHORTHAND_STYLE_ID,
+  LONGHAND_PRECEDENCE,
+  RESET_PRECEDENCE,
+  SHORTHAND_PRECEDENCE,
   StyleRegistry,
 } from '../style/registry'
 import { StyleRegistryContext } from '../style/StyleRegistryContext'
@@ -20,36 +20,37 @@ export function StyleRegistryProvider(props: {
   return createElement(StyleRegistryContext.Provider, { value: props.registry }, props.children)
 }
 
+const groups = [
+  ['reset', RESET_PRECEDENCE],
+  ['shorthand', SHORTHAND_PRECEDENCE],
+  ['longhand', LONGHAND_PRECEDENCE],
+] as const
+
 // A closing tag inside CSS text would end the style element early.
 const escapeCSS = (css: string): string => css.replace(/<\//g, '<\\/')
 
-// The three style elements the client adopts on hydration. Render them in <head>, in this order.
+// The three groups of the render, as React 19 `<style href precedence>` elements, one for each
+// group, in this order. React puts them in <head>, and on the client the registry writes into
+// them. React doesn't hydrate them, so the client tree doesn't need them.
 export const renderStyleTags = (registry: StyleRegistry): ReactElement => {
-  const { reset, shorthand, longhand } = registry.cssText()
+  const css = registry.cssText()
   return createElement(
     Fragment,
     null,
-    createElement('style', {
-      id: RESET_STYLE_ID,
-      dangerouslySetInnerHTML: { __html: escapeCSS(reset) },
-    }),
-    createElement('style', {
-      id: SHORTHAND_STYLE_ID,
-      dangerouslySetInnerHTML: { __html: escapeCSS(shorthand) },
-    }),
-    createElement('style', {
-      id: LONGHAND_STYLE_ID,
-      dangerouslySetInnerHTML: { __html: escapeCSS(longhand) },
-    }),
+    ...groups.map(([level, precedence]) =>
+      createElement('style', { key: precedence, href: precedence, precedence }, css[level]),
+    ),
   )
 }
 
-// The same three elements as an HTML string, for a template.
+// The same three elements as an HTML string, for a template: the markup that React writes for
+// them.
 export const styleTagsHTML = (registry: StyleRegistry): string => {
-  const { reset, shorthand, longhand } = registry.cssText()
-  return (
-    `<style id="${RESET_STYLE_ID}">${escapeCSS(reset)}</style>` +
-    `<style id="${SHORTHAND_STYLE_ID}">${escapeCSS(shorthand)}</style>` +
-    `<style id="${LONGHAND_STYLE_ID}">${escapeCSS(longhand)}</style>`
-  )
+  const css = registry.cssText()
+  return groups
+    .map(
+      ([level, precedence]) =>
+        `<style data-precedence="${precedence}" data-href="${precedence}">${escapeCSS(css[level])}</style>`,
+    )
+    .join('')
 }

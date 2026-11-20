@@ -1,10 +1,24 @@
+import { act } from 'react'
+import { hydrateRoot, type Root } from 'react-dom/client'
 import { renderToString } from 'react-dom/server.browser'
 import { describe, expect, test } from 'vitest'
 
 import { Text } from '../components/Text'
 import { View } from '../components/View'
-import { LONGHAND_STYLE_ID, RESET_STYLE_ID, SHORTHAND_STYLE_ID } from '../style/registry'
+import { PRECEDENCE_ORDER, resetStyleRegistry } from '../style/registry'
 import { createStyleRegistry, renderStyleTags, StyleRegistryProvider, styleTagsHTML } from './index'
+
+const groupRuleCounts = (): number[] =>
+  PRECEDENCE_ORDER.map((precedence) =>
+    Array.from(
+      document.querySelectorAll<HTMLStyleElement>(`style[data-precedence="${precedence}"]`),
+    )
+      .map((element) => element.sheet?.cssRules.length ?? 0)
+      .reduce((sum, count) => sum + count, 0),
+  )
+
+const groupPattern = (precedence: string): string =>
+  `<style data-precedence="${precedence}" data-href="${precedence}">[^<]+</style>`
 
 const page = (registry: ReturnType<typeof createStyleRegistry>): string =>
   renderToString(
@@ -35,17 +49,64 @@ describe('server', () => {
     expect(b.ruleCount).toBe(0)
   })
 
-  test('renders the three style tags the client adopts', () => {
+  test('renders the three groups as React writes them', () => {
     const registry = createStyleRegistry()
     page(registry)
 
     const asString = styleTagsHTML(registry)
-    expect(asString).toMatch(
-      new RegExp(
-        `^<style id="${RESET_STYLE_ID}">[^<]+</style><style id="${SHORTHAND_STYLE_ID}">[^<]+</style><style id="${LONGHAND_STYLE_ID}">[^<]+</style>$`,
-      ),
-    )
+    expect(asString).toMatch(new RegExp(`^${PRECEDENCE_ORDER.map(groupPattern).join('')}$`))
     expect(renderToString(renderStyleTags(registry))).toBe(asString)
+  })
+
+  test('React puts the groups in the <head> of a full document, in order', () => {
+    const registry = createStyleRegistry()
+    page(registry)
+    const html = renderToString(
+      <html lang="en">
+        <head>
+          <title>Page</title>
+        </head>
+        <body>{renderStyleTags(registry)}</body>
+      </html>,
+    )
+
+    const head = html.slice(0, html.indexOf('</head>'))
+    const [reset, shorthand, longhand] = PRECEDENCE_ORDER.map((precedence) =>
+      head.indexOf(`data-precedence="${precedence}"`),
+    ) as [number, number, number]
+    expect(reset).toBeGreaterThanOrEqual(0)
+    expect(shorthand).toBeGreaterThan(reset)
+    expect(longhand).toBeGreaterThan(shorthand)
+  })
+
+  test('on hydration, the client adopts the groups of the server and inserts no copy', async () => {
+    resetStyleRegistry()
+    const app = (
+      <View testID="box" style={{ width: 10, padding: 4 }}>
+        <Text>Hello</Text>
+      </View>
+    )
+    const registry = createStyleRegistry()
+    const html = renderToString(
+      <StyleRegistryProvider registry={registry}>{app}</StyleRegistryProvider>,
+    )
+    document.head.insertAdjacentHTML('beforeend', styleTagsHTML(registry))
+    const container = document.createElement('div')
+    container.innerHTML = html
+    document.body.appendChild(container)
+    const before = groupRuleCounts()
+
+    let root: Root | undefined
+    await act(async () => {
+      root = hydrateRoot(container, app)
+    })
+
+    expect(document.querySelectorAll('style[data-precedence]')).toHaveLength(3)
+    expect(groupRuleCounts()).toEqual(before)
+    expect(getComputedStyle(container.firstElementChild as Element).width).toBe('10px')
+    act(() => root?.unmount())
+    container.remove()
+    resetStyleRegistry()
   })
 
   test('escapes a closing tag inside CSS', () => {

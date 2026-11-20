@@ -9,13 +9,15 @@ const Padded = () => createElement(View, { style: { paddingTop: 7 } })
 const Empty = () => null
 
 describe('getApplication', () => {
-  test('gives the three style elements with the CSS of the render', () => {
+  test('gives the three style groups with the CSS of the render', () => {
     AppRegistry.registerComponent('Padded', () => Padded)
     const { element, getStyleElement } = AppRegistry.getApplication('Padded')
     const html = renderToString(element)
     const css = renderToStaticMarkup(getStyleElement())
 
-    expect(css.match(/<style id="rootnative-style-(reset|shorthand|longhand)"/g)).toHaveLength(3)
+    expect(
+      css.match(/<style data-precedence="rootnative-(reset|shorthand|longhand)"/g),
+    ).toHaveLength(3)
     expect(css).toContain('padding-top:7px')
     const classNames = html.match(/class="([^"]*)"/)?.[1].split(' ') ?? []
     expect(classNames.some((name) => css.includes(`.${name}`))).toBe(true)
@@ -32,13 +34,15 @@ describe('getApplication', () => {
     expect(renderToStaticMarkup(empty.getStyleElement())).not.toContain('padding-top:7px')
   })
 
-  test('puts the props of getStyleElement on each style element', () => {
+  test('puts the key of getStyleElement on the fragment, so its three groups stay', () => {
     AppRegistry.registerComponent('Padded', () => Padded)
     const { element, getStyleElement } = AppRegistry.getApplication('Padded')
     renderToString(element)
 
+    const tags = getStyleElement({ key: 'react-native-style' })
+    expect(tags.key).toBe('react-native-style')
     expect(
-      renderToStaticMarkup(getStyleElement({ nonce: 'abc' })).match(/nonce="abc"/g),
+      renderToStaticMarkup(tags).match(/<style data-precedence="rootnative-[a-z]+"/g),
     ).toHaveLength(3)
   })
 

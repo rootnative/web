@@ -64,7 +64,7 @@ import { App } from './App'
 hydrateRoot(document.getElementById('root')!, <App />)
 ```
 
-The client needs no provider. It finds the three `<style>` elements by their id and adopts their rules, so it inserts no rule twice. Keep them in their order: the defaults of the components, then the shorthands, then the longhands.
+The client needs no provider. It finds the three `<style>` elements by their `data-precedence` and adopts their rules, so it inserts no rule twice. Keep them in their order: the defaults of the components, then the shorthands, then the longhands.
 
 ## Values that differ on the server
 

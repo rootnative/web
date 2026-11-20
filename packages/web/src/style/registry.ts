@@ -1,16 +1,23 @@
 import { hasDOM } from '../utils/env'
 import type { CSSDeclarations } from './types'
 
-// Three style elements, and with equal specificity the later sheet wins:
+// Three groups of style elements, and with equal specificity the later group wins:
 // - the reset rules of the components, which stand for the defaults of native layout,
 // - the shorthand rules of the app's styles,
 // - the longhand rules of the app's styles.
 // So any style of the app beats a default, and a longhand always beats a shorthand, as on native.
-export const RESET_STYLE_ID = 'rootnative-style-reset'
-export const SHORTHAND_STYLE_ID = 'rootnative-style-shorthand'
-export const LONGHAND_STYLE_ID = 'rootnative-style-longhand'
+// They are React 19's groups: React puts a `<style href precedence>` element of a server render
+// into the group of its `data-precedence`, so the server's elements and the client's rules share
+// the same groups.
+export const RESET_PRECEDENCE = 'rootnative-reset'
+export const SHORTHAND_PRECEDENCE = 'rootnative-shorthand'
+export const LONGHAND_PRECEDENCE = 'rootnative-longhand'
 
-const SHEET_ORDER = [RESET_STYLE_ID, SHORTHAND_STYLE_ID, LONGHAND_STYLE_ID] as const
+export const PRECEDENCE_ORDER: readonly [
+  typeof RESET_PRECEDENCE,
+  typeof SHORTHAND_PRECEDENCE,
+  typeof LONGHAND_PRECEDENCE,
+] = [RESET_PRECEDENCE, SHORTHAND_PRECEDENCE, LONGHAND_PRECEDENCE]
 
 const shorthandProperties: ReadonlySet<string> = new Set([
   'border',
@@ -66,11 +73,17 @@ export class StyleRegistry {
   private readonly longhandRules: string[] = []
   private readonly sheets: StyleSheets
 
-  constructor(sheets: StyleSheets = { reset: null, shorthand: null, longhand: null }) {
+  // `adopted` are the sheets whose rules the page already has: by default, the three sheets.
+  constructor(
+    sheets: StyleSheets = { reset: null, shorthand: null, longhand: null },
+    adopted: ReadonlyArray<CSSStyleSheet | null> = [
+      sheets.reset,
+      sheets.shorthand,
+      sheets.longhand,
+    ],
+  ) {
     this.sheets = sheets
-    this.adopt(sheets.reset)
-    this.adopt(sheets.shorthand)
-    this.adopt(sheets.longhand)
+    for (const sheet of adopted) this.adopt(sheet)
   }
 
   classFor(property: string, value: string): string {
@@ -181,38 +194,42 @@ export class StyleRegistry {
 let defaultRegistry: StyleRegistry | null = null
 
 export const getStyleRegistry = (): StyleRegistry => {
-  if (defaultRegistry !== null) return defaultRegistry
-  defaultRegistry = new StyleRegistry(
-    hasDOM()
-      ? {
-          reset: domSheet(RESET_STYLE_ID),
-          shorthand: domSheet(SHORTHAND_STYLE_ID),
-          longhand: domSheet(LONGHAND_STYLE_ID),
-        }
-      : { reset: null, shorthand: null, longhand: null },
-  )
+  defaultRegistry ??= hasDOM() ? domRegistry() : new StyleRegistry()
   return defaultRegistry
 }
+
+const groupElements = (precedence: string): HTMLStyleElement[] =>
+  Array.from(document.querySelectorAll<HTMLStyleElement>(`style[data-precedence="${precedence}"]`))
 
 // For tests, so each file starts with an empty registry.
 export const resetStyleRegistry = (): void => {
   defaultRegistry = null
   if (!hasDOM()) return
-  for (const id of SHEET_ORDER) document.getElementById(id)?.remove()
+  for (const element of PRECEDENCE_ORDER.flatMap(groupElements)) element.remove()
 }
 
-// A new style element goes before the sheets that must come after it. A page from an older
-// server can have the other two sheets already.
-const domSheet = (id: (typeof SHEET_ORDER)[number]): CSSStyleSheet => {
-  let element = document.getElementById(id) as HTMLStyleElement | null
-  if (element === null) {
-    element = document.createElement('style')
-    element.id = id
-    const later = SHEET_ORDER.slice(SHEET_ORDER.indexOf(id) + 1)
-      .map((name) => document.getElementById(name))
-      .find((found) => found !== null)
-    if (later === undefined || later === null) document.head.appendChild(element)
-    else later.before(element)
+// The registry writes into the last element of each group, and adopts the rules of every
+// element of the groups. A server render can give a group more than one element. A group that
+// the page doesn't have gets a new element after the earlier groups, or before the later ones.
+const domRegistry = (): StyleRegistry => {
+  const groups = PRECEDENCE_ORDER.map(groupElements)
+  const targets: HTMLStyleElement[] = []
+  for (const [index, precedence] of PRECEDENCE_ORDER.entries()) {
+    let target = groups[index]?.at(-1)
+    if (target === undefined) {
+      target = document.createElement('style')
+      target.dataset['precedence'] = precedence
+      const previous = targets[index - 1]
+      const next = groups.slice(index + 1).flat()[0]
+      if (previous !== undefined) previous.after(target)
+      else if (next !== undefined) next.before(target)
+      else document.head.appendChild(target)
+    }
+    targets.push(target)
   }
-  return element.sheet as CSSStyleSheet
+  const [reset, shorthand, longhand] = targets.map((target) => target.sheet)
+  return new StyleRegistry(
+    { reset: reset ?? null, shorthand: shorthand ?? null, longhand: longhand ?? null },
+    groups.flat().map((element) => element.sheet),
+  )
 }

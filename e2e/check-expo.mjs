@@ -152,7 +152,7 @@ async function checkPage(url) {
       }).observe(document, { childList: true, subtree: true })
     })
 
-    // Static output: the server renders the page, with the three style sheets of the runtime.
+    // Static output: the server renders the page, with the three style groups of the runtime.
     // The first request to a dev server starts the bundle.
     const html = await fetch(url, { signal: AbortSignal.timeout(180_000) })
       .then((response) => response.text())
@@ -163,8 +163,8 @@ async function checkPage(url) {
       )
     }
     for (const name of ['reset', 'shorthand', 'longhand']) {
-      if (!html.includes(`<style id="rootnative-style-${name}"`)) {
-        problems.push(`The HTML from the server has no style element rootnative-style-${name}.`)
+      if (!html.includes(`<style data-precedence="rootnative-${name}"`)) {
+        problems.push(`The HTML from the server has no style group rootnative-${name}.`)
       }
     }
 
@@ -195,11 +195,13 @@ async function checkPage(url) {
     )
     expectEqual('Platform.OS', await text('platform'), 'Platform.OS is web')
 
-    // react-native-web has one style sheet. `@rootnative/web` has three, with these ids. After
-    // the hydration, each is the one from the server: the client adds no second copy.
+    // react-native-web has one style sheet. `@rootnative/web` has three groups, React 19's
+    // `data-precedence` groups. After the hydration, each is the element from the server: the
+    // client writes into it and adds no second element.
     const sheets = await page.evaluate(() =>
       ['reset', 'shorthand', 'longhand'].map(
-        (name) => `${name} ${document.querySelectorAll(`#rootnative-style-${name}`).length}`,
+        (name) =>
+          `${name} ${document.querySelectorAll(`style[data-precedence="rootnative-${name}"]`).length}`,
       ),
     )
     expectEqual(
