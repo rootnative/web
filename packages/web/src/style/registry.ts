@@ -41,6 +41,8 @@ export const isShorthandProperty = (name: string): boolean => shorthandPropertie
 
 const toKebab = (name: string): string => name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)
 
+const leadingClass = /^\.([\w-]+)/
+
 const hash = (input: string): string => {
   let h = 0x811c9dc5
   for (let i = 0; i < input.length; i++) {
@@ -114,7 +116,8 @@ export class StyleRegistry {
     return className
   }
 
-  // True for a class of `staticClass` or `resetClass` that this registry already has.
+  // True for a class of `staticClass`, `resetClass`, or `resetClassRules` that this registry
+  // already has.
   hasClass(className: string): boolean {
     return this.classNames.has(className)
   }
@@ -123,16 +126,28 @@ export class StyleRegistry {
   // name is its own, never an atomic one, so a style of the app with the same declaration
   // still gets an atomic class that beats the default.
   resetClass(className: string, declarations: CSSDeclarations): string {
+    return this.resetClassRules(className, [[`.${className}`, declarations]])
+  }
+
+  // As `resetClass`, with one rule for each selector, in this order. Each selector starts with
+  // the class and adds no weight to it, for example with `:where()`, so the app's styles still
+  // win.
+  resetClassRules(
+    className: string,
+    rules: ReadonlyArray<readonly [selector: string, declarations: CSSDeclarations]>,
+  ): string {
     if (this.classNames.has(className)) return className
     this.classNames.set(className, className)
-    const body = Object.entries(declarations)
-      .map(([property, value]) => `${toKebab(property)}:${value}`)
-      .join(';')
-    const rule = `.${className}{${body}}`
-    this.resetRules.push(rule)
-    if (!this.adopted.has(className)) {
-      const sheet = this.sheets.reset
-      sheet?.insertRule(rule, sheet.cssRules.length)
+    for (const [selector, declarations] of rules) {
+      const body = Object.entries(declarations)
+        .map(([property, value]) => `${toKebab(property)}:${value}`)
+        .join(';')
+      const rule = `${selector}{${body}}`
+      this.resetRules.push(rule)
+      if (!this.adopted.has(className)) {
+        const sheet = this.sheets.reset
+        sheet?.insertRule(rule, sheet.cssRules.length)
+      }
     }
     return className
   }
@@ -151,10 +166,14 @@ export class StyleRegistry {
   }
 
   // Remembers the class names the server already rendered, so the client does not insert them again.
+  // The class of a rule is the class at the start of its selector, also for `.a::selection` or
+  // `.a:where(.a>*)`.
   private adopt(sheet: CSSStyleSheet | null): void {
     if (sheet === null) return
     for (const rule of Array.from(sheet.cssRules)) {
-      if (rule instanceof CSSStyleRule) this.adopted.add(rule.selectorText.slice(1))
+      if (!(rule instanceof CSSStyleRule)) continue
+      const className = leadingClass.exec(rule.selectorText)?.[1]
+      if (className !== undefined) this.adopted.add(className)
     }
   }
 }

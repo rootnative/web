@@ -22,6 +22,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 - **Breaking: an animation with `useNativeDriver: false` throws on a value that moved to the native side before**, with React Native's error. A value moves with an animation with `useNativeDriver: true`, with `useNativeDriver: true` in the config of `Animated.Value`, `Animated.ValueXY`, or `Animated.Color`, or under `nativeEvent` in the mapping of a native `Animated.event` or of `attachNativeEvent`. The error: `Attempting to run JS driven animation on animated node that has been moved to "native" earlier by starting an animation with useNativeDriver: true`. On native, such code throws too. Before, both kinds of animation ran on the same value. Use one kind for each value.
 - **`ListRenderItem` returns any React node**, as in React Native's types. Before, it returned only an element or `null`.
 - **The listener of `addListener` on an `Animated` node** gets a value of any type, as in React Native's types, because a `ValueXY` gives `{ x, y }`. `Animated.Value` keeps `{ value: number }`. Before, each node typed it as `{ value: number }`.
+- **Breaking: a `Text` inside a `View` inside a `Text` starts from the defaults of a `Text`**, as on native. Before, it took the font, color, alignment, and decoration of the outer `Text`. The parent element, not a React context, now tells a nested `Text` from the others. So a nested `Text` has the class `rn-text`, and the class `rn-text-nested` is gone.
 
 - **Breaking: `FlatList` renders a window of its items**, on top of `VirtualizedList`, as on native. Before, it rendered every item. What changes for your app:
   - A long list mounts faster, and an item outside the window unmounts, so keep its state in the item data or in a store.
@@ -32,6 +33,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
   - With no `renderItem` and no `ListItemComponent`, the cells are empty, as on native. Before, the list threw.
   - `ListEmptyComponent` gets the flip of `inverted` in its own `style`, as on native, not in a wrapper `View`.
   - `setNativeProps` on the ref writes the style on the scroll element. Before, it did nothing.
+
+### Fixed
+
+- **The client no longer inserts a second copy of a server-rendered rule** whose selector goes past its class name, such as the rule of `selectionColor`.
 
 ## [0.0.0-alpha.6] - 2026-11-18
 

@@ -6,7 +6,7 @@ import { LONGHAND_STYLE_ID } from '../../style/registry'
 import { cleanup, render } from '../../test/render'
 import { Pressable } from '../Pressable'
 import { View } from '../View'
-import { Text } from './index'
+import { Text, TextAncestorContext } from './index'
 import type { HostInstance } from '../View/types'
 
 afterEach(() => {
@@ -78,6 +78,47 @@ describe('Text', () => {
     expect(getComputedStyle(b as Element).fontSize).toBe('20px')
     expect(getComputedStyle(b as Element).textDecorationLine).toBe('underline')
     expect(getComputedStyle(c as Element).fontSize).toBe('10px')
+  })
+
+  test('a nested Text gets none of the defaults of a root Text', () => {
+    const { container } = render(
+      <Text>
+        a<Text>b</Text>
+      </Text>,
+    )
+    const computed = getComputedStyle(first(container).firstElementChild as Element)
+    expect(computed.position).toBe('static')
+    expect(computed.boxSizing).toBe('content-box')
+    expect(computed.borderTopStyle).toBe('none')
+  })
+
+  test('a nested Text inherits also when the context says it is a root, as in a server component', () => {
+    const { container } = render(
+      <Text style={{ color: 'red', fontSize: 20 }}>
+        a
+        <TextAncestorContext value={false}>
+          <Text>b</Text>
+        </TextAncestorContext>
+      </Text>,
+    )
+    const computed = getComputedStyle(first(container).firstElementChild as Element)
+    expect(computed.color).toBe('rgb(255, 0, 0)')
+    expect(computed.fontSize).toBe('20px')
+  })
+
+  test('a Text in a View in a Text starts from the defaults of a root Text, as on native', () => {
+    const { container } = render(
+      <Text style={{ color: 'red', fontSize: 20 }}>
+        a
+        <View>
+          <Text>b</Text>
+        </View>
+      </Text>,
+    )
+    const view = first(container).firstElementChild as HTMLElement
+    const computed = getComputedStyle(view.firstElementChild as Element)
+    expect(computed.color).toBe('rgb(0, 0, 0)')
+    expect(computed.fontSize).toBe('14px')
   })
 
   describe('numberOfLines', () => {

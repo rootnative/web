@@ -18,6 +18,11 @@ const domRules = (id: string): string[] => {
 // The order of the classes in an attribute has no effect on the style.
 const classSet = (classes: string): Set<string> => new Set(classes.split(' '))
 
+const pairRules = [
+  ['.rn-pair:where(:not(.rn-pair)>*)', { color: 'black' }],
+  ['.rn-pair:where(.rn-pair>*)', { color: 'inherit' }],
+] as const
+
 describe('StyleRegistry', () => {
   beforeEach(resetStyleRegistry)
   afterEach(resetStyleRegistry)
@@ -57,6 +62,16 @@ describe('StyleRegistry', () => {
     expect(registry.resetClass('rn-box', declarations)).toBe('rn-box')
     expect(registry.cssText().reset).toBe('.rn-box{display:flex;flex-shrink:0}')
     expect(registry.ruleCount).toBe(1)
+  })
+
+  test('writes a reset with selectors as one rule for each selector, in order, once', () => {
+    const registry = new StyleRegistry()
+    expect(registry.resetClassRules('rn-pair', pairRules)).toBe('rn-pair')
+    expect(registry.resetClassRules('rn-pair', pairRules)).toBe('rn-pair')
+    expect(registry.cssText().reset).toBe(
+      '.rn-pair:where(:not(.rn-pair)>*){color:black}\n.rn-pair:where(.rn-pair>*){color:inherit}',
+    )
+    expect(registry.ruleCount).toBe(2)
   })
 
   test('the default registry inserts rules into three style elements: reset, shorthand, longhand', () => {
@@ -140,6 +155,28 @@ describe('StyleRegistry', () => {
 
     client.classFor('width', '1px')
     expect(domRules(LONGHAND_STYLE_ID)).toHaveLength(2)
+  })
+
+  test('adopts a server rule by the class at the start of its selector', () => {
+    const server = new StyleRegistry()
+    const selectionRules = ['.rn-sel::selection{background-color:red}']
+    server.resetClassRules('rn-pair', pairRules)
+    server.staticClass('rn-sel', selectionRules)
+    for (const [id, text] of [
+      [RESET_STYLE_ID, server.cssText().reset],
+      [LONGHAND_STYLE_ID, server.cssText().longhand],
+    ] as const) {
+      const element = document.createElement('style')
+      element.id = id
+      element.textContent = text
+      document.head.appendChild(element)
+    }
+
+    const client = getStyleRegistry()
+    expect(client.resetClassRules('rn-pair', pairRules)).toBe('rn-pair')
+    expect(client.staticClass('rn-sel', selectionRules)).toBe('rn-sel')
+    expect(domRules(RESET_STYLE_ID)).toHaveLength(2)
+    expect(domRules(LONGHAND_STYLE_ID)).toHaveLength(1)
   })
 })
 

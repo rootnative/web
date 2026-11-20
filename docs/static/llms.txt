@@ -209,6 +209,8 @@ View
 - pointerEvents: none, auto, box-none, box-only.
 
 Text
+- A Text inside a Text takes the font, color, alignment, and decoration of
+  its parent. As on native, a View between the two ends that.
 - numberOfLines 1 ends the line with an ellipsis. A larger number clamps.
 - ellipsizeMode: tail and clip. head and middle show the ellipsis at the end.
 - selectable is true by default on the web (false on native).

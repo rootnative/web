@@ -159,6 +159,22 @@ export const compileReset = (
   // Each render of each component calls this, so the style resolves only for a new class.
   registry.hasClass(className) ? className : registry.resetClass(className, resolveStyle(style))
 
+/**
+ * As `compileReset`, with one rule for each selector, for a default that depends on the parent
+ * element. Each selector starts with `.className` and adds no weight to it.
+ */
+export const compileResetRules = (
+  className: string,
+  rules: ReadonlyArray<readonly [selector: string, style: FlatStyle]>,
+  registry: StyleRegistry = getStyleRegistry(),
+): string =>
+  registry.hasClass(className)
+    ? className
+    : registry.resetClassRules(
+        className,
+        rules.map(([selector, style]) => [selector, resolveStyle(style)] as const),
+      )
+
 // Joins class names and skips the empty ones.
 export const joinClassNames = (...names: ReadonlyArray<string | false | undefined>): string =>
   names.filter((name) => typeof name === 'string' && name !== '').join(' ')

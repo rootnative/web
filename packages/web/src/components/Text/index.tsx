@@ -15,7 +15,12 @@ import { withHostMethods } from '../../render/hostMethods'
 import { resolveTag } from '../../render/resolveTag'
 import { useElementLayout } from '../../render/useElementLayout'
 import { toCSSColor } from '../../style/color'
-import { compileReset, compileStyle, joinClassNames, pointerEventsStyle } from '../../style/compile'
+import {
+  compileResetRules,
+  compileStyle,
+  joinClassNames,
+  pointerEventsStyle,
+} from '../../style/compile'
 import type { StyleRegistry } from '../../style/registry'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { TextAncestorContext } from './TextAncestorContext'
@@ -51,6 +56,14 @@ const nestedResetStyle = Object.freeze({
   textDecoration: 'inherit',
   whiteSpace: 'inherit',
 })
+
+// The parent element, not the context, tells a nested Text from the others. So a Text that can't
+// read the context, as in a server component, gets the same reset. As on native, a View between
+// two Texts ends the nesting.
+const resetRules = [
+  ['.rn-text:where(:not(.rn-text)>*)', resetStyle],
+  ['.rn-text:where(.rn-text>*)', nestedResetStyle],
+] as const
 
 // On native, Yoga measures a Text at most as wide as its parent, also with `flexShrink: 0`.
 // `maxWidth` does the same here. The reset's `break-word` has no use on a line that doesn't wrap.
@@ -154,9 +167,7 @@ export function Text(props: TextProps): ReactElement {
   const pointerStyle = pointerEvents === undefined ? undefined : pointerEventsStyle[pointerEvents]
 
   let className = joinClassNames(
-    nested
-      ? compileReset('rn-text-nested', nestedResetStyle, registry)
-      : compileReset('rn-text', resetStyle, registry),
+    compileResetRules('rn-text', resetRules, registry),
     compileStyle(
       [
         pressable && pointerCursorStyle,

@@ -20,7 +20,7 @@ export function Byline({ author }) {
 }
 ```
 
-A `Text` starts at 14 px, black, in the system font, and keeps its spaces and line breaks, as on native. A `Text` inside a `Text` takes the font, color, alignment, and decoration of its parent.
+A `Text` starts at 14 px, black, in the system font, and keeps its spaces and line breaks, as on native. A `Text` inside a `Text` takes the font, color, alignment, and decoration of its parent. As on native, a `View` between the two ends that: a `Text` inside a `View` inside a `Text` starts from the defaults again.
 
 ## Props
 
