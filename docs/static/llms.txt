@@ -90,10 +90,9 @@ node_modules/react-native-web/expo-exports.json lists them under "missing".
 - @rootnative/web: the React Native components and APIs. Import it as
   react-native through the plugin.
 - @rootnative/web/dom: web-only features. Head.
-- @rootnative/web/server: deprecated, gone before 1.0. A server render needs
-  nothing from it: createStyleRegistry, StyleRegistryProvider,
-  renderStyleTags, and styleTagsHTML do nothing now.
 - @rootnative/web/vite: rootnative(), the Vite plugin. Only in vite.config.ts.
+- Server render: react-dom/server only. Each component puts its CSS into the
+  HTML as React 19 style elements. This package has no server entry.
 
 Libraries: react-native-svg, react-native-safe-area-context, and
 @react-native-async-storage/async-storage need nothing more. Reanimated and

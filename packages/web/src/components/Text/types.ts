@@ -13,9 +13,6 @@ import type {
 
 export type TextInstance = HostInstance
 
-/** @deprecated Use `GestureResponderEvent`, the type that React Native gives `onPress`. */
-export type PressEvent = GestureResponderEvent
-
 // An interface, as in React Native, so a library can add props with a module augmentation.
 export interface TextProps extends AccessibilityProps, DOMEventHandlers<HTMLElement> {
   children?: ReactNode

@@ -28,7 +28,7 @@ import { TextAncestorContext } from './TextAncestorContext'
 import type { TextProps } from './types'
 
 export { TextAncestorContext } from './TextAncestorContext'
-export type { PressEvent, TextInstance, TextProps } from './types'
+export type { TextInstance, TextProps } from './types'
 
 // What a native Text looks like before any style is applied.
 const resetStyle = Object.freeze({

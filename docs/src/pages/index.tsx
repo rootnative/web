@@ -473,8 +473,8 @@ const layers = [
   },
   {
     name: 'Server',
-    entry: '@rootnative/web/server',
-    description: 'Helpers that render the page and its styles on the server.',
+    entry: 'react-dom/server',
+    description: "React's own renderer. Each component sends its CSS with its HTML.",
   },
 ]
 
@@ -483,11 +483,11 @@ function Layers() {
     <section className={`${styles.section} ${styles.sectionMuted}`}>
       <div className={styles.sectionInner}>
         <span className={styles.sectionEyebrow}>How it works</span>
-        <h2 className={styles.sectionTitle}>One plugin. Three entry points.</h2>
+        <h2 className={styles.sectionTitle}>One plugin. Three layers.</h2>
         <p className={styles.sectionLead}>
           Your app imports <code>react-native</code>. The Vite plugin resolves that name to{' '}
-          <code>@rootnative/web</code>. Import the web and the server entry only in code that runs
-          on the web.
+          <code>@rootnative/web</code>. Import the web entry only in code that runs on the web. A
+          server render needs nothing from this package.
         </p>
         <div className={styles.layersGrid}>
           {layers.map((layer, index) => (

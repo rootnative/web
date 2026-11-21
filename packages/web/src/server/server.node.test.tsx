@@ -17,7 +17,6 @@ import {
   PRECEDENCE_ORDER,
   resetStyleRegistry,
 } from '../style/registry'
-import { createStyleRegistry, renderStyleTags, StyleRegistryProvider, styleTagsHTML } from './index'
 
 // A server render with React's own server renderer and no DOM.
 
@@ -105,18 +104,6 @@ describe('server render', () => {
   test('a closing tag in a value does not end the style element', () => {
     const html = renderToString(<Text style={{ fontFamily: '"</style><script>"' }}>Hello</Text>)
     expect(html).not.toContain('</style><script>')
-  })
-
-  test('the deprecated server API changes nothing', () => {
-    const registry = createStyleRegistry()
-    const html = renderToString(
-      <StyleRegistryProvider registry={registry}>
-        <View style={{ width: 3 }} />
-      </StyleRegistryProvider>,
-    )
-    expect(html).toContain('{width:3px}')
-    expect(styleTagsHTML(registry)).toBe('')
-    expect(renderToString(renderStyleTags(registry))).toBe('')
   })
 
   test('the server registry serves each render, and starts again past its limit', () => {

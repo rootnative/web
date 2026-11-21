@@ -24,15 +24,15 @@ The API can still change between releases. Each page lists what ships today and 
 
 ## How it works
 
-Your app imports `react-native`. The [Vite plugin](/vite-plugin) resolves that name to `@rootnative/web`. In an Expo app, [`@rootnative/web-expo`](/expo) does it in place of react-native-web. Your app code uses three entry points:
+Your app imports `react-native`. The [Vite plugin](/vite-plugin) resolves that name to `@rootnative/web`. In an Expo app, [`@rootnative/web-expo`](/expo) does it in place of react-native-web. Your app code uses three layers:
 
-| Layer  | Import                   | What's in it                                                    |
-| ------ | ------------------------ | --------------------------------------------------------------- |
-| Parity | `@rootnative/web`        | The React Native components and APIs                            |
-| Web    | `@rootnative/web/dom`    | Browser features that native doesn't have, for example `<Head>` |
-| Server | `@rootnative/web/server` | Deprecated: a server render needs nothing from it               |
+| Layer  | Import                | What's in it                                                                                                |
+| ------ | --------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Parity | `@rootnative/web`     | The React Native components and APIs                                                                        |
+| Web    | `@rootnative/web/dom` | Browser features that native doesn't have, for example `<Head>`                                             |
+| Server | `react-dom/server`    | React's own renderer. Each component sends its CSS with its HTML. See [Server rendering](/server-rendering) |
 
-Import `@rootnative/web/dom` only in code that runs on the web. The rest of your app stays the same code that runs on iOS and Android. A fourth entry, `@rootnative/web/vite`, is the Vite plugin, for `vite.config.ts` only.
+Import `@rootnative/web/dom` only in code that runs on the web. The rest of your app stays the same code that runs on iOS and Android. One more entry, `@rootnative/web/vite`, is the Vite plugin, for `vite.config.ts` only.
 
 ## Next steps
 

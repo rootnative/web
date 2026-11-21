@@ -71,10 +71,6 @@ The client finds the three groups of the server by their `data-precedence`: `roo
 
 A server render under a DOM emulation, such as jsdom, takes the browser path. Its HTML then has no style elements.
 
-## The old API
-
-`createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, and `styleTagsHTML` from `@rootnative/web/server` are deprecated. A server render needs none of them. They do nothing now, so code that still calls them keeps its styles. Remove the calls: the functions go away before 1.0.
-
 ## Values that differ on the server
 
 The server doesn't know the window or the user's settings. Two hooks return a fixed value on the server and during hydration, so the first client render matches the server HTML. The real value arrives right after hydration.

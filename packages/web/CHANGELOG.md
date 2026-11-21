@@ -4,6 +4,11 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Removed
+
+- **Breaking: the `@rootnative/web/server` entry is gone**, with `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, and its `StyleRegistry` export. Since `0.0.0-alpha.7` they did nothing: a server render puts the CSS of each component into React's style groups by itself. Remove the import and the calls. See [Server rendering](https://rootnative.github.io/web/server-rendering).
+- **Breaking: the `PressEvent` type is gone.** Use `GestureResponderEvent`, the type that React Native gives `onPress`. React Native's types have no `PressEvent`.
+
 ## [0.0.0-alpha.7] - 2026-11-20
 
 The virtualized lists (`VirtualizedList`, `SectionList`, and a `FlatList` that renders a window of its items), the rest of React Native's `Animated` API with a Web Animations driver for `useNativeDriver: true`, and `LayoutAnimation`. A server render now puts the CSS of each component into React 19's style groups, with no provider. Four entries are breaking changes.
