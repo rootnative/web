@@ -368,13 +368,17 @@ The latest release is [`0.0.0-alpha.7`](https://www.npmjs.com/package/@rootnativ
 ## Out of scope
 
 - The `react-native-web` internals. Only `@rootnative/web-expo` has its file layout, for Expo's bundler.
-- Metro with no Expo. A Metro plugin isn't planned for 1.0.
+- Metro with no Expo. A Metro plugin isn't planned.
 - React 18, CommonJS, and Flow.
 - Props that React Native doesn't have, except a small web-only set. Each page marks a web-only prop.
 
 ## How it's tested
 
 Every component and API has tests. They run in real browsers through Vitest browser mode, not in a simulated DOM: Chromium, Firefox, and WebKit, the engine of Safari.
+
+## Versions
+
+`@rootnative/web` follows modified semver: a breaking change bumps the middle digit (`0.1.0`), and fixes and additions bump the last digit (`0.0.2`). The [changelog](https://github.com/rootnative/web/blob/main/packages/web/CHANGELOG.md) lists each breaking change.
 
 ---
 
