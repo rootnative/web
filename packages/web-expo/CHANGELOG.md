@@ -63,7 +63,8 @@ Expo Router runs on `@rootnative/web`, with single-page and static output.
 - **The two style files of react-native-web that Reanimated 4 reads**, so Reanimated animates the components of `@rootnative/web`.
 - **A stub for each name that `@rootnative/web` doesn't have yet**, such as `Animated`. The import works, and a use throws an error with the name. `expo-exports.json` lists these names under `missing`.
 
-[unreleased]: https://github.com/rootnative/web/compare/web@0.0.0-alpha.7...HEAD
+[unreleased]: https://github.com/rootnative/web/compare/web@0.0.1...HEAD
+[0.0.1]: https://github.com/rootnative/web/releases/tag/web@0.0.1
 [0.0.0-alpha.7]: https://github.com/rootnative/web/releases/tag/web@0.0.0-alpha.7
 [0.0.0-alpha.6]: https://github.com/rootnative/web/releases/tag/web@0.0.0-alpha.6
 [0.0.0-alpha.5]: https://github.com/rootnative/web/releases/tag/web@0.0.0-alpha.5
