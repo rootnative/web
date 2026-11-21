@@ -15,6 +15,9 @@ export const ALIASES: Readonly<Record<string, string>> = {
   'react-native-web/dist/cjs/exports/StyleSheet/compiler/createReactDOMStyle.js':
     '@rootnative/web/style',
   'react-native-web/dist/cjs/exports/StyleSheet/preprocess.js': '@rootnative/web/style',
+  // Expo's modules don't run here. A library that loads `expo-font` only under Expo gets a
+  // module that throws, as a missing module does, so a project with Expo installed still builds.
+  'expo-font': '@rootnative/web/internal/compat/expoFont/index.js',
 }
 
 /**

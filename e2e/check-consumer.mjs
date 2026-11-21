@@ -3,7 +3,9 @@
 // - the tarball's JavaScript still reads `process.env.NODE_ENV`,
 // - the app in ./consumer passes `tsc` with the types of the tarball and no `skipLibCheck`,
 // - the app builds with the Vite plugin, and the built page works in Chromium,
-// - a library that imports `react-native` works in that build.
+// - a library that imports `react-native` works in that build,
+// - a library that loads `expo-font` in a `try` block builds and runs next to an installed
+//   `expo-font`, and goes on without it.
 // The app follows the Installation page of the docs, so a failure here is also a docs problem.
 //
 // The tarball goes into ./consumer/node_modules, so the app can't see the source of the package.
@@ -11,7 +13,7 @@
 // package lists them, at the versions of the lockfile, so the check needs no second install.
 
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { builtinModules } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -43,6 +45,23 @@ function installTarball() {
   } finally {
     rmSync(packDir, { recursive: true, force: true })
   }
+  installExpoFont()
+}
+
+// A project with Expo installed has the real `expo-font`. Expo's modules import `NativeModules`
+// from `react-native`, which the package doesn't export, so without the plugin's alias the Vite
+// build stops with MISSING_EXPORT. This copy has the same import and nothing else.
+function installExpoFont() {
+  const dir = join(appDir, 'node_modules', 'expo-font')
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(
+    join(dir, 'package.json'),
+    JSON.stringify({ name: 'expo-font', version: '0.0.0', type: 'module', main: 'index.js' }),
+  )
+  writeFileSync(
+    join(dir, 'index.js'),
+    "import { NativeModules } from 'react-native'\n\nexport const loadAsync = () => NativeModules.ExpoFontLoader.loadAsync()\n",
+  )
 }
 
 function listScripts(dir) {
@@ -137,6 +156,11 @@ async function checkPage() {
       'The insets from react-native-safe-area-context',
       await page.getByTestId('insets').textContent(),
       'Insets 0 0',
+    )
+    expectEqual(
+      'The font loader with expo-font installed',
+      await page.getByTestId('font-loader').textContent(),
+      'Fonts without Expo',
     )
     await page.getByTestId('press').click()
     await page

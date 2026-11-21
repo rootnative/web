@@ -181,12 +181,13 @@ export default defineConfig({
 | `react-native` alias  | Resolves the import name `react-native` to `@rootnative/web`. Only the exact name: a deep import such as `react-native/Libraries/Image` doesn't resolve.                                                                                 |
 | Assets registry alias | Resolves `@react-native/assets-registry/registry` to `@rootnative/web/assets-registry`. Libraries such as `react-native-svg` import that module on the web.                                                                              |
 | Reanimated aliases    | Resolves two `react-native-web` internal files, which Reanimated 4 reads its web style helpers from, to `@rootnative/web/style`. See [Compat exports](https://rootnative.github.io/web/compat).                                                                          |
+| `expo-font` alias     | Resolves `expo-font` to a module that throws, as a missing module does, so a project with Expo installed still builds. See [Expo modules](#expo-modules).                                                                                |
 | `.web` files          | Resolves `Button.web.tsx` before `Button.tsx` for an import of `./Button`, as Metro does for the web. Each extension gets a `.web` variant in front. Pre-bundled dependencies get the same list, so a library loads its `.web.js` files. |
 | `__DEV__`             | Defines the React Native global: `true` on the dev server, `false` in a production build. It follows `NODE_ENV`, as React's development mode does. Pre-bundled dependencies get it too.                                                  |
 | `global`              | Defines React Native's name for the global object as `globalThis`. Reanimated and Worklets read it. Pre-bundled dependencies get it too.                                                                                                 |
 | `Platform.OS`         | Puts `'web'` in place of each `Platform.OS` read, so the minifier drops the code of the other platforms.                                                                                                                                 |
 
-Your own config wins. A `react-native` alias, or a `__DEV__` or `global` define in your config, keeps its value. A `resolve.extensions` list of your own gets the `.web` variants in front.
+Your own config wins. A `react-native` or `expo-font` alias, or a `__DEV__` or `global` define in your config, keeps its value. A `resolve.extensions` list of your own gets the `.web` variants in front.
 
 TypeScript doesn't read the Vite config. For `.web` files, add `moduleSuffixes` to `tsconfig.json`, as [Installation](https://rootnative.github.io/web/installation#add-the-types) shows.
 
@@ -228,6 +229,14 @@ const label = Platform.OS === 'ios' ? 'iPhone' : 'Web'
 ```
 
 At run time `Platform.OS` is `'web'` anyway, so only the bundle size changes. Some reads keep their code, for example when a local variable in the same file has the name `Platform`. On the dev server, pre-bundled dependencies keep their reads too. `Platform.select` keeps its code.
+
+## Expo modules
+
+The icon sets of `@react-native-vector-icons` load `expo-font` in a `try` block, when Expo runs the app. The bundler still follows that import when `expo-font` is installed, for example when a native Expo app shares your project. Expo's modules import `NativeModules` from `react-native`, which `@rootnative/web` doesn't have, so the build stops with `MISSING_EXPORT` errors.
+
+So the plugin resolves `expo-font` to a module that throws, as a missing module does. The icon set then goes on without it. The dev server and its pre-bundled dependencies get the same alias.
+
+An import of `expo-font` in your own code throws an error with a link to this section. To give the browser a font, see [Icon fonts](https://rootnative.github.io/web/libraries#icon-fonts).
 
 ## Server rendering
 
@@ -271,6 +280,8 @@ export default defineConfig({
 ```
 
 `Platform.OS` then stays a read at run time. It still returns `'web'`.
+
+If your project has `expo-font` installed and uses an icon set, alias `expo-font` to a file of your own that throws an error. See [Expo modules](#expo-modules).
 
 A library that needs a [compat entry](https://rootnative.github.io/web/compat) also needs its alias. The plugin adds these three:
 
@@ -739,7 +750,7 @@ A library built on Reanimated needs the same option. See [`worklets`](https://ro
 
 ## Icon fonts
 
-An icon set of `@react-native-vector-icons` renders each icon as a character of its font. The package loads the font file only through Expo. In an app with no Expo, give the browser the font yourself, or each icon is an empty box.
+An icon set of `@react-native-vector-icons` renders each icon as a character of its font. The package loads the font file only through Expo. In an app with no Expo, give the browser the font yourself, or each icon is an empty box. The Vite plugin keeps Expo's font module out of the build, also when it's installed. See [Expo modules](https://rootnative.github.io/web/vite-plugin#expo-modules).
 
 Add the font once, in the file that mounts your app:
 

@@ -27,6 +27,7 @@ describe('ALIASES', () => {
       'react-native-web/dist/cjs/exports/StyleSheet/compiler/createReactDOMStyle.js':
         '@rootnative/web/style',
       'react-native-web/dist/cjs/exports/StyleSheet/preprocess.js': '@rootnative/web/style',
+      'expo-font': '@rootnative/web/internal/compat/expoFont/index.js',
     })
   })
 })

@@ -4,6 +4,8 @@ export default defineConfig({
   entry: [
     'src/index.ts',
     'src/assets-registry/index.ts',
+    // No module imports it: the Vite plugin aliases `expo-font` to it through `internal/*`.
+    'src/compat/expoFont/index.ts',
     'src/dom/index.ts',
     'src/style/index.ts',
     'src/vite/index.ts',

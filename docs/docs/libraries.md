@@ -32,7 +32,7 @@ A library built on Reanimated needs the same option. See [`worklets`](/vite-plug
 
 ## Icon fonts
 
-An icon set of `@react-native-vector-icons` renders each icon as a character of its font. The package loads the font file only through Expo. In an app with no Expo, give the browser the font yourself, or each icon is an empty box.
+An icon set of `@react-native-vector-icons` renders each icon as a character of its font. The package loads the font file only through Expo. In an app with no Expo, give the browser the font yourself, or each icon is an empty box. The Vite plugin keeps Expo's font module out of the build, also when it's installed. See [Expo modules](/vite-plugin#expo-modules).
 
 Add the font once, in the file that mounts your app:
 

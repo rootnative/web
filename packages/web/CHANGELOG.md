@@ -9,6 +9,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 - **Breaking: the `@rootnative/web/server` entry is gone**, with `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, and its `StyleRegistry` export. Since `0.0.0-alpha.7` they did nothing: a server render puts the CSS of each component into React's style groups by itself. Remove the import and the calls. See [Server rendering](https://rootnative.github.io/web/server-rendering).
 - **Breaking: the `PressEvent` type is gone.** Use `GestureResponderEvent`, the type that React Native gives `onPress`. React Native's types have no `PressEvent`.
 
+### Fixed
+
+- **The Vite build of a project with Expo installed** no longer stops with `MISSING_EXPORT` errors in `expo-modules-core` and `expo-asset`. The icon sets of `@react-native-vector-icons` load `expo-font` in a `try` block, and the bundler followed that import into Expo's modules, which import `NativeModules` from `react-native`. The Vite plugin now resolves `expo-font` to a module that throws, as a missing module does, so the icon set goes on without it. See [Expo modules](https://rootnative.github.io/web/vite-plugin#expo-modules).
+
 ## [0.0.0-alpha.7] - 2026-11-20
 
 The virtualized lists (`VirtualizedList`, `SectionList`, and a `FlatList` that renders a window of its items), the rest of React Native's `Animated` API with a Web Animations driver for `useNativeDriver: true`, and `LayoutAnimation`. A server render now puts the CSS of each component into React 19's style groups, with no provider. Four entries are breaking changes.

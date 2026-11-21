@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native'
 
+import { fontLoader } from './fontLoader'
 import { Insets } from './Insets'
 import { label } from './label'
 
@@ -15,6 +16,7 @@ export function App() {
       <Text testID="dev">{String(__DEV__)}</Text>
       <Text testID="label">{label}</Text>
       <Insets />
+      <Text testID="font-loader">{fontLoader}</Text>
       <Pressable testID="press" onPress={() => setCount((value) => value + 1)}>
         <Text testID="count">{`Pressed ${count}`}</Text>
       </Pressable>

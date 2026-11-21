@@ -43,6 +43,21 @@ describe('rootnative() config', () => {
       firstAlias(config.resolve.alias, 'react-native-web/dist/cjs/exports/StyleSheet/preprocess.js')
         ?.replacement,
     ).toBe('@rootnative/web/style')
+    expect(firstAlias(config.resolve.alias, 'expo-font')?.replacement).toBe(
+      '@rootnative/web/internal/compat/expoFont/index.js',
+    )
+    expect(firstAlias(config.resolve.alias, 'expo-font/build/FontHooks')).toBeUndefined()
+  })
+
+  test("lets the app's own expo-font alias win", async () => {
+    const config = await resolveConfig(
+      baseConfig({
+        plugins: [rootnative()],
+        resolve: { alias: [{ find: 'expo-font', replacement: 'expo-font' }] },
+      }),
+      'serve',
+    )
+    expect(firstAlias(config.resolve.alias, 'expo-font')?.replacement).toBe('expo-font')
   })
 
   test("lets the app's own react-native alias win", async () => {
@@ -148,7 +163,8 @@ describe('rootnative() in the dev server', () => {
   const packageStub: Plugin = {
     name: 'package-stub',
     enforce: 'pre',
-    resolveId: (id) => (id === '@rootnative/web' ? '\0@rootnative/web' : null),
+    resolveId: (id) =>
+      id === '@rootnative/web' || id.startsWith('@rootnative/web/') ? `\0${id}` : null,
   }
 
   let server: ViteDevServer
@@ -177,6 +193,14 @@ describe('rootnative() in the dev server', () => {
 
   test('resolves the .web file first', () => {
     expect(code).toContain('/label.web.ts')
+  })
+
+  test('resolves expo-font to the module that throws', async () => {
+    const resolved = await server.environments.client.pluginContainer.resolveId(
+      'expo-font',
+      path('./__fixtures__/app.ts'),
+    )
+    expect(resolved?.id).toBe('\0@rootnative/web/internal/compat/expoFont/index.js')
   })
 
   test('sets the __DEV__ global on the client', async () => {

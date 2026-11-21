@@ -17,6 +17,7 @@ export default defineConfig({
       'react-native-web/dist/cjs/exports/StyleSheet/compiler/createReactDOMStyle.js':
         webSource('style/index.ts'),
       'react-native-web/dist/cjs/exports/StyleSheet/preprocess.js': webSource('style/index.ts'),
+      'expo-font': webSource('compat/expoFont/index.ts'),
       '@rootnative/web/dom': webSource('dom/index.ts'),
       '@rootnative/web': webSource('index.ts'),
     },
