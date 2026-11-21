@@ -4,14 +4,19 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
-### Removed
+## [0.0.1] - 2026-11-21
 
-- **Breaking: the `@rootnative/web/server` entry is gone**, with `createStyleRegistry`, `StyleRegistryProvider`, `renderStyleTags`, `styleTagsHTML`, and its `StyleRegistry` export. Since `0.0.0-alpha.7` they did nothing: a server render puts the CSS of each component into React's style groups by itself. Remove the import and the calls. See [Server rendering](https://rootnative.github.io/web/server-rendering).
-- **Breaking: the `PressEvent` type is gone.** Use `GestureResponderEvent`, the type that React Native gives `onPress`. React Native's types have no `PressEvent`.
+The first stable release. A React Native app runs in the browser as a real web app, with semantic HTML, atomic CSS, server rendering, and SEO tags. [Status](https://rootnative.github.io/web/status) lists what ships, and each docs page says what differs from iOS and Android.
 
-### Fixed
+### Added
 
-- **The Vite build of a project with Expo installed** no longer stops with `MISSING_EXPORT` errors in `expo-modules-core` and `expo-asset`. The icon sets of `@react-native-vector-icons` load `expo-font` in a `try` block, and the bundler followed that import into Expo's modules, which import `NativeModules` from `react-native`. The Vite plugin now resolves `expo-font` to a module that throws, as a missing module does, so the icon set goes on without it. See [Expo modules](https://rootnative.github.io/web/vite-plugin#expo-modules).
+- **Components:** `View`, `Text`, `Image`, `Pressable`, `TouchableHighlight`, `TouchableNativeFeedback`, `TouchableOpacity`, `TouchableWithoutFeedback`, `Button`, `ScrollView`, `FlatList`, `VirtualizedList`, `SectionList`, `VirtualizedSectionList`, `RefreshControl`, `TextInput`, `Switch`, `ActivityIndicator`, `Modal`, `KeyboardAvoidingView`, and `StatusBar`.
+- **APIs:** `StyleSheet`, `Platform`, `Dimensions`, `useWindowDimensions`, `Appearance`, `useColorScheme`, `AppState`, `Keyboard`, `Linking`, `Alert`, `Share`, `Vibration`, `Clipboard`, `AccessibilityInfo`, `I18nManager`, `BackHandler`, `PixelRatio`, `processColor`, `PanResponder`, `Easing`, `LayoutAnimation`, and `usePressability`.
+- **`Animated`**, with all of React Native's API and the hooks `useAnimatedValue`, `useAnimatedValueXY`, and `useAnimatedColor`. With `useNativeDriver: true`, a `timing` or a `spring` that moves only `transform` and `opacity` runs on the Web Animations API. See [Animated](https://rootnative.github.io/web/animated).
+- **`Head`** from `@rootnative/web/dom`, for the tags in `<head>`. See [SEO](https://rootnative.github.io/web/seo).
+- **Server rendering** with `react-dom/server` and no helper. Each component puts its CSS into the HTML as React 19 style elements, and the page hydrates with no second copy of a rule. See [Server rendering](https://rootnative.github.io/web/server-rendering).
+- **For libraries:** `unstable_createElement`, `findNodeHandle`, `TurboModuleRegistry`, and the entries `@rootnative/web/assets-registry` and `@rootnative/web/style`. See [Compat exports](https://rootnative.github.io/web/compat).
+- **The Vite plugin**, `rootnative()` from `@rootnative/web/vite`. It resolves `react-native` to this package, resolves `.web` files first, defines `__DEV__`, and puts `'web'` in place of `Platform.OS`. Its `worklets` option runs the Babel plugin of `react-native-worklets`, for Reanimated. It resolves `expo-font` to a module that throws, so a project with Expo installed still builds. See [Vite plugin](https://rootnative.github.io/web/vite-plugin).
 
 ## [0.0.0-alpha.7] - 2026-11-20
 

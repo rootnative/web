@@ -16,7 +16,7 @@
 
 `@rootnative/web` is a standalone web runtime for React Native apps. You write `react-native`. It runs in the browser as a real web app.
 
-> **Early alpha.** The API can change between releases. [Status](https://rootnative.github.io/web/status) lists what ships today, and the [changelog](packages/web/CHANGELOG.md) lists the changes in each release.
+[Status](https://rootnative.github.io/web/status) lists what ships today, and the [changelog](packages/web/CHANGELOG.md) lists the changes in each release.
 
 **Docs: https://rootnative.github.io/web/**
 

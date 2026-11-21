@@ -8,12 +8,6 @@ description: A standalone web runtime for React Native apps. You write react-nat
 
 `@rootnative/web` is a standalone web runtime for React Native apps. You write `react-native`. It runs in the browser as a real web app.
 
-:::warning Early alpha
-
-The API can still change between releases. Each page lists what ships today and what doesn't.
-
-:::
-
 ## Why
 
 [react-native-web](https://github.com/necolas/react-native-web) tracks React Native and stops there. This project starts from the browser and asks a different question: what does a React Native app need to be a good web app?

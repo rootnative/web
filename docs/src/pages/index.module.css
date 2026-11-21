@@ -87,26 +87,6 @@
   margin-bottom: 24px;
 }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 12px;
-  border: 1px solid var(--web-border);
-  border-radius: 999px;
-  background: var(--web-surface-muted);
-  color: var(--web-fg-muted);
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.eyebrowDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--web-accent-strong);
-}
-
 .heroTitle {
   margin: 20px 0 0;
   font-size: clamp(2.4rem, 5.2vw, 3.75rem);

@@ -320,10 +320,6 @@ function Hero() {
             width={56}
             height={56}
           />
-          <span className={styles.eyebrow}>
-            <span className={styles.eyebrowDot} aria-hidden="true" />
-            Early alpha
-          </span>
           <h1 className={styles.heroTitle}>React Native, as a real web app.</h1>
           <p className={styles.heroTagline}>
             A standalone web runtime for React Native apps. You write <code>react-native</code>. The
@@ -537,7 +533,7 @@ function BottomCta() {
       <div className={styles.bottomCtaInner}>
         <h2 className={styles.bottomCtaTitle}>Your React Native code, in the browser.</h2>
         <p className={styles.bottomCtaText}>
-          It's an early alpha. The Status page lists what ships today and what's planned.
+          The Status page lists what ships today and what's planned.
         </p>
         <div className={styles.heroCtas}>
           <Link className={styles.ctaPrimary} to="/installation">

@@ -6,6 +6,18 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.1] - 2026-11-21
+
+The first stable release. An Expo app, also with Expo Router, runs on `@rootnative/web` `0.0.1` in place of react-native-web. See [Expo](https://rootnative.github.io/web/expo).
+
+### Added
+
+- **The file layout that Expo's web bundler reads:** one file for each name of `react-native` in `dist/exports/<Name>/index.js`. Each file loads only its own module of `@rootnative/web`, so the app bundles only the components that it imports.
+- **`AppRegistry`**, for Expo Router with `web.output: 'single'` and `'static'`. With `'static'`, each route renders on the server, and the page hydrates.
+- **The names that Expo and its libraries read from react-native-web:** `AssetRegistry`, `DeviceEventEmitter`, `NativeEventEmitter`, `UIManager`, `NativeModules`, and `LogBox`, the asset registry for `react-native-svg` and `expo-asset`, and the two style files that Reanimated 4 reads.
+- **`createSheet`**, with the four reset rules of react-native-web, such as `body { margin: 0 }`.
+- **A stub for each name that `@rootnative/web` doesn't have**, such as `Picker`. The import works, and a use throws an error with the name. `expo-exports.json` lists these names under `missing`.
+
 ## [0.0.0-alpha.7] - 2026-11-20
 
 The lists and `LayoutAnimation` of `@rootnative/web` load, and a static render of Expo Router gets its CSS from React 19's style groups.

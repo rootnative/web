@@ -12,10 +12,6 @@ Source: https://github.com/rootnative/web
 
 `@rootnative/web` is a standalone web runtime for React Native apps. You write `react-native`. It runs in the browser as a real web app.
 
-> **WARNING: Early alpha**
->
-> The API can still change between releases. Each page lists what ships today and what doesn't.
-
 ## Why
 
 [react-native-web](https://github.com/necolas/react-native-web) tracks React Native and stops there. This project starts from the browser and asks a different question: what does a React Native app need to be a good web app?
@@ -345,7 +341,7 @@ The largest ones today are `ImageBackground` and `SafeAreaView`. The file `node_
 
 # Status
 
-`@rootnative/web` is in early alpha. The API can change between alpha releases. This page lists what exists, so nothing on this site reads as a promise.
+This page lists what `@rootnative/web` ships today, what's planned, and what's out of scope.
 
 The latest release is [`0.0.0-alpha.7`](https://www.npmjs.com/package/@rootnative/web) on npm. The [changelog](https://github.com/rootnative/web/blob/main/packages/web/CHANGELOG.md) lists the changes in each release.
 
