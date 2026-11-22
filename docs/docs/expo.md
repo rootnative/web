@@ -28,7 +28,15 @@ The package depends on the same version of `@rootnative/web`, and works only wit
 
 ## How it works
 
-On the web, Expo's Babel preset rewrites `import { View } from 'react-native'` to an import of `react-native-web/dist/exports/View`. The package has a file at each of these paths, and each file loads only its own module of `@rootnative/web`. So the bundle has only the components that your app imports.
+On the web, Expo's bundler rewrites `import { View } from 'react-native'` to an import of `react-native-web/dist/exports/View`. The package has a file at each of these paths, and each file loads only its own module of `@rootnative/web`.
+
+These imports load the root of the package, and with it all of `@rootnative/web`:
+
+- A namespace import, such as `import * as RN from 'react-native'`, or a default import.
+- A name that react-native-web doesn't have, such as `useAnimatedValue`.
+- `require('react-native')`.
+
+Expo Router uses `require('react-native')`. So with Expo Router, the bundle has all of `@rootnative/web`, also the components that your app doesn't use.
 
 Expo also calls `AppRegistry` from `react-native-web` to start the app, and asks it for the reset styles of the page. The package gives both: your app renders with React DOM, and `body` gets no margin, as with react-native-web.
 

@@ -69,13 +69,17 @@ An Expo app, also with Expo Router, runs on @rootnative/web through
 @rootnative/web-expo, installed under the name react-native-web:
   npm install react-native-web@npm:@rootnative/web-expo
 Restart the dev server with --clear. The app code, the Babel preset, and the
-react-native types stay. Expo's Babel preset rewrites each react-native import
+react-native types stay. Expo's bundler rewrites a named react-native import
 to react-native-web/dist/exports/<Name>; the package has those files, and each
-one loads only its own module of @rootnative/web, so the bundle has only the
-components the app imports. It also gives Expo AppRegistry and the page reset
-(body margin 0), and UIManager, NativeModules ({ UIManager }, no native
-module), LogBox (no-ops), DeviceEventEmitter, NativeEventEmitter (only
-JavaScript emits events), and AssetRegistry, as react-native-web does.
+one loads only its own module of @rootnative/web. A namespace or default
+import, a name that react-native-web doesn't have (such as useAnimatedValue),
+and require('react-native') load the package root, with all of
+@rootnative/web. Expo Router uses require('react-native'), so an app with
+Expo Router bundles all of @rootnative/web. The package also gives Expo
+AppRegistry and the page reset (body margin 0), and UIManager, NativeModules
+({ UIManager }, no native module), LogBox (no-ops), DeviceEventEmitter,
+NativeEventEmitter (only JavaScript emits events), and AssetRegistry, as
+react-native-web does.
 Works: the dev server, expo export --platform web with web.output 'single'
 or 'static' (each route renders on the server, then hydrates), Expo Router
 (tabs, a stack, links, back, a URL that opens a screen), Reanimated 4 (the
