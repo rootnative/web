@@ -295,25 +295,49 @@ A library that needs a [compat entry](https://rootnative.github.io/web/compat) a
 
 ## Install
 
-Install the package under the name `react-native-web`, with an npm alias:
+Install the package, and remove react-native-web:
 
 ```bash npm2yarn
-npm install react-native-web@npm:@rootnative/web-expo
+npm install @rootnative/web-expo
+npm uninstall react-native-web
 ```
 
-An Expo app with web support lists `react-native-web` already, and the alias takes its place. Restart the dev server with `--clear` after the change:
+Wrap your Metro config with `withRootNative`. If your app has no `metro.config.js`, add this one:
+
+```js title="metro.config.js"
+const { getDefaultConfig } = require('expo/metro-config')
+const { withRootNative } = require('@rootnative/web-expo/metro.cjs')
+
+module.exports = withRootNative(getDefaultConfig(__dirname))
+```
+
+On the web, `withRootNative` sends each import of `react-native` and of react-native-web to the package. On iOS and Android, it changes nothing. Restart the dev server with `--clear` after the change:
 
 ```bash
 npx expo start --clear
 ```
 
+Expo warns that react-native-web isn't installed. The warning doesn't stop the dev server or `expo export`.
+
 Your code doesn't change, and TypeScript keeps the types of the `react-native` package.
+
+### Without a Metro config
+
+You can also install the package under the name `react-native-web`, with an npm alias. Then the app needs no `withRootNative`:
+
+```bash npm2yarn
+npm install react-native-web@npm:@rootnative/web-expo
+```
+
+An Expo app with web support lists `react-native-web` already, and the alias takes its place.
+
+### Versions
 
 The package depends on the same version of `@rootnative/web`, and works only with that version. If your app imports `@rootnative/web` itself, for example [`Head`](https://rootnative.github.io/web/seo) from `@rootnative/web/dom`, install the version that the package names.
 
 ## How it works
 
-On the web, Expo's bundler rewrites `import { View } from 'react-native'` to an import of `react-native-web/dist/exports/View`. The package has a file at each of these paths, and each file loads only its own module of `@rootnative/web`.
+On the web, Expo's bundler rewrites `import { View } from 'react-native'` to an import of `react-native-web/dist/exports/View`. `withRootNative`, or the alias, sends that path to the package. The package has a file at each of these paths, and each file loads only its own module of `@rootnative/web`.
 
 These imports load the root of the package, and with it all of `@rootnative/web`:
 
@@ -343,7 +367,7 @@ Expo's libraries import `UIManager`, `NativeModules`, `LogBox`, `DeviceEventEmit
 
 A name of `react-native` that `@rootnative/web` doesn't have yet loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `ImageBackground is not in @rootnative/web yet`.
 
-The largest ones today are `ImageBackground` and `SafeAreaView`. The file `node_modules/react-native-web/expo-exports.json` lists all of them under `missing`.
+The largest ones today are `ImageBackground` and `SafeAreaView`. The file `expo-exports.json` of the package lists all of them under `missing`: `node_modules/@rootnative/web-expo/expo-exports.json`, or `node_modules/react-native-web/expo-exports.json` with the alias.
 
 ---
 

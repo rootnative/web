@@ -66,12 +66,24 @@ ReferenceError. Add it to ssr.noExternal.
 ## Expo
 
 An Expo app, also with Expo Router, runs on @rootnative/web through
-@rootnative/web-expo, installed under the name react-native-web:
+@rootnative/web-expo. Install it, remove react-native-web, and wrap the Metro
+config with withRootNative:
+  npm install @rootnative/web-expo
+  npm uninstall react-native-web
+  // metro.config.js
+  const { getDefaultConfig } = require('expo/metro-config')
+  const { withRootNative } = require('@rootnative/web-expo/metro.cjs')
+  module.exports = withRootNative(getDefaultConfig(__dirname))
+On the web, withRootNative sends each react-native and react-native-web import
+to the package; iOS and Android don't change. Expo warns that react-native-web
+isn't installed; the warning stops nothing. With no Metro config, install the
+package under the name react-native-web instead:
   npm install react-native-web@npm:@rootnative/web-expo
 Restart the dev server with --clear. The app code, the Babel preset, and the
 react-native types stay. Expo's bundler rewrites a named react-native import
-to react-native-web/dist/exports/<Name>; the package has those files, and each
-one loads only its own module of @rootnative/web. A namespace or default
+to react-native-web/dist/exports/<Name>; withRootNative or the alias sends it
+to the package, which has those files, and each one loads only its own module
+of @rootnative/web. A namespace or default
 import, a name that react-native-web doesn't have (such as useAnimatedValue),
 and require('react-native') load the package root, with all of
 @rootnative/web. Expo Router uses require('react-native'), so an app with
@@ -89,7 +101,9 @@ version if the app imports @rootnative/web too.
 A name that @rootnative/web lacks (ImageBackground, SafeAreaView, and
 more) loads as a stub that throws
 "<Name> is not in @rootnative/web yet" on use;
-node_modules/react-native-web/expo-exports.json lists them under "missing".
+expo-exports.json of the package lists them under "missing"
+(node_modules/@rootnative/web-expo/, or node_modules/react-native-web/ with
+the alias).
 
 ## Entry points
 

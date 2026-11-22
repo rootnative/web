@@ -2,7 +2,30 @@
 
 Runs an Expo app on [`@rootnative/web`](https://rootnative.github.io/web/) in place of react-native-web.
 
-Expo's web bundler rewrites each `react-native` import to a file of react-native-web. This package has the same file layout, and each file loads `@rootnative/web`. Install it under the name `react-native-web`:
+Expo's web bundler rewrites each `react-native` import to a file of react-native-web. This package has the same file layout, and each file loads `@rootnative/web`.
+
+## Install
+
+Install this package, and remove react-native-web:
+
+```sh
+npm install @rootnative/web-expo
+npm uninstall react-native-web
+```
+
+Wrap your Metro config with `withRootNative`. On the web, it sends each import of `react-native` and of react-native-web to this package:
+
+```js
+// metro.config.js
+const { getDefaultConfig } = require('expo/metro-config')
+const { withRootNative } = require('@rootnative/web-expo/metro.cjs')
+
+module.exports = withRootNative(getDefaultConfig(__dirname))
+```
+
+Expo then warns that react-native-web isn't installed. The warning doesn't stop the dev server or `expo export`.
+
+Or, with no Metro config, install this package under the name `react-native-web`:
 
 ```json
 {
