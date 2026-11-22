@@ -4,6 +4,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-11-22
+
 ### Added
 
 - **`inert` and `suppressHydrationWarning`** on `View` and `Text`. Both pass to the element, as on react-native-web. Before, they were dropped, so React reported a hydration error for a `Text` that shows the time. See [Server rendering](https://rootnative.github.io/web/server-rendering#values-that-differ-on-the-server).
