@@ -83,3 +83,5 @@ The server doesn't know the window or the user's settings. Two hooks return a fi
 In render, use these hooks, not `Dimensions.get()` or `Appearance.getColorScheme()`. The two getters return the fixed value on the server but the real value in the browser at once, so a render that reads them doesn't match the server HTML.
 
 A layout that depends on the window width renders its zero-width branch first. Use flex and percentages for the first paint, and refine after hydration.
+
+A value that can't be the same, such as the current time, still differs. Set `suppressHydrationWarning` on the `Text` that shows it, and React reports no error. The text of the server stays until the next render of that `Text`, so update the value in an effect. The prop covers the text and the attributes of its own element only, not its children.

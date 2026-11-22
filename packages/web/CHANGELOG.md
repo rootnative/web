@@ -6,6 +6,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ### Added
 
+- **`inert` and `suppressHydrationWarning`** on `View` and `Text`. Both pass to the element, as on react-native-web. Before, they were dropped, so React reported a hydration error for a `Text` that shows the time. See [Server rendering](https://rootnative.github.io/web/server-rendering#values-that-differ-on-the-server).
 - **A development warning for a flat accessibility prop of react-native-web**, such as `accessibilityDisabled`. React Native doesn't have these props, so this package drops them. The warning names the `aria-*` prop to use, for example `aria-disabled`.
 
 ### Fixed

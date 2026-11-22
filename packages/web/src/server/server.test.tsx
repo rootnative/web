@@ -76,6 +76,27 @@ describe('server render', () => {
     container.remove()
   })
 
+  // React keeps the text of the server until the next render.
+  test('suppressHydrationWarning lets a text differ from the server HTML', async () => {
+    const container = serverPage(<Text suppressHydrationWarning>Server time</Text>)
+    const errors: unknown[] = []
+
+    let root: Root | undefined
+    await act(async () => {
+      root = hydrateRoot(container, <Text suppressHydrationWarning>Client time</Text>, {
+        onRecoverableError: (error) => errors.push(error),
+      })
+    })
+    expect(errors).toEqual([])
+    expect(container.querySelector('span')?.textContent).toBe('Server time')
+
+    await act(async () => root?.render(<Text suppressHydrationWarning>Later time</Text>))
+    expect(container.querySelector('span')?.textContent).toBe('Later time')
+
+    act(() => root?.unmount())
+    container.remove()
+  })
+
   // The HTML parser must keep the tree, or hydration does not match.
   test('the HTML parser keeps the markup of a table', () => {
     const html = renderAsServer(() =>

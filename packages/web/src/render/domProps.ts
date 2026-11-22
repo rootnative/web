@@ -17,7 +17,15 @@ const nativeHandler =
 
 export const isNativeHandler = (name: string): boolean => nativeHandler.test(name)
 
-const passThrough = new Set(['lang', 'dir', 'target', 'rel', 'download'])
+const passThrough = new Set([
+  'lang',
+  'dir',
+  'target',
+  'rel',
+  'download',
+  'inert',
+  'suppressHydrationWarning',
+])
 
 // The events that React DOM 19 registers. Each has a handler prop and its `Capture` form. A
 // library can spread its own callback, such as `onValueChange`, onto a View: React Native and

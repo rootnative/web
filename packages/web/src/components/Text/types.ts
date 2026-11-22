@@ -44,4 +44,6 @@ export interface TextProps extends AccessibilityProps, DOMEventHandlers<HTMLElem
   rel?: string | undefined
   download?: string | boolean | undefined
   lang?: string | undefined
+  inert?: boolean | undefined
+  suppressHydrationWarning?: boolean | undefined
 }

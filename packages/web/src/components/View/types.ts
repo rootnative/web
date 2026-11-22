@@ -197,4 +197,7 @@ export interface ViewProps extends AccessibilityProps, DOMEventHandlers<HTMLElem
   'aria-level'?: number | undefined
   // Web only. Renders an anchor.
   href?: string | undefined
+  // Web only. Pass to the element.
+  inert?: boolean | undefined
+  suppressHydrationWarning?: boolean | undefined
 }

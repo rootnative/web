@@ -26,21 +26,23 @@ const styles = StyleSheet.create({
 
 ## Props
 
-| Prop                                                   | On the web                                                                                                                                                      |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `style`                                                | Compiles to atomic CSS. See [Styles](/styles).                                                                                                                  |
-| `role`, `accessibilityRole`                            | Picks the element. See [Semantic HTML](/semantic-html).                                                                                                         |
-| `accessibilityLabel` and the other accessibility props | Become ARIA attributes. See [Accessibility props](/semantic-html#accessibility-props).                                                                          |
-| `onLayout`                                             | Fires after mount and after each size change, from a `ResizeObserver`. `x` and `y` are relative to the parent view. A move with no size change doesn't fire it. |
-| `pointerEvents`                                        | `none`, `auto`, `box-none`, and `box-only`, as on native.                                                                                                       |
-| `focusable`, `tabIndex`                                | `focusable` sets `tabIndex` to 0, or to -1 for `false`. `tabIndex` wins when you set both.                                                                      |
-| `nativeID`, `id`, `testID`                             | `id`, `id`, and `data-testid`.                                                                                                                                  |
-| `href`                                                 | **Web only.** Renders an `<a>`.                                                                                                                                 |
-| `hrefAttrs`                                            | **Web only.** The react-native-web form of `target`, `rel`, and `download`. See [Props from react-native-web](/compat#props-from-react-native-web).             |
-| `dataSet`                                              | **Web only.** The react-native-web form of `data-*` props. See [Props from react-native-web](/compat#props-from-react-native-web).                              |
-| `aria-level`                                           | **Web only.** The heading level of `role="heading"`, 1 to 6.                                                                                                    |
-| `onClick`, `onKeyDown`, and the other DOM handlers     | **Web only.** Every React DOM event handler passes to the element.                                                                                              |
-| `collapsable`, `accessible`                            | Accepted and ignored.                                                                                                                                           |
+| Prop                                                   | On the web                                                                                                                                                                                       |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `style`                                                | Compiles to atomic CSS. See [Styles](/styles).                                                                                                                                                   |
+| `role`, `accessibilityRole`                            | Picks the element. See [Semantic HTML](/semantic-html).                                                                                                                                          |
+| `accessibilityLabel` and the other accessibility props | Become ARIA attributes. See [Accessibility props](/semantic-html#accessibility-props).                                                                                                           |
+| `onLayout`                                             | Fires after mount and after each size change, from a `ResizeObserver`. `x` and `y` are relative to the parent view. A move with no size change doesn't fire it.                                  |
+| `pointerEvents`                                        | `none`, `auto`, `box-none`, and `box-only`, as on native.                                                                                                                                        |
+| `focusable`, `tabIndex`                                | `focusable` sets `tabIndex` to 0, or to -1 for `false`. `tabIndex` wins when you set both.                                                                                                       |
+| `nativeID`, `id`, `testID`                             | `id`, `id`, and `data-testid`.                                                                                                                                                                   |
+| `href`                                                 | **Web only.** Renders an `<a>`.                                                                                                                                                                  |
+| `hrefAttrs`                                            | **Web only.** The react-native-web form of `target`, `rel`, and `download`. See [Props from react-native-web](/compat#props-from-react-native-web).                                              |
+| `dataSet`                                              | **Web only.** The react-native-web form of `data-*` props. See [Props from react-native-web](/compat#props-from-react-native-web).                                                               |
+| `inert`                                                | **Web only.** The element and its children take no focus and no clicks, and screen readers skip them.                                                                                            |
+| `suppressHydrationWarning`                             | **Web only.** React doesn't report a difference from the server HTML in the text and the attributes of this element. See [Server rendering](/server-rendering#values-that-differ-on-the-server). |
+| `aria-level`                                           | **Web only.** The heading level of `role="heading"`, 1 to 6.                                                                                                                                     |
+| `onClick`, `onKeyDown`, and the other DOM handlers     | **Web only.** Every React DOM event handler passes to the element.                                                                                                                               |
+| `collapsable`, `accessible`                            | Accepted and ignored.                                                                                                                                                                            |
 
 Any other prop that isn't a React Native prop is dropped.
 

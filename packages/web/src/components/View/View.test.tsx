@@ -335,6 +335,18 @@ describe('View', () => {
       expect(element.hasAttribute('dataset')).toBe(false)
     })
 
+    test('inert passes to the element', () => {
+      const { container } = render(
+        <View>
+          <View inert />
+          <View inert={false} />
+        </View>,
+      )
+      const [on, off] = Array.from(first(container).children) as HTMLElement[]
+      expect(on?.inert).toBe(true)
+      expect(off?.hasAttribute('inert')).toBe(false)
+    })
+
     test('a flat accessibility prop of react-native-web warns once and names the aria prop', () => {
       resetWarnings()
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
