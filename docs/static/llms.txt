@@ -125,7 +125,7 @@ PanResponder, Animated, useAnimatedValue, useAnimatedValueXY, useAnimatedColor,
 Easing, LayoutAnimation, usePressability.
 
 Compat, for libraries only, do not call in app code: unstable_createElement,
-findNodeHandle, TurboModuleRegistry. Compat prop: hrefAttrs on View and Text.
+findNodeHandle, TurboModuleRegistry. Compat props: hrefAttrs and dataSet.
 
 NOT IMPLEMENTED, do not import:
 - A Next.js plugin, and templates for a Vite app with and without server
@@ -176,6 +176,10 @@ or -1 for false. tabIndex wins.
 aria-* and data-* props pass through. An aria-* prop wins over the mapped
 prop. DOM event handlers (onClick, onKeyDown, ...) pass to the element (web
 only). Any other prop that isn't a React Native prop is dropped.
+dataSet, react-native-web's form of data-* props, works too. Libraries send
+it, and the types don't declare it. Each key becomes data-<key>, with a - and
+the lower case letter for each capital (fooBar gives data-foo-bar). A null
+value adds nothing, and a data-* prop with the same name wins.
 
 ## Styles
 

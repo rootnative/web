@@ -319,6 +319,20 @@ describe('View', () => {
       render(<View {...libraryProps} />)
       expect(errors).not.toHaveBeenCalled()
     })
+
+    test('dataSet becomes data-* attributes, and a data-* prop wins over it', () => {
+      const libraryProps: object = {
+        dataSet: { entrance: 'true', fooBar: 1, direct: 'theirs', empty: null },
+        'data-direct': 'mine',
+      }
+      const { container } = render(<View {...libraryProps} />)
+      const element = first(container)
+      expect(element.getAttribute('data-entrance')).toBe('true')
+      expect(element.getAttribute('data-foo-bar')).toBe('1')
+      expect(element.getAttribute('data-direct')).toBe('mine')
+      expect(element.hasAttribute('data-empty')).toBe(false)
+      expect(element.hasAttribute('dataset')).toBe(false)
+    })
   })
 
   describe('pointerEvents', () => {

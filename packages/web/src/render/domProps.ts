@@ -33,9 +33,10 @@ const reactDOMEvents =
   'submit suspend timeUpdate toggle touchCancel touchEnd touchMove touchStart transitionCancel ' +
   'transitionEnd transitionRun transitionStart volumeChange waiting wheel'
 
-// react-native-web's form of the anchor attributes. Libraries written for it send it, for example
-// the `Link` of Expo Router. The types don't declare it, because a library can declare it with a
-// module augmentation, and a second declaration with another type breaks that merge.
+// `hrefAttrs` and `dataSet` are react-native-web's forms of the anchor attributes and of the
+// `data-*` attributes. Libraries written for it send them, for example the `Link` of Expo Router.
+// The types don't declare them, because a library can declare them with a module augmentation, and
+// a second declaration with another type breaks that merge.
 const hrefAttrsToDOM = (hrefAttrs: unknown, out: DOMProps): void => {
   if (typeof hrefAttrs !== 'object' || hrefAttrs === null) return
   const { download, rel, target } = hrefAttrs as Record<string, unknown>
@@ -43,6 +44,16 @@ const hrefAttrsToDOM = (hrefAttrs: unknown, out: DOMProps): void => {
   if (rel != null) out['rel'] ??= rel
   // As in react-native-web: `blank` becomes `_blank`.
   if (typeof target === 'string') out['target'] ??= target.startsWith('_') ? target : `_${target}`
+}
+
+const toKebabCase = (key: string): string =>
+  key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
+
+const dataSetToDOM = (dataSet: unknown, out: DOMProps): void => {
+  if (typeof dataSet !== 'object' || dataSet === null) return
+  for (const [key, value] of Object.entries(dataSet)) {
+    if (value != null) out[`data-${toKebabCase(key)}`] ??= value
+  }
 }
 
 export const domEventHandlers: ReadonlySet<string> = new Set([
@@ -93,6 +104,7 @@ export const toDOMProps = (props: Input): DOMProps => {
     focusable,
     href,
     hrefAttrs,
+    dataSet,
   } = props
 
   if (accessibilityLabel !== undefined) out['aria-label'] ??= accessibilityLabel
@@ -134,6 +146,7 @@ export const toDOMProps = (props: Input): DOMProps => {
     out['href'] = href
     hrefAttrsToDOM(hrefAttrs, out)
   }
+  if (dataSet !== undefined) dataSetToDOM(dataSet, out)
 
   if (tabIndex !== undefined) out['tabIndex'] = tabIndex
   else if (focusable === true) out['tabIndex'] = 0

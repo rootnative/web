@@ -55,6 +55,13 @@ describe('server render', () => {
     expect(html.slice(end)).not.toContain('<style')
   })
 
+  // A library can mark an element with `dataSet` to reveal it when the bundle doesn't run.
+  test('dataSet becomes data-* attributes in the server HTML', () => {
+    const libraryProps: object = { dataSet: { entrance: 'true' } }
+    const html = renderToString(<View {...libraryProps} />)
+    expect(html).toContain('data-entrance="true"')
+  })
+
   test('a fragment gets the groups at its start', () => {
     const html = renderToString(<View style={{ padding: 0, paddingTop: 10 }} />)
     expect(html).toMatch(/^<style data-precedence="rootnative-reset"/)

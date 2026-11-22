@@ -42,6 +42,7 @@ A `Text` starts at 14 px, black, in the system font, and keeps its spaces and li
 | `href`                               | **Web only.** Renders an `<a>`.                                                                                                                     |
 | `target`, `rel`, `download`          | **Web only.** Pass to the anchor.                                                                                                                   |
 | `hrefAttrs`                          | **Web only.** The react-native-web form of `target`, `rel`, and `download`. See [Props from react-native-web](/compat#props-from-react-native-web). |
+| `dataSet`                            | **Web only.** The react-native-web form of `data-*` props. See [Props from react-native-web](/compat#props-from-react-native-web).                  |
 | `lang`                               | **Web only.** The language of the text, for screen readers and hyphenation.                                                                         |
 | `aria-level`                         | **Web only.** The heading level of `role="heading"`, 1 to 6.                                                                                        |
 | `onClick` and the other DOM handlers | **Web only.** Pass to the element. On a pressable `Text`, they run before the press handlers, and both run.                                         |

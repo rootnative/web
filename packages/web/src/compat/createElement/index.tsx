@@ -10,6 +10,7 @@ export type CreateElementProps = Readonly<Record<string, unknown>>
 
 // `toDOMProps` turns these into DOM attributes, so the names themselves never reach the element.
 const mappedProps = new Set([
+  'dataSet',
   'focusable',
   'hrefAttrs',
   'importantForAccessibility',

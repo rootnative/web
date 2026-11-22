@@ -88,10 +88,11 @@ const style = useAnimatedStyle(() => ({ opacity: progress.value }), [progress])
 
 ## Props from react-native-web
 
-`View` and `Text` take one prop that only react-native-web has. Libraries written for react-native-web send it, for example the `Link` of Expo Router. The types don't declare it.
+Two props that only react-native-web has. Libraries written for react-native-web send them, for example the `Link` of Expo Router. The types don't declare them.
 
-| Prop        | Result                                                                                                                                                                                                                    |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `hrefAttrs` | With `href`, its `target`, `rel`, and `download` go to the `<a>`. A `target` with no leading `_` gets one: `blank` becomes `_blank`. A `target`, `rel`, or `download` prop wins over it. Without `href`, it does nothing. |
+| Prop        | Result                                                                                                                                                                                                                                                            |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hrefAttrs` | With `href` on a `View` or a `Text`, its `target`, `rel`, and `download` go to the `<a>`. A `target` with no leading `_` gets one: `blank` becomes `_blank`. A `target`, `rel`, or `download` prop wins over it. Without `href`, it does nothing.                 |
+| `dataSet`   | Each key becomes a `data-*` attribute. A capital letter becomes `-` and the lower case letter: `fooBar` gives `data-foo-bar`. A `null` or `undefined` value adds nothing. A `data-*` prop with the same name wins over it. It works wherever `data-*` props work. |
 
-In your own code, use the `target`, `rel`, and `download` props of [`Text`](/text).
+In your own code, use the `target`, `rel`, and `download` props of [`Text`](/text), and `data-*` props.

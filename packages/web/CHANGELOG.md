@@ -7,6 +7,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 ### Fixed
 
 - **`hrefAttrs` on a `View` or a `Text` with `href`** now sets `target`, `rel`, and `download` on the `<a>`, as on react-native-web. Before, the prop was dropped, so an Expo Router `<Link target="_blank">` opened in the same tab. A `target` with no leading `_` gets one, and a direct `target`, `rel`, or `download` prop wins. `unstable_createElement` maps it too. See [Compat exports](https://rootnative.github.io/web/compat#props-from-react-native-web).
+- **`dataSet`** now becomes `data-*` attributes, as on react-native-web: `{ fooBar: 'x' }` gives `data-foo-bar="x"`. Before, the prop was dropped, so an element that a library marked with it had no attribute, also in the server HTML. A `data-*` prop with the same name wins. See [Compat exports](https://rootnative.github.io/web/compat#props-from-react-native-web).
 
 ## [0.0.1] - 2026-11-21
 
