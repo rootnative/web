@@ -8,7 +8,7 @@ description: What @rootnative/web ships today, what's planned, what's out of sco
 
 This page lists what `@rootnative/web` ships today, what's planned, and what's out of scope.
 
-The latest release is [`0.0.1`](https://www.npmjs.com/package/@rootnative/web) on npm. The [changelog](https://github.com/rootnative/web/blob/main/packages/web/CHANGELOG.md) lists the changes in each release.
+The latest release is [`0.0.2`](https://www.npmjs.com/package/@rootnative/web) on npm. The [changelog](https://github.com/rootnative/web/blob/main/packages/web/CHANGELOG.md) lists the changes in each release.
 
 ## What ships today
 
