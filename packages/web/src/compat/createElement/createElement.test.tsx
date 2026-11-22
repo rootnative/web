@@ -59,6 +59,17 @@ describe('unstable_createElement', () => {
     )
   })
 
+  test('maps hrefAttrs to the anchor attributes, and the name never reaches the element', () => {
+    const errors = vi.spyOn(console, 'error')
+    const { container } = render(
+      unstable_createElement('a', { href: '/a', hrefAttrs: { target: 'blank' }, children: 'Go' }),
+    )
+    const a = container.firstElementChild as HTMLAnchorElement
+    expect(a.getAttribute('target')).toBe('_blank')
+    expect(a.hasAttribute('hrefattrs')).toBe(false)
+    expect(errors).not.toHaveBeenCalled()
+  })
+
   test('gives the ref the element, calls DOM handlers, and renders children', () => {
     const ref = vi.fn()
     const onClick = vi.fn()

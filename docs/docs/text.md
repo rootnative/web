@@ -24,26 +24,27 @@ A `Text` starts at 14 px, black, in the system font, and keeps its spaces and li
 
 ## Props
 
-| Prop                                 | On the web                                                                                                                        |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| `style`                              | Compiles to atomic CSS. See [Styles](/styles).                                                                                    |
-| `numberOfLines`                      | `1` keeps the text on one line and ends it with an ellipsis. A larger number clamps the text to that many lines.                  |
-| `ellipsizeMode`                      | `tail` (the default) and `clip`. `head` and `middle` show the ellipsis at the end for now.                                        |
-| `selectable`                         | The text is selectable by default, as web users expect. On native the default is `false`. `false` turns selection off.            |
-| `selectionColor`                     | The background color of selected text.                                                                                            |
-| `onPress`, `onPressIn`, `onPressOut` | As on [`Pressable`](/pressable#how-a-press-works): a pointer, Enter or Space, or a click. The event is a `GestureResponderEvent`. |
-| `onLongPress`                        | A press held for 500 ms. `onPress` then doesn't fire.                                                                             |
-| `pressRetentionOffset`               | How far a pointer can leave the text and still press it, as on `Pressable`.                                                       |
-| `suppressHighlighting`               | Ignored, as on Android. Only iOS highlights a pressed `Text`.                                                                     |
-| `disabled`                           | Sets `aria-disabled`. The `Text` isn't pressable, so a pressable parent gets the press.                                           |
-| `role`, accessibility props          | See [Semantic HTML](/semantic-html).                                                                                              |
-| `onLayout`, `pointerEvents`          | As on [`View`](/view).                                                                                                            |
-| `nativeID`, `id`, `testID`           | `id`, `id`, and `data-testid`.                                                                                                    |
-| `href`                               | **Web only.** Renders an `<a>`.                                                                                                   |
-| `target`, `rel`, `download`          | **Web only.** Pass to the anchor.                                                                                                 |
-| `lang`                               | **Web only.** The language of the text, for screen readers and hyphenation.                                                       |
-| `aria-level`                         | **Web only.** The heading level of `role="heading"`, 1 to 6.                                                                      |
-| `onClick` and the other DOM handlers | **Web only.** Pass to the element. On a pressable `Text`, they run before the press handlers, and both run.                       |
+| Prop                                 | On the web                                                                                                                                          |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `style`                              | Compiles to atomic CSS. See [Styles](/styles).                                                                                                      |
+| `numberOfLines`                      | `1` keeps the text on one line and ends it with an ellipsis. A larger number clamps the text to that many lines.                                    |
+| `ellipsizeMode`                      | `tail` (the default) and `clip`. `head` and `middle` show the ellipsis at the end for now.                                                          |
+| `selectable`                         | The text is selectable by default, as web users expect. On native the default is `false`. `false` turns selection off.                              |
+| `selectionColor`                     | The background color of selected text.                                                                                                              |
+| `onPress`, `onPressIn`, `onPressOut` | As on [`Pressable`](/pressable#how-a-press-works): a pointer, Enter or Space, or a click. The event is a `GestureResponderEvent`.                   |
+| `onLongPress`                        | A press held for 500 ms. `onPress` then doesn't fire.                                                                                               |
+| `pressRetentionOffset`               | How far a pointer can leave the text and still press it, as on `Pressable`.                                                                         |
+| `suppressHighlighting`               | Ignored, as on Android. Only iOS highlights a pressed `Text`.                                                                                       |
+| `disabled`                           | Sets `aria-disabled`. The `Text` isn't pressable, so a pressable parent gets the press.                                                             |
+| `role`, accessibility props          | See [Semantic HTML](/semantic-html).                                                                                                                |
+| `onLayout`, `pointerEvents`          | As on [`View`](/view).                                                                                                                              |
+| `nativeID`, `id`, `testID`           | `id`, `id`, and `data-testid`.                                                                                                                      |
+| `href`                               | **Web only.** Renders an `<a>`.                                                                                                                     |
+| `target`, `rel`, `download`          | **Web only.** Pass to the anchor.                                                                                                                   |
+| `hrefAttrs`                          | **Web only.** The react-native-web form of `target`, `rel`, and `download`. See [Props from react-native-web](/compat#props-from-react-native-web). |
+| `lang`                               | **Web only.** The language of the text, for screen readers and hyphenation.                                                                         |
+| `aria-level`                         | **Web only.** The heading level of `role="heading"`, 1 to 6.                                                                                        |
+| `onClick` and the other DOM handlers | **Web only.** Pass to the element. On a pressable `Text`, they run before the press handlers, and both run.                                         |
 
 As on native, only `onPress` or `onLongPress` makes a `Text` pressable. A `Text` with only `onPressIn` or `onPressOut` doesn't respond. A pressable `Text` that isn't `disabled` shows the `pointer` cursor, and a `cursor` in `style` wins.
 

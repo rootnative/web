@@ -33,6 +33,18 @@ const reactDOMEvents =
   'submit suspend timeUpdate toggle touchCancel touchEnd touchMove touchStart transitionCancel ' +
   'transitionEnd transitionRun transitionStart volumeChange waiting wheel'
 
+// react-native-web's form of the anchor attributes. Libraries written for it send it, for example
+// the `Link` of Expo Router. The types don't declare it, because a library can declare it with a
+// module augmentation, and a second declaration with another type breaks that merge.
+const hrefAttrsToDOM = (hrefAttrs: unknown, out: DOMProps): void => {
+  if (typeof hrefAttrs !== 'object' || hrefAttrs === null) return
+  const { download, rel, target } = hrefAttrs as Record<string, unknown>
+  if (download != null) out['download'] ??= download
+  if (rel != null) out['rel'] ??= rel
+  // As in react-native-web: `blank` becomes `_blank`.
+  if (typeof target === 'string') out['target'] ??= target.startsWith('_') ? target : `_${target}`
+}
+
 export const domEventHandlers: ReadonlySet<string> = new Set([
   ...reactDOMEvents.split(' ').flatMap((event) => {
     const name = `on${event.charAt(0).toUpperCase()}${event.slice(1)}`
@@ -80,6 +92,7 @@ export const toDOMProps = (props: Input): DOMProps => {
     tabIndex,
     focusable,
     href,
+    hrefAttrs,
   } = props
 
   if (accessibilityLabel !== undefined) out['aria-label'] ??= accessibilityLabel
@@ -117,7 +130,10 @@ export const toDOMProps = (props: Input): DOMProps => {
   const domId = id ?? nativeID
   if (domId !== undefined) out['id'] = domId
   if (testID !== undefined) out['data-testid'] = testID
-  if (href !== undefined) out['href'] = href
+  if (href !== undefined) {
+    out['href'] = href
+    hrefAttrsToDOM(hrefAttrs, out)
+  }
 
   if (tabIndex !== undefined) out['tabIndex'] = tabIndex
   else if (focusable === true) out['tabIndex'] = 0

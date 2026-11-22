@@ -430,6 +430,22 @@ describe('Text', () => {
       expect(a.getAttribute('lang')).toBe('fr')
     })
 
+    test('hrefAttrs sets the attributes of the anchor, with a leading _ on the target', () => {
+      const libraryProps: object = {
+        hrefAttrs: { target: 'blank', rel: 'noopener', download: 'file.txt' },
+      }
+      const { container } = render(
+        <Text href="/a" {...libraryProps}>
+          Link
+        </Text>,
+      )
+      const a = first(container)
+      expect(a.tagName).toBe('A')
+      expect(a.getAttribute('target')).toBe('_blank')
+      expect(a.getAttribute('rel')).toBe('noopener')
+      expect(a.getAttribute('download')).toBe('file.txt')
+    })
+
     test('heading role renders a heading element', () => {
       const { container } = render(
         <Text role="heading" aria-level={3}>

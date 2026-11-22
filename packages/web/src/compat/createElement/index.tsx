@@ -9,7 +9,13 @@ import type { FlatStyle, StyleProp } from '../../style/types'
 export type CreateElementProps = Readonly<Record<string, unknown>>
 
 // `toDOMProps` turns these into DOM attributes, so the names themselves never reach the element.
-const mappedProps = new Set(['focusable', 'importantForAccessibility', 'nativeID', 'testID'])
+const mappedProps = new Set([
+  'focusable',
+  'hrefAttrs',
+  'importantForAccessibility',
+  'nativeID',
+  'testID',
+])
 
 const isNativeOnly = (name: string): boolean =>
   mappedProps.has(name) || name.startsWith('accessibility') || isNativeHandler(name)

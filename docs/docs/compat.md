@@ -85,3 +85,13 @@ Reanimated on the web needs its Worklets Babel plugin, or a dependency array on 
 ```tsx
 const style = useAnimatedStyle(() => ({ opacity: progress.value }), [progress])
 ```
+
+## Props from react-native-web
+
+`View` and `Text` take one prop that only react-native-web has. Libraries written for react-native-web send it, for example the `Link` of Expo Router. The types don't declare it.
+
+| Prop        | Result                                                                                                                                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hrefAttrs` | With `href`, its `target`, `rel`, and `download` go to the `<a>`. A `target` with no leading `_` gets one: `blank` becomes `_blank`. A `target`, `rel`, or `download` prop wins over it. Without `href`, it does nothing. |
+
+In your own code, use the `target`, `rel`, and `download` props of [`Text`](/text).

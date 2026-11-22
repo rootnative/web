@@ -125,7 +125,7 @@ PanResponder, Animated, useAnimatedValue, useAnimatedValueXY, useAnimatedColor,
 Easing, LayoutAnimation, usePressability.
 
 Compat, for libraries only, do not call in app code: unstable_createElement,
-findNodeHandle, TurboModuleRegistry.
+findNodeHandle, TurboModuleRegistry. Compat prop: hrefAttrs on View and Text.
 
 NOT IMPLEMENTED, do not import:
 - A Next.js plugin, and templates for a Vite app with and without server
@@ -157,6 +157,10 @@ The role prop picks the element:
 
 href on a View or a Text renders an <a> (web only). On Text, target, rel,
 download, and lang pass to the element (web only).
+hrefAttrs, react-native-web's form of target, rel, and download, works on View
+and Text when href is set. Libraries send it, for example the Expo Router
+Link. A target with no leading _ gets one (blank becomes _blank), and a
+direct target, rel, or download prop wins. The types don't declare it.
 
 accessibilityRole works. role wins when both are set. Old names map: header to
 heading, image to img, imagebutton to button, summary to region, adjustable to

@@ -4,6 +4,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Fixed
+
+- **`hrefAttrs` on a `View` or a `Text` with `href`** now sets `target`, `rel`, and `download` on the `<a>`, as on react-native-web. Before, the prop was dropped, so an Expo Router `<Link target="_blank">` opened in the same tab. A `target` with no leading `_` gets one, and a direct `target`, `rel`, or `download` prop wins. `unstable_createElement` maps it too. See [Compat exports](https://rootnative.github.io/web/compat#props-from-react-native-web).
+
 ## [0.0.1] - 2026-11-21
 
 The first stable release. A React Native app runs in the browser as a real web app, with semantic HTML, atomic CSS, server rendering, and SEO tags. [Status](https://rootnative.github.io/web/status) lists what ships, and each docs page says what differs from iOS and Android.

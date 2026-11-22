@@ -200,6 +200,35 @@ describe('View', () => {
       expect(a.getAttribute('href')).toBe('/a')
       expect(a.hasAttribute('role')).toBe(false)
     })
+
+    test('hrefAttrs sets the attributes of the anchor', () => {
+      const libraryProps: object = {
+        hrefAttrs: { target: '_self', rel: 'nofollow', download: true },
+      }
+      const { container } = render(<View href="/a" {...libraryProps} />)
+      const a = first(container)
+      expect(a.getAttribute('target')).toBe('_self')
+      expect(a.getAttribute('rel')).toBe('nofollow')
+      expect(a.getAttribute('download')).toBe('')
+    })
+
+    test('hrefAttrs does nothing without href, and a direct prop wins over it', () => {
+      const hrefAttrs = { target: 'blank', rel: 'nofollow' }
+      const withoutHref: object = { hrefAttrs }
+      const withDirect: object = { hrefAttrs, target: '_top' }
+      const { container } = render(
+        <View>
+          <View {...withoutHref} />
+          <View href="/a" {...withDirect} />
+        </View>,
+      )
+      const [plain, a] = Array.from(first(container).children)
+      expect(plain?.tagName).toBe('DIV')
+      expect(plain?.hasAttribute('target')).toBe(false)
+      expect(plain?.hasAttribute('rel')).toBe(false)
+      expect(a?.getAttribute('target')).toBe('_top')
+      expect(a?.getAttribute('rel')).toBe('nofollow')
+    })
   })
 
   describe('props to attributes', () => {
