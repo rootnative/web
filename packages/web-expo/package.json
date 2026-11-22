@@ -25,6 +25,7 @@
   "files": [
     "dist",
     "asset-registry.js",
+    "metro.cjs",
     "expo-exports.json",
     "LICENSE",
     "CHANGELOG.md"

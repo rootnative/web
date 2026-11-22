@@ -5,8 +5,9 @@
 //   renders each route on the server,
 // - the exported page hydrates and works in Chromium, and its runtime is `@rootnative/web`.
 //
-// The app installs `@rootnative/web-expo` under the name `react-native-web`, as the README of that
-// package says. With `--url <address>`, the check uses a running `expo start` and exports nothing.
+// The app installs `@rootnative/web-expo` under its own name, and `withRootNative` in its Metro
+// config sends the names of react-native-web there. With `--url <address>`, the check uses a
+// running `expo start` and exports nothing.
 // `pnpm --filter @rootnative/expo-demo dev:source` starts one on the source of `@rootnative/web`,
 // so that path needs no build, and with `EXPO_WEB_DEV_HYDRATE=1`, so the page hydrates as an
 // export does. Run `node packages/web-expo/scripts/build.mjs` first: it writes the files of the
@@ -304,7 +305,8 @@ async function checkPage(url) {
       await page.locator('h1').textContent(),
       'Root Native Web on Expo',
     )
-    await page.goto(new URL('stack/details', url).href)
+    // On a dev server, this request renders the route on the server and bundles the app again.
+    await page.goto(new URL('stack/details', url).href, { timeout: 180_000 })
     expectEqual(
       'The screen of the URL /stack/details',
       await text('details'),

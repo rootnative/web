@@ -1,4 +1,6 @@
-// Expo's Metro config, with one opt-in. With `ROOTNATIVE_WEB_SOURCE=1`, Metro reads
+// Expo's Metro config, with `withRootNative` and one opt-in. `withRootNative` sends each name of
+// react-native and react-native-web to `@rootnative/web-expo` on the web, so the app installs that
+// package under its own name. With `ROOTNATIVE_WEB_SOURCE=1`, Metro reads
 // `@rootnative/web` from its TypeScript source in place of its built `dist/`, and compiles it in
 // memory. So the dev server runs on the current code of the runtime, with no build. CI leaves it
 // off: `check:expo` exports the app on the built package, as an app installs it.
@@ -6,6 +8,7 @@
 const { existsSync } = require('node:fs')
 const { join } = require('node:path')
 
+const { withRootNative } = require('@rootnative/web-expo/metro.cjs')
 const { getDefaultConfig } = require('expo/metro-config')
 
 const config = getDefaultConfig(__dirname)
@@ -38,4 +41,4 @@ if (process.env.ROOTNATIVE_WEB_SOURCE === '1') {
   }
 }
 
-module.exports = config
+module.exports = withRootNative(config)
