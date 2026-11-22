@@ -180,6 +180,9 @@ dataSet, react-native-web's form of data-* props, works too. Libraries send
 it, and the types don't declare it. Each key becomes data-<key>, with a - and
 the lower case letter for each capital (fooBar gives data-foo-bar). A null
 value adds nothing, and a data-* prop with the same name wins.
+The flat accessibility props of react-native-web (accessibilityDisabled,
+accessibilityLevel, and 40 more) are dropped, as React Native doesn't have
+them. In development, a warning names the aria-* prop to use.
 
 ## Styles
 

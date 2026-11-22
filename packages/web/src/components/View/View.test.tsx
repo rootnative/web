@@ -6,6 +6,7 @@ import { StyleSheet } from '../../apis/StyleSheet'
 import { domEventHandlers } from '../../render/domProps'
 import { ScrollView, type ScrollViewInstance } from '../ScrollView'
 import { cleanup, render } from '../../test/render'
+import { resetWarnings } from '../../utils/warn'
 import { View } from './index'
 import type { HostInstance } from './types'
 
@@ -332,6 +333,30 @@ describe('View', () => {
       expect(element.getAttribute('data-direct')).toBe('mine')
       expect(element.hasAttribute('data-empty')).toBe(false)
       expect(element.hasAttribute('dataset')).toBe(false)
+    })
+
+    test('a flat accessibility prop of react-native-web warns once and names the aria prop', () => {
+      resetWarnings()
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const libraryProps: object = {
+        accessibilityDisabled: true,
+        accessibilityColumnCount: 3,
+        accessibilityLabel: 'React Native prop',
+      }
+      const { container } = render(
+        <View>
+          <View {...libraryProps} />
+          <View {...libraryProps} />
+        </View>,
+      )
+      const element = first(container).firstElementChild
+      expect(element?.hasAttribute('aria-disabled')).toBe(false)
+      expect(element?.getAttribute('aria-label')).toBe('React Native prop')
+      expect(warn.mock.calls.map((call) => String(call[0]))).toEqual([
+        expect.stringContaining('accessibilityDisabled is a react-native-web prop'),
+        expect.stringContaining('Use aria-colcount.'),
+      ])
+      warn.mockRestore()
     })
   })
 

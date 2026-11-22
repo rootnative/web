@@ -1,4 +1,5 @@
 import type { AccessibilityProps } from '../components/View/types'
+import { warnOnce } from '../utils/warn'
 
 export type DOMProps = Record<string, unknown>
 
@@ -56,6 +57,32 @@ const dataSetToDOM = (dataSet: unknown, out: DOMProps): void => {
   }
 }
 
+// react-native-web maps these flat names to ARIA attributes. React Native doesn't have them, so
+// they're dropped here, with a development warning that names the `aria-*` prop to use.
+const rnwAccessibilityToAria: ReadonlyMap<string, string> = new Map([
+  ...(
+    'ActiveDescendant Atomic AutoComplete Busy Checked Controls Current DescribedBy Details ' +
+    'Disabled ErrorMessage Expanded FlowTo HasPopup Hidden Invalid KeyShortcuts Level Modal ' +
+    'MultiSelectable Multiline Orientation Owns Placeholder PosInSet Pressed ReadOnly Required ' +
+    'RoleDescription RowCount RowIndex RowSpan Selected SetSize Sort ValueMax ValueMin ValueNow ' +
+    'ValueText'
+  )
+    .split(' ')
+    .map((name): [string, string] => [`accessibility${name}`, `aria-${name.toLowerCase()}`]),
+  ['accessibilityColumnCount', 'aria-colcount'],
+  ['accessibilityColumnIndex', 'aria-colindex'],
+  ['accessibilityColumnSpan', 'aria-colspan'],
+])
+
+const warnRNWAccessibility = (name: string): void => {
+  const aria = rnwAccessibilityToAria.get(name)
+  if (aria === undefined) return
+  warnOnce(
+    `rnw-prop-${name}`,
+    `${name} is a react-native-web prop. React Native doesn't have it, so it's dropped. Use ${aria}.`,
+  )
+}
+
 export const domEventHandlers: ReadonlySet<string> = new Set([
   ...reactDOMEvents.split(' ').flatMap((event) => {
     const name = `on${event.charAt(0).toUpperCase()}${event.slice(1)}`
@@ -84,6 +111,8 @@ export const toDOMProps = (props: Input): DOMProps => {
       domEventHandlers.has(name)
     ) {
       out[name] = value
+    } else {
+      warnRNWAccessibility(name)
     }
   }
 

@@ -96,3 +96,5 @@ Two props that only react-native-web has. Libraries written for react-native-web
 | `dataSet`   | Each key becomes a `data-*` attribute. A capital letter becomes `-` and the lower case letter: `fooBar` gives `data-foo-bar`. A `null` or `undefined` value adds nothing. A `data-*` prop with the same name wins over it. It works wherever `data-*` props work. |
 
 In your own code, use the `target`, `rel`, and `download` props of [`Text`](/text), and `data-*` props.
+
+react-native-web also maps flat accessibility props, such as `accessibilityDisabled`, to ARIA attributes. React Native doesn't have them, so this package drops them. In development, a warning names the `aria-*` prop to use, for example `aria-disabled`.

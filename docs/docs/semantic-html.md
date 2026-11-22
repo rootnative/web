@@ -101,4 +101,6 @@ The React Native accessibility props become ARIA attributes:
 
 `aria-*` props pass through as you write them. An `aria-*` prop wins over the mapped prop with the same meaning.
 
+A flat accessibility prop of react-native-web, such as `accessibilityDisabled`, is dropped, because React Native doesn't have it. In development, a warning names the `aria-*` prop to use.
+
 `data-*` props pass through too, and so does `dataSet`, their react-native-web form. See [Props from react-native-web](/compat#props-from-react-native-web). Any other prop that isn't a React Native prop is dropped, so it never reaches the element.

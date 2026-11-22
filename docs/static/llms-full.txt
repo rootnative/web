@@ -483,6 +483,8 @@ The React Native accessibility props become ARIA attributes:
 
 `aria-*` props pass through as you write them. An `aria-*` prop wins over the mapped prop with the same meaning.
 
+A flat accessibility prop of react-native-web, such as `accessibilityDisabled`, is dropped, because React Native doesn't have it. In development, a warning names the `aria-*` prop to use.
+
 `data-*` props pass through too, and so does `dataSet`, their react-native-web form. See [Props from react-native-web](https://rootnative.github.io/web/compat#props-from-react-native-web). Any other prop that isn't a React Native prop is dropped, so it never reaches the element.
 
 ---
@@ -3008,3 +3010,5 @@ Two props that only react-native-web has. Libraries written for react-native-web
 | `dataSet`   | Each key becomes a `data-*` attribute. A capital letter becomes `-` and the lower case letter: `fooBar` gives `data-foo-bar`. A `null` or `undefined` value adds nothing. A `data-*` prop with the same name wins over it. It works wherever `data-*` props work. |
 
 In your own code, use the `target`, `rel`, and `download` props of [`Text`](https://rootnative.github.io/web/text), and `data-*` props.
+
+react-native-web also maps flat accessibility props, such as `accessibilityDisabled`, to ARIA attributes. React Native doesn't have them, so this package drops them. In development, a warning names the `aria-*` prop to use, for example `aria-disabled`.

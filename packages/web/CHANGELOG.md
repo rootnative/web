@@ -4,6 +4,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Added
+
+- **A development warning for a flat accessibility prop of react-native-web**, such as `accessibilityDisabled`. React Native doesn't have these props, so this package drops them. The warning names the `aria-*` prop to use, for example `aria-disabled`.
+
 ### Fixed
 
 - **`hrefAttrs` on a `View` or a `Text` with `href`** now sets `target`, `rel`, and `download` on the `<a>`, as on react-native-web. Before, the prop was dropped, so an Expo Router `<Link target="_blank">` opened in the same tab. A `target` with no leading `_` gets one, and a direct `target`, `rel`, or `download` prop wins. `unstable_createElement` maps it too. See [Compat exports](https://rootnative.github.io/web/compat#props-from-react-native-web).
