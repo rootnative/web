@@ -4,6 +4,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Added
+
+- **`ImageBackground`**, as in React Native: a view with an image that fills it, under its children, with the `imageStyle` and `imageRef` props. See [ImageBackground](https://rootnative.github.io/web/imagebackground).
+
 ## [0.0.4] - 2026-11-23
 
 ### Fixed

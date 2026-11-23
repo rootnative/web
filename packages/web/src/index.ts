@@ -129,6 +129,8 @@ export type {
   ImageStatics,
   ImageURISource,
 } from './components/Image'
+export { ImageBackground } from './components/ImageBackground'
+export type { ImageBackgroundInstance, ImageBackgroundProps } from './components/ImageBackground'
 export { KeyboardAvoidingView } from './components/KeyboardAvoidingView'
 export type {
   KeyboardAvoidingViewInstance,

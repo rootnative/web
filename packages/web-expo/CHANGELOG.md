@@ -6,6 +6,10 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+### Changed
+
+- **`ImageBackground` is no longer a stub.** It loads the component of `@rootnative/web`. See [ImageBackground](https://rootnative.github.io/web/imagebackground).
+
 ## [0.0.4] - 2026-11-23
 
 ### Fixed

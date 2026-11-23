@@ -370,7 +370,7 @@ Expo's libraries import `UIManager`, `NativeModules`, `LogBox`, `DeviceEventEmit
 
 A name of `react-native` that `@rootnative/web` doesn't have yet loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `ImageBackground is not in @rootnative/web yet`.
 
-The largest ones today are `ImageBackground` and `SafeAreaView`. The file `expo-exports.json` of the package lists all of them under `missing`: `node_modules/@rootnative/web-expo/expo-exports.json`, or `node_modules/react-native-web/expo-exports.json` with the alias.
+The largest ones today are `SafeAreaView` and `InputAccessoryView`. The file `expo-exports.json` of the package lists all of them under `missing`: `node_modules/@rootnative/web-expo/expo-exports.json`, or `node_modules/react-native-web/expo-exports.json` with the alias.
 
 ---
 
@@ -384,7 +384,7 @@ The latest release is [`0.0.4`](https://www.npmjs.com/package/@rootnative/web) o
 
 | Group      | Exports                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`VirtualizedList`](https://rootnative.github.io/web/virtualizedlist), [`SectionList`](https://rootnative.github.io/web/sectionlist), [`VirtualizedSectionList`](https://rootnative.github.io/web/sectionlist#virtualizedsectionlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`Modal`](https://rootnative.github.io/web/modal), [`KeyboardAvoidingView`](https://rootnative.github.io/web/keyboardavoidingview), [`StatusBar`](https://rootnative.github.io/web/statusbar)                                                               |
+| Components | [`View`](https://rootnative.github.io/web/view), [`Text`](https://rootnative.github.io/web/text), [`Image`](https://rootnative.github.io/web/image), [`ImageBackground`](https://rootnative.github.io/web/imagebackground), [`Pressable`](https://rootnative.github.io/web/pressable), [`TouchableHighlight`](https://rootnative.github.io/web/touchablehighlight), [`TouchableNativeFeedback`](https://rootnative.github.io/web/touchablenativefeedback), [`TouchableOpacity`](https://rootnative.github.io/web/touchableopacity), [`TouchableWithoutFeedback`](https://rootnative.github.io/web/touchablewithoutfeedback), [`Button`](https://rootnative.github.io/web/button), [`ScrollView`](https://rootnative.github.io/web/scrollview), [`FlatList`](https://rootnative.github.io/web/flatlist), [`VirtualizedList`](https://rootnative.github.io/web/virtualizedlist), [`SectionList`](https://rootnative.github.io/web/sectionlist), [`VirtualizedSectionList`](https://rootnative.github.io/web/sectionlist#virtualizedsectionlist), [`RefreshControl`](https://rootnative.github.io/web/refreshcontrol), [`TextInput`](https://rootnative.github.io/web/textinput), [`Switch`](https://rootnative.github.io/web/switch), [`ActivityIndicator`](https://rootnative.github.io/web/activityindicator), [`Modal`](https://rootnative.github.io/web/modal), [`KeyboardAvoidingView`](https://rootnative.github.io/web/keyboardavoidingview), [`StatusBar`](https://rootnative.github.io/web/statusbar)                        |
 | APIs       | [`StyleSheet`](https://rootnative.github.io/web/stylesheet), [`Platform`](https://rootnative.github.io/web/platform), [`Dimensions`](https://rootnative.github.io/web/dimensions), [`useWindowDimensions`](https://rootnative.github.io/web/dimensions), [`Appearance`](https://rootnative.github.io/web/appearance), [`useColorScheme`](https://rootnative.github.io/web/appearance), [`AppState`](https://rootnative.github.io/web/appstate), [`Keyboard`](https://rootnative.github.io/web/keyboard), [`Linking`](https://rootnative.github.io/web/linking), [`Alert`](https://rootnative.github.io/web/alert), [`Share`](https://rootnative.github.io/web/share), [`Vibration`](https://rootnative.github.io/web/vibration), [`Clipboard`](https://rootnative.github.io/web/clipboard), [`AccessibilityInfo`](https://rootnative.github.io/web/accessibilityinfo), [`I18nManager`](https://rootnative.github.io/web/i18nmanager), [`BackHandler`](https://rootnative.github.io/web/backhandler), [`PixelRatio`](https://rootnative.github.io/web/pixelratio), [`processColor`](https://rootnative.github.io/web/processcolor), [`PanResponder`](https://rootnative.github.io/web/panresponder), [`Animated`](https://rootnative.github.io/web/animated), [`useAnimatedValue`](https://rootnative.github.io/web/animated), [`useAnimatedValueXY`](https://rootnative.github.io/web/animated), [`useAnimatedColor`](https://rootnative.github.io/web/animated), [`Easing`](https://rootnative.github.io/web/easing), [`LayoutAnimation`](https://rootnative.github.io/web/layoutanimation), [`usePressability`](https://rootnative.github.io/web/usepressability) |
 | Compat     | [`unstable_createElement`](https://rootnative.github.io/web/compat), [`findNodeHandle`](https://rootnative.github.io/web/compat), [`TurboModuleRegistry`](https://rootnative.github.io/web/compat), and the entries `@rootnative/web/assets-registry` and `@rootnative/web/style`. Libraries import them, your app doesn't. Also the react-native-web props [`hrefAttrs` and `dataSet`](https://rootnative.github.io/web/compat#props-from-react-native-web), which libraries send.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Web layer  | [`Head`](https://rootnative.github.io/web/seo), from `@rootnative/web/dom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -1025,6 +1025,44 @@ With `resizeMode="repeat"` or a `tintColor`, the box paints the image as a CSS b
 ## Ref
 
 The ref is the box element. It has the measure methods of [`View`](https://rootnative.github.io/web/view#ref). The type is `ImageInstance`.
+
+---
+
+# `ImageBackground`
+
+A view with an image that fills it, under its children. It works as in React Native: a [`View`](https://rootnative.github.io/web/view) with an [`Image`](https://rootnative.github.io/web/image) as its first child, absolutely positioned.
+
+```tsx
+import { ImageBackground, Text } from 'react-native'
+
+export function Hero() {
+  return (
+    <ImageBackground
+      source={{ uri: 'https://example.com/mountains.jpg' }}
+      resizeMode="cover"
+      style={{ height: 240, justifyContent: 'flex-end', padding: 16 }}
+      imageStyle={{ borderRadius: 12 }}
+    >
+      <Text style={{ color: 'white', fontSize: 24 }}>The Alps</Text>
+    </ImageBackground>
+  )
+}
+```
+
+## Props
+
+| Prop         | Behavior                                                                                                        |
+| ------------ | --------------------------------------------------------------------------------------------------------------- |
+| `style`      | The style of the view. Its `width` and `height` also size the image.                                            |
+| `imageStyle` | The style of the image. It comes after the size from `style`, so a `width` or a `height` here wins.             |
+| `imageRef`   | A ref to the image element.                                                                                     |
+| `ref`        | A ref to the view element.                                                                                      |
+| `children`   | Render after the image, so they paint on top of it.                                                             |
+| Each other   | Goes to the image, as on native: `source`, `resizeMode`, `alt`, `onLoad`, `onError`, and the rest. See `Image`. |
+
+`importantForAccessibility` goes to both the view and the image, as on native.
+
+A view sized with `flex: 1` and no `width` or `height` still shows the whole image, as on native: the image fills the view.
 
 ---
 

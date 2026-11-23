@@ -104,7 +104,7 @@ react-native-web's View, so the bundle fails. Give View and Text a role for
 semantic HTML instead.
 web-expo depends on the exact same version of @rootnative/web: install that
 version if the app imports @rootnative/web too.
-A name that @rootnative/web lacks (ImageBackground, SafeAreaView, and
+A name that @rootnative/web lacks (SafeAreaView, InputAccessoryView, and
 more) loads as a stub that throws
 "<Name> is not in @rootnative/web yet" on use;
 expo-exports.json of the package lists them under "missing"
@@ -132,7 +132,7 @@ Import /dom only in code that runs on the web.
 
 ## What ships
 
-Components: View, Text, Image, Pressable, TouchableHighlight,
+Components: View, Text, Image, ImageBackground, Pressable, TouchableHighlight,
 TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, Button,
 ScrollView, FlatList, VirtualizedList, SectionList, VirtualizedSectionList,
 RefreshControl, TextInput, Switch, ActivityIndicator, Modal,
@@ -281,6 +281,12 @@ Image
 - Statics: getSize (rejects on the server), getSizeWithHeaders, prefetch
   (resolves true), queryCache (resolves {}), resolveAssetSource (null for a
   number).
+
+ImageBackground
+- A View with an Image as its first child, absolutely positioned to fill it,
+  under the children, as on native. The width and height of style also size
+  the image; imageStyle comes after them. imageRef is the image, ref the view.
+  Each other prop goes to the image.
 
 Pressable
 - role="button" renders <button type="button">. Without a role, a focusable

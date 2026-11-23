@@ -40,7 +40,6 @@ type Mismatch<Name extends string, NativeType, OurType> = [NativeType] extends [
 
 type ExportGaps =
   // Not built yet.
-  | 'ImageBackground'
   | 'SafeAreaView'
   // Native platform, native modules, and development tools.
   | 'ActionSheetIOS'
@@ -412,6 +411,9 @@ export type TypeParity = [
   None<PropDiff<Native.RefreshControlProps, Web.RefreshControlProps, ViewGaps>>,
   None<PropDiff<Native.ButtonProps, Web.ButtonProps, never>>,
   None<PropDiff<Native.ModalProps, Web.ModalProps, ViewGaps>>,
+  None<
+    PropDiff<Native.ImageBackgroundProps, Web.ImageBackgroundProps, Exclude<ImageGaps, 'children'>>
+  >,
   None<PropDiff<Native.KeyboardAvoidingViewProps, Web.KeyboardAvoidingViewProps, ViewGaps>>,
   None<PropDiff<Native.ActivityIndicatorProps, Web.ActivityIndicatorProps, ViewGaps>>,
   None<
