@@ -8,7 +8,7 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ### Added
 
-- **`withRootNative`, a Metro helper in `metro.cjs`.** An Expo app installs this package under its own name, and wraps its Metro config with `withRootNative`. The `react-native-web` alias isn't needed anymore, and it still works. On the web, the helper sends each import of `react-native` and of react-native-web to this package. On iOS and Android, it changes nothing. See [Expo](https://rootnative.github.io/web/expo).
+- **`withRootNative`, a Metro helper in `metro.cjs`.** An Expo app installs this package under its own name, and wraps its Metro config with `withRootNative`. The `react-native-web` alias isn't needed anymore, and it still works. On the web, the helper sends each import of `react-native` and of react-native-web to this package. On iOS and Android, it changes nothing. Keep `react-dom` in the `dependencies` of the app: without it and without react-native-web, Expo stops with an error. See [Expo](https://rootnative.github.io/web/expo).
 
 ## [0.0.2] - 2026-11-22
 
