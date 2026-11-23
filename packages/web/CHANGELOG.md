@@ -4,6 +4,14 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-11-23
+
+No change in the runtime. This version ships with `@rootnative/web-expo` `0.0.3`, which adds the Metro helper `withRootNative` and fixes `expo-system-ui` on the web.
+
+### Changed
+
+- **The Expo part of `llms.txt`** describes `withRootNative`, and says that an app without react-native-web keeps `react-dom`. It also says that `expo-system-ui` works and `@expo/html-elements` doesn't. See [Expo](https://rootnative.github.io/web/expo).
+
 ## [0.0.2] - 2026-11-22
 
 ### Added
