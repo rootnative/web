@@ -4,6 +4,7 @@ import { renderToStaticMarkup, renderToString } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 
 import { AppRegistry } from '../src/AppRegistry.js'
+import { resetRules } from '../src/createSheet.js'
 
 const Padded = () => createElement(View, { style: { paddingTop: 7 } })
 const Empty = () => null
@@ -31,14 +32,24 @@ describe('getApplication', () => {
     )
   })
 
-  test('gives no style element, because React puts the styles of the render in <head>', () => {
+  test('gives the reset sheet as the style element, with the id that createSheet reads', () => {
     AppRegistry.registerComponent('Padded', () => Padded)
     const { getStyleElement } = AppRegistry.getApplication('Padded')
 
-    expect(getStyleElement({ key: 'react-native-style' })).toBeNull()
-    expect(renderToStaticMarkup(createElement('head', null, getStyleElement()))).toBe(
-      '<head></head>',
+    const html = renderToStaticMarkup(
+      createElement('head', null, getStyleElement({ key: 'react-native-style', nonce: 'abc' })),
     )
+    expect(html).toBe(
+      `<head><style nonce="abc" id="react-native-stylesheet">${resetRules.join('\n')}</style></head>`,
+    )
+    expect(html).toContain('body{margin:0;}')
+  })
+
+  test('the style element needs no props', () => {
+    AppRegistry.registerComponent('Padded', () => Padded)
+    const { getStyleElement } = AppRegistry.getApplication('Padded')
+
+    expect(renderToStaticMarkup(getStyleElement())).toContain('id="react-native-stylesheet"')
   })
 
   test('passes the initial props to the component', () => {

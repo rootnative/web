@@ -214,6 +214,15 @@ async function checkPage(url) {
     // Expo's default index.html relies on the reset of react-native-web, which web-expo gives.
     const bodyMargin = await page.evaluate(() => getComputedStyle(document.body).margin)
     expectEqual('The margin of body', bodyMargin, '0px')
+    // The reset is in the HTML from the server, so the browser adopts it. An insert in the
+    // browser restyles the whole document, and `body` has its margin until the script runs.
+    const resetSheets = await page.evaluate(async () => {
+      const serverHtml = await (await fetch(location.href)).text()
+      const inServerHtml = serverHtml.split('id="react-native-stylesheet"').length - 1
+      const inPage = document.querySelectorAll('style#react-native-stylesheet').length
+      return `${inServerHtml} in the HTML, ${inPage} in the page`
+    })
+    expectEqual('The reset style sheet', resetSheets, '1 in the HTML, 1 in the page')
 
     // An image import: Expo gives it a URL, and `Image` loads it.
     const imageWidth = await page
