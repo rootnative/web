@@ -4,7 +4,10 @@ import {
   ALIASES,
   createWorkletTransform,
   globalDefines,
+  ICON_FONT_WARNING,
+  ICON_SET_FILE,
   inlinePlatformOS,
+  patchIconSet,
   WORKLET_CODE,
   webExtensions,
   type WorkletTransform,
@@ -47,6 +50,17 @@ export type RootnativeOptions = {
  */
 export const rootnative = (options: RootnativeOptions = {}): Plugin => {
   let workletize: WorkletTransform | undefined
+  let warnedIconFonts = false
+  // The code of the icon set file with its font step. Warns once when the code has changed.
+  const iconSetCode = (code: string, warn: (message: string) => void): string => {
+    const patched = patchIconSet(code)
+    if (patched !== null) return patched
+    if (!warnedIconFonts) {
+      warnedIconFonts = true
+      warn(ICON_FONT_WARNING)
+    }
+    return code
+  }
 
   return {
     name: '@rootnative/web',
@@ -70,6 +84,24 @@ export const rootnative = (options: RootnativeOptions = {}): Plugin => {
           },
         ] as typeof rolldownOptions.plugins
       }
+
+      // The icon sets of `@react-native-vector-icons` are pre-bundled in development too.
+      config.optimizeDeps ??= {}
+      config.optimizeDeps.rolldownOptions ??= {}
+      const optimizer = config.optimizeDeps.rolldownOptions
+      optimizer.plugins = [
+        optimizer.plugins,
+        {
+          name: '@rootnative/web:icon-fonts',
+          transform: {
+            filter: { id: ICON_SET_FILE },
+            handler(code: string) {
+              const patched = iconSetCode(code, (message) => this.warn(message))
+              return patched === code ? null : { code: patched, map: null }
+            },
+          },
+        },
+      ] as typeof optimizer.plugins
 
       config.resolve ??= {}
       // Last, so an alias in the app's config wins. The first matching alias resolves an import.
@@ -111,6 +143,13 @@ export const rootnative = (options: RootnativeOptions = {}): Plugin => {
         code: options.worklets === true ? [PLATFORM_CODE, WORKLET_CODE] : PLATFORM_CODE,
       },
       async handler(code, id) {
+        // A build doesn't pre-bundle, so the icon set file of a library comes here.
+        if (ICON_SET_FILE.test(id)) {
+          const patched = iconSetCode(code, (message) => this.warn(message))
+          const program = this.parse(patched)
+          const inlined = inlinePlatformOS(patched, program) ?? patched
+          return inlined === code ? null : { code: inlined, map: null }
+        }
         // The Worklets step comes first, as the last plugin of the Babel preset does on native:
         // it reads the functions that the other transforms made.
         const worklets = workletize === undefined ? null : await workletize(code, id)

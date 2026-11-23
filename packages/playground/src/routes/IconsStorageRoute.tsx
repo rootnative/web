@@ -1,6 +1,5 @@
 import AsyncStorage, { createAsyncStorage } from '@react-native-async-storage/async-storage'
 import { MaterialDesignIcons } from '@react-native-vector-icons/material-design-icons'
-import fontUrl from '@react-native-vector-icons/material-design-icons/fonts/MaterialDesignIcons.ttf?url'
 import { Button } from '@rootnative/components/button'
 import { Checkbox } from '@rootnative/components/checkbox'
 import { IconButton } from '@rootnative/components/icon-button'
@@ -9,11 +8,8 @@ import { ThemeProvider, darkTheme, lightTheme, useThemeMode } from '@rootnative/
 import { useEffect, useState, type ReactElement } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
-// The icon set names its font family and loads the file only through Expo. On the web, the app
-// gives the browser the font.
-const iconFont = new FontFace('MaterialDesignIcons', `url(${fontUrl})`)
-document.fonts.add(iconFont)
-void iconFont.load()
+// The icon set loads its font only through Expo. The Vite plugin of `@rootnative/web` adds
+// the font to the page, so the route needs no code for it.
 
 const database = createAsyncStorage('playground')
 

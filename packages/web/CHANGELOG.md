@@ -6,6 +6,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ### Added
 
+- **The Vite plugin loads the fonts of the icon sets of `@react-native-vector-icons`.** The package loads a font only through Expo, so with no Expo each icon was an empty box until the app added a `FontFace`. Now the plugin adds the font of each icon set to the page. See [Icon fonts](https://rootnative.github.io/web/vite-plugin#icon-fonts).
 - **`SafeAreaView`**, deprecated, as in React Native, with its warning. A view with padding from the safe-area insets of the browser on each physical side. A padding in `style` wins. See [SafeAreaView](https://rootnative.github.io/web/safeareaview).
 - **`InputAccessoryView`**. It renders nothing and warns, as on Android. See [InputAccessoryView](https://rootnative.github.io/web/inputaccessoryview).
 - **`ImageBackground`**, as in React Native: a view with an image that fills it, under its children, with the `imageStyle` and `imageRef` props. See [ImageBackground](https://rootnative.github.io/web/imagebackground).

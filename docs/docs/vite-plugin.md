@@ -26,6 +26,7 @@ export default defineConfig({
 | Assets registry alias | Resolves `@react-native/assets-registry/registry` to `@rootnative/web/assets-registry`. Libraries such as `react-native-svg` import that module on the web.                                                                              |
 | Reanimated aliases    | Resolves two `react-native-web` internal files, which Reanimated 4 reads its web style helpers from, to `@rootnative/web/style`. See [Compat exports](/compat).                                                                          |
 | `expo-font` alias     | Resolves `expo-font` to a module that throws, as a missing module does, so a project with Expo installed still builds. See [Expo modules](#expo-modules).                                                                                |
+| Icon fonts            | Adds the font of each icon set of `@react-native-vector-icons` to the page, which the package loads only through Expo. See [Icon fonts](#icon-fonts).                                                                                    |
 | `.web` files          | Resolves `Button.web.tsx` before `Button.tsx` for an import of `./Button`, as Metro does for the web. Each extension gets a `.web` variant in front. Pre-bundled dependencies get the same list, so a library loads its `.web.js` files. |
 | `__DEV__`             | Defines the React Native global: `true` on the dev server, `false` in a production build. It follows `NODE_ENV`, as React's development mode does. Pre-bundled dependencies get it too.                                                  |
 | `global`              | Defines React Native's name for the global object as `globalThis`. Reanimated and Worklets read it. Pre-bundled dependencies get it too.                                                                                                 |
@@ -80,7 +81,15 @@ The icon sets of `@react-native-vector-icons` load `expo-font` in a `try` block,
 
 So the plugin resolves `expo-font` to a module that throws, as a missing module does. The icon set then goes on without it. The dev server and its pre-bundled dependencies get the same alias.
 
-An import of `expo-font` in your own code throws an error with a link to this section. To give the browser a font, see [Icon fonts](/libraries#icon-fonts).
+An import of `expo-font` in your own code throws an error with a link to this section. The fonts of the icon sets come from the plugin: see [Icon fonts](#icon-fonts).
+
+## Icon fonts
+
+An icon set of `@react-native-vector-icons` knows the URL of its font, but it loads the font only through Expo. With no Expo, each icon is an empty box.
+
+So the plugin adds one step to `createIconSet` in `@react-native-vector-icons/common`: in the browser, it adds a `FontFace` with the font of the set to `document.fonts`, under the family that the icons ask for. An icon set that you make with `createIconSet` and a `fontSource` gets its font too. A family that the page has already keeps its font. The dev server and its pre-bundled dependencies get the same step.
+
+If a new version of the package changes that code, the plugin changes nothing and warns once in the terminal. Then add the font in your app, as [Icon fonts](/libraries#icon-fonts) shows.
 
 ## Server rendering
 
@@ -125,7 +134,7 @@ export default defineConfig({
 
 `Platform.OS` then stays a read at run time. It still returns `'web'`.
 
-If your project has `expo-font` installed and uses an icon set, alias `expo-font` to a file of your own that throws an error. See [Expo modules](#expo-modules).
+If your project has `expo-font` installed and uses an icon set, alias `expo-font` to a file of your own that throws an error. See [Expo modules](#expo-modules). Each icon set also needs its font from your app: see [Icon fonts](/libraries#icon-fonts).
 
 A library that needs a [compat entry](/compat) also needs its alias. The plugin adds these three:
 

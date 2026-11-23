@@ -1,3 +1,4 @@
+export { ICON_FONT_WARNING, ICON_SET_FILE, patchIconSet } from './iconFonts'
 export { inlinePlatformOS } from './inlinePlatformOS'
 export {
   createWorkletTransform,

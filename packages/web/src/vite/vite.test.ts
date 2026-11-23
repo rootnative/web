@@ -264,6 +264,57 @@ describe('rootnative({ worklets: true })', () => {
     expect(plugins).toContainEqual(expect.objectContaining({ name: '@rootnative/web:worklets' }))
 
     const off = await resolveConfig(baseConfig({ plugins: [rootnative()] }), 'serve')
-    expect(off.optimizeDeps.rolldownOptions?.plugins).toBeUndefined()
+    const offPlugins = [off.optimizeDeps.rolldownOptions?.plugins].flat(3)
+    expect(offPlugins).not.toContainEqual(
+      expect.objectContaining({ name: '@rootnative/web:worklets' }),
+    )
+  })
+})
+
+describe('rootnative() icon fonts', () => {
+  type OptimizerPlugin = {
+    name: string
+    transform: {
+      filter: { id: RegExp }
+      handler: (this: { warn: (message: string) => void }, code: string) => unknown
+    }
+  }
+
+  const optimizerPlugin = async (): Promise<OptimizerPlugin> => {
+    const config = await resolveConfig(baseConfig({ plugins: [rootnative()] }), 'serve')
+    const plugins = [config.optimizeDeps.rolldownOptions?.plugins].flat(3) as OptimizerPlugin[]
+    const plugin = plugins.find((entry) => entry?.name === '@rootnative/web:icon-fonts')
+    if (plugin === undefined) throw new Error('No icon font plugin in the optimizer.')
+    return plugin
+  }
+
+  const file = '/app/node_modules/@react-native-vector-icons/common/lib/module/create-icon-set.js'
+  const source = [
+    'export function createIconSet(glyphMap, options) {',
+    "  const fontReference = 'Icons';",
+    '  const fontSource = typeof options === "object" && options?.fontSource;',
+    '  return fontSource;',
+    '}',
+  ].join('\n')
+
+  test('gives the dependency optimizer a step for the file of createIconSet', async () => {
+    const plugin = await optimizerPlugin()
+    expect(plugin.transform.filter.id.test(file)).toBe(true)
+    expect(plugin.transform.filter.id.test('/app/node_modules/other/create-icon-set.js')).toBe(
+      false,
+    )
+    const warn = vi.fn()
+    const result = plugin.transform.handler.call({ warn }, source) as { code: string }
+    expect(result.code).toContain('new FontFace(fontReference')
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  test('warns once and changes nothing when the file has new code', async () => {
+    const plugin = await optimizerPlugin()
+    const warn = vi.fn()
+    expect(plugin.transform.handler.call({ warn }, 'export const a = 1')).toBeNull()
+    expect(plugin.transform.handler.call({ warn }, 'export const b = 2')).toBeNull()
+    expect(warn).toHaveBeenCalledOnce()
+    expect(String(warn.mock.calls[0]?.[0])).toContain('libraries#icon-fonts')
   })
 })

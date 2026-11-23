@@ -1,20 +1,20 @@
 ---
 id: libraries
 title: Libraries
-description: What a React Native library needs to run on @rootnative/web. The worklets option for Reanimated, the font of an icon set, and the TypeScript setting for library types.
+description: What a React Native library needs to run on @rootnative/web. The worklets option for Reanimated, the fonts of the icon sets, and the TypeScript setting for library types.
 ---
 
 # Libraries
 
 A React Native library runs here when it has a web build, or when it's plain React Native code. The [Vite plugin](/vite-plugin) resolves `react-native` inside the library too, and loads its `.web.js` files. Some libraries need one more step.
 
-| Library                                        | What it needs                                          |
-| ---------------------------------------------- | ------------------------------------------------------ |
-| `react-native-reanimated`, and libraries on it | The [`worklets` option](#reanimated) of the plugin.    |
-| `@react-native-vector-icons/*`                 | The [font of the icon set](#icon-fonts) from your app. |
-| `react-native-svg`                             | Nothing.                                               |
-| `react-native-safe-area-context`               | Nothing.                                               |
-| `@react-native-async-storage/async-storage`    | Nothing.                                               |
+| Library                                        | What it needs                                           |
+| ---------------------------------------------- | ------------------------------------------------------- |
+| `react-native-reanimated`, and libraries on it | The [`worklets` option](#reanimated) of the plugin.     |
+| `@react-native-vector-icons/*`                 | Nothing with the plugin. See [Icon fonts](#icon-fonts). |
+| `react-native-svg`                             | Nothing.                                                |
+| `react-native-safe-area-context`               | Nothing.                                                |
+| `@react-native-async-storage/async-storage`    | Nothing.                                                |
 
 A library with only native code, and no web build, doesn't run in a browser.
 
@@ -32,9 +32,9 @@ A library built on Reanimated needs the same option. See [`worklets`](/vite-plug
 
 ## Icon fonts
 
-An icon set of `@react-native-vector-icons` renders each icon as a character of its font. The package loads the font file only through Expo. In an app with no Expo, give the browser the font yourself, or each icon is an empty box. The Vite plugin keeps Expo's font module out of the build, also when it's installed. See [Expo modules](/vite-plugin#expo-modules).
+An icon set of `@react-native-vector-icons` renders each icon as a character of its font. The package loads the font file only through Expo. With the Vite plugin, you don't need Expo: the plugin adds the font of each icon set to the page when your app imports the set. See [Icon fonts](/vite-plugin#icon-fonts) on the plugin page.
 
-Add the font once, in the file that mounts your app:
+Without the plugin, give the browser the font yourself, or each icon is an empty box. Add it once, in the file that mounts your app:
 
 ```ts title="src/main.tsx"
 import fontUrl from '@react-native-vector-icons/material-design-icons/fonts/MaterialDesignIcons.ttf?url'
