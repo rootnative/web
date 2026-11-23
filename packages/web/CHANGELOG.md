@@ -4,6 +4,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-11-23
+
 ### Fixed
 
 - **A style value that moves no longer adds a CSS rule for each value.** Before, each new value of a style from React state got a rule that stayed for the life of the page: one drag of a slider thumb added 236 rules. Now, in the browser, a longhand property gets a class for its first 64 values, and a new value after that goes into the `style` attribute of the element. A value that has its class keeps it, a shorthand always gets a class, and a server render writes only classes, so hydration doesn't change. See [Styles](https://rootnative.github.io/web/styles).

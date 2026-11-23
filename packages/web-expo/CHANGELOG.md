@@ -6,6 +6,8 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-11-23
+
 ### Fixed
 
 - **The reset styles are in the HTML of a static export.** Before, the page from the server had no reset, so `body` kept the 8 px margin of the browser until the script ran. Then the browser inserted the reset and computed the styles of the whole document again. Now `AppRegistry.getApplication` gives Expo Router the reset as its style element, and the browser uses that element.
