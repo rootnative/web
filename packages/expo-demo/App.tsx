@@ -10,17 +10,25 @@ import {
   TextInput,
   View,
 } from 'react-native'
+import * as SystemUI from 'expo-system-ui'
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 
 import logo from './assets/logo.png'
 import { Gallery } from './Gallery'
 
-// The home tab of the demo. Expo's bundler sends each `react-native` import to the
-// `react-native-web` package, which is `@rootnative/web-expo` in this app.
+// The home tab of the demo. Expo's bundler rewrites each `react-native` import to a path of
+// react-native-web, and `withRootNative` sends that path to `@rootnative/web-expo`.
 export default function App(): ReactElement {
   const [count, setCount] = useState(0)
   const [name, setName] = useState('')
   const [moved, setMoved] = useState(false)
+  const [pageColor, setPageColor] = useState('No page color yet.')
+
+  // On the web, `getBackgroundColorAsync` loads react-native-web's `normalizeColor`.
+  const changePageColor = async (): Promise<void> => {
+    await SystemUI.setBackgroundColorAsync('#f8fafc')
+    setPageColor(String(await SystemUI.getBackgroundColorAsync()))
+  }
 
   const offset = useSharedValue(0)
   const slide = useAnimatedStyle(() => ({ transform: [{ translateX: offset.get() }] }))
@@ -50,6 +58,16 @@ export default function App(): ReactElement {
         style={styles.field}
       />
       <Text testID="greeting">{name === '' ? 'No name yet.' : `Hello, ${name}.`}</Text>
+      <View style={styles.row}>
+        <Pressable
+          testID="set-page-color"
+          onPress={() => void changePageColor()}
+          style={styles.button}
+        >
+          <Text style={styles.buttonLabel}>Set the page color</Text>
+        </Pressable>
+        <Text testID="page-color">{pageColor}</Text>
+      </View>
       <Pressable testID="move" onPress={move} style={styles.button}>
         <Text style={styles.buttonLabel}>{moved ? 'Move back' : 'Move'}</Text>
       </Pressable>

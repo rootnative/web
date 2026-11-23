@@ -235,6 +235,17 @@ async function checkPage(url) {
     await page.getByTestId('name').fill('Ada')
     expectEqual('The greeting after the text input', await text('greeting'), 'Hello, Ada.')
 
+    // expo-system-ui sets the color of `body`, and reads it back with react-native-web's
+    // `normalizeColor`, which web-expo gives as a CommonJS file.
+    const pageColor = 'rgba(248,250,252,1.00)'
+    await page.getByTestId('set-page-color').click()
+    await page
+      .getByTestId('page-color')
+      .filter({ hasText: pageColor })
+      .waitFor({ timeout: 5000 })
+      .catch(() => {})
+    expectEqual('The page color from expo-system-ui', await text('page-color'), pageColor)
+
     // Reanimated, and a library that is built on it, each move a box 160 px to the right.
     await page.getByTestId('move').click()
     for (const testID of ['reanimated', 'inertia']) {

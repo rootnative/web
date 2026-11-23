@@ -77,6 +77,9 @@ Expo's libraries import `UIManager`, `NativeModules`, `LogBox`, `DeviceEventEmit
 | Reanimated 4                 | Animates the components. Expo's Babel preset runs the Worklets plugin, so the app needs no setup.                                                |
 | Image imports                | `require('./logo.png')` loads the image. On the web, Expo gives the import a `uri`, a `width`, and a `height`, and [`Image`](/image) reads them. |
 | `react-native-svg`           | Renders. The package has the assets registry that it loads on the web.                                                                           |
+| `expo-system-ui`             | Sets and reads the background color of the page.                                                                                                 |
+
+`@expo/html-elements` doesn't work with the package. It imports internal files of react-native-web's `View`, which the package doesn't have, so the bundle fails. Give `View` and `Text` a `role` instead: see [Semantic HTML](/semantic-html).
 
 ## Names that aren't there yet
 

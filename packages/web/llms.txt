@@ -97,7 +97,11 @@ react-native-web does.
 Works: the dev server, expo export --platform web with web.output 'single'
 or 'static' (each route renders on the server, then hydrates), Expo Router
 (tabs, a stack, links, back, a URL that opens a screen), Reanimated 4 (the
-preset adds the Worklets plugin), image imports, react-native-svg.
+preset adds the Worklets plugin), image imports, react-native-svg, and
+expo-system-ui (sets and reads the background color of the page).
+Doesn't work: @expo/html-elements. It imports internal files of
+react-native-web's View, so the bundle fails. Give View and Text a role for
+semantic HTML instead.
 web-expo depends on the exact same version of @rootnative/web: install that
 version if the app imports @rootnative/web too.
 A name that @rootnative/web lacks (ImageBackground, SafeAreaView, and

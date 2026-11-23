@@ -1,7 +1,7 @@
 // Writes `dist/`, with the file layout of react-native-web. Expo's Metro transform rewrites
 // `import { View } from 'react-native'` to `react-native-web/dist/exports/View` on the web, and
-// each other import to `react-native-web/dist/index`. An app installs this package under the
-// name `react-native-web`, so those paths load `@rootnative/web`.
+// each other import to `react-native-web/dist/index`. `withRootNative` in the Metro config of the
+// app, or an install under the name `react-native-web`, sends those paths to this package.
 
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -91,8 +91,18 @@ const styleFile = `export * from '@rootnative/web/style'\nexport { default } fro
 // Expo's `AppRegistry` for the web reads `createSheet` from this file of react-native-web.
 const SHEET_FILE = 'exports/StyleSheet/dom/index.js'
 
+// `expo-system-ui` calls the result of `require()` of this file as a function, so the file must
+// set `module.exports`, as the CommonJS build of react-native-web does. An ES default export
+// gives `require()` an object.
+export const NORMALIZE_COLOR_FILE = 'cjs/modules/normalizeColor/index.js'
+
 // The files of `src/` that go into `dist/` as they are.
-export const SOURCE_FILES = [...Object.values(SUPPLIED), 'createSheet.js', 'missing.js']
+export const SOURCE_FILES = [
+  ...Object.values(SUPPLIED),
+  'createSheet.js',
+  'missing.js',
+  'normalizeColor.js',
+]
 
 // The path of each generated file, from `dist/`, and its text.
 export const facadeFiles = ({ names, missing } = readExports(), modules = runtimeModules()) => {
@@ -101,6 +111,10 @@ export const facadeFiles = ({ names, missing } = readExports(), modules = runtim
   for (const name of names) files.set(`exports/${name}/index.js`, exportFile(name, gaps, modules))
   for (const path of STYLE_FILES) files.set(path, styleFile)
   files.set(SHEET_FILE, `export { createSheet } from '../../../createSheet.js'\n`)
+  files.set(
+    NORMALIZE_COLOR_FILE,
+    `module.exports = require('../../../normalizeColor.js').normalizeColor\n`,
+  )
   const index = [
     `export * from '@rootnative/web'`,
     `export { unstable_createElement as createElement } from '@rootnative/web'`,

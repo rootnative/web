@@ -1,7 +1,18 @@
+import { posix } from 'node:path'
+import { runInNewContext } from 'node:vm'
+
 import { describe, expect, test } from 'vitest'
 
-import { facadeFiles, readExports, runtimeModules, SUPPLIED } from '../scripts/build.mjs'
+import {
+  facadeFiles,
+  NORMALIZE_COLOR_FILE,
+  readExports,
+  runtimeModules,
+  SOURCE_FILES,
+  SUPPLIED,
+} from '../scripts/build.mjs'
 import { missing as missingExport } from '../src/missing.js'
+import { normalizeColor } from '../src/normalizeColor.js'
 
 const { names, missing } = readExports()
 
@@ -27,8 +38,8 @@ describe('the list of names', () => {
 describe('the generated files', () => {
   const files = facadeFiles()
 
-  test('has one file for each name, the index, the two style files of Reanimated, and the sheet file', () => {
-    expect(files.size).toBe(names.length + 4)
+  test('has one file for each name, the index, the two style files of Reanimated, the sheet file, and normalizeColor', () => {
+    expect(files.size).toBe(names.length + 5)
     for (const path of [
       'cjs/exports/StyleSheet/compiler/createReactDOMStyle.js',
       'cjs/exports/StyleSheet/preprocess.js',
@@ -62,6 +73,23 @@ describe('the generated files', () => {
     expect(files.get('exports/StyleSheet/dom/index.js')).toBe(
       `export { createSheet } from '../../../createSheet.js'\n`,
     )
+  })
+
+  test('gives expo-system-ui normalizeColor as the CommonJS export, where react-native-web has it', () => {
+    const text = files.get(NORMALIZE_COLOR_FILE)
+    const module = { exports: {} }
+    const required = []
+    const require = (path) => {
+      required.push(path)
+      return { normalizeColor }
+    }
+    runInNewContext(text, { module, exports: module.exports, require })
+
+    expect(module.exports).toBe(normalizeColor)
+    expect(required).toHaveLength(1)
+    const target = posix.join('dist', posix.dirname(NORMALIZE_COLOR_FILE), required[0])
+    expect(target).toBe('dist/normalizeColor.js')
+    expect(SOURCE_FILES).toContain('normalizeColor.js')
   })
 
   test('gives a name that this package supplies its own file', () => {
