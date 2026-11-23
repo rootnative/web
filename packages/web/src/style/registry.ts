@@ -101,6 +101,8 @@ export class StyleRegistry {
 
   // The atomic class of one declaration. With `inline`, a longhand value past the cap of its
   // property gets no rule: the declaration goes into `inline`, for the `style` attribute.
+  classFor(property: string, value: string): string
+  classFor(property: string, value: string, inline: CSSDeclarations | undefined): string | undefined
   classFor(property: string, value: string, inline?: CSSDeclarations): string | undefined {
     const key = `${property}:${value}`
     const known = this.classNames.get(key)
