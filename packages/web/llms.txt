@@ -104,8 +104,8 @@ react-native-web's View, so the bundle fails. Give View and Text a role for
 semantic HTML instead.
 web-expo depends on the exact same version of @rootnative/web: install that
 version if the app imports @rootnative/web too.
-A name that @rootnative/web lacks (SafeAreaView, InputAccessoryView, and
-more) loads as a stub that throws
+A name that @rootnative/web lacks (Picker, CheckBox, InteractionManager,
+and more) loads as a stub that throws
 "<Name> is not in @rootnative/web yet" on use;
 expo-exports.json of the package lists them under "missing"
 (node_modules/@rootnative/web-expo/, or node_modules/react-native-web/ with
@@ -136,7 +136,7 @@ Components: View, Text, Image, ImageBackground, Pressable, TouchableHighlight,
 TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, Button,
 ScrollView, FlatList, VirtualizedList, SectionList, VirtualizedSectionList,
 RefreshControl, TextInput, Switch, ActivityIndicator, Modal,
-KeyboardAvoidingView, StatusBar.
+KeyboardAvoidingView, SafeAreaView (deprecated), InputAccessoryView, StatusBar.
 
 APIs: StyleSheet, Platform, Dimensions, useWindowDimensions, Appearance,
 useColorScheme, AppState, Keyboard, Linking, Alert, Share, Vibration, Clipboard,
@@ -287,6 +287,15 @@ ImageBackground
   under the children, as on native. The width and height of style also size
   the image; imageStyle comes after them. imageRef is the image, ref the view.
   Each other prop goes to the image.
+
+SafeAreaView
+- Deprecated, as in React Native: use react-native-safe-area-context. Warns
+  once in development. A View with padding env(safe-area-inset-*) on each
+  physical side, also in RTL. The insets are 0 without viewport-fit=cover in
+  the viewport meta tag. A padding in style wins.
+
+InputAccessoryView
+- Renders nothing and warns once in development, as on Android.
 
 Pressable
 - role="button" renders <button type="button">. Without a role, a focusable

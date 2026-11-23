@@ -38,6 +38,8 @@ const sidebars: SidebarsConfig = {
         'activityindicator',
         'modal',
         'keyboardavoidingview',
+        'inputaccessoryview',
+        'safeareaview',
         'statusbar',
       ],
     },

@@ -67,11 +67,9 @@
   ],
   "missing": [
     "CheckBox",
-    "InputAccessoryView",
     "InteractionManager",
     "Picker",
     "ProgressBar",
-    "SafeAreaView",
     "Touchable",
     "YellowBox",
     "render",

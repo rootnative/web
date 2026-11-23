@@ -6,6 +6,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ### Added
 
+- **`SafeAreaView`**, deprecated, as in React Native, with its warning. A view with padding from the safe-area insets of the browser on each physical side. A padding in `style` wins. See [SafeAreaView](https://rootnative.github.io/web/safeareaview).
+- **`InputAccessoryView`**. It renders nothing and warns, as on Android. See [InputAccessoryView](https://rootnative.github.io/web/inputaccessoryview).
 - **`ImageBackground`**, as in React Native: a view with an image that fills it, under its children, with the `imageStyle` and `imageRef` props. See [ImageBackground](https://rootnative.github.io/web/imagebackground).
 
 ## [0.0.4] - 2026-11-23

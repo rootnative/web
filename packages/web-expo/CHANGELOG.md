@@ -8,7 +8,7 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ### Changed
 
-- **`ImageBackground` is no longer a stub.** It loads the component of `@rootnative/web`. See [ImageBackground](https://rootnative.github.io/web/imagebackground).
+- **`ImageBackground`, `SafeAreaView`, and `InputAccessoryView` are no longer stubs.** They load the components of `@rootnative/web`. The names that stay stubs aren't React Native APIs.
 
 ## [0.0.4] - 2026-11-23
 

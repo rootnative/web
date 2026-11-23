@@ -81,8 +81,8 @@ Expo's libraries import `UIManager`, `NativeModules`, `LogBox`, `DeviceEventEmit
 
 `@expo/html-elements` doesn't work with the package. It imports internal files of react-native-web's `View`, which the package doesn't have, so the bundle fails. Give `View` and `Text` a `role` instead: see [Semantic HTML](/semantic-html).
 
-## Names that aren't there yet
+## Names that load as stubs
 
-A name of `react-native` that `@rootnative/web` doesn't have yet loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `ImageBackground is not in @rootnative/web yet`.
+A name that Expo's bundler asks for and `@rootnative/web` doesn't have loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `Picker is not in @rootnative/web yet`.
 
-The largest ones today are `SafeAreaView` and `InputAccessoryView`. The file `expo-exports.json` of the package lists all of them under `missing`: `node_modules/@rootnative/web-expo/expo-exports.json`, or `node_modules/react-native-web/expo-exports.json` with the alias.
+These names aren't in React Native 0.88: `CheckBox`, `Picker`, `ProgressBar`, and the others come from react-native-web, and React Native removed `InteractionManager`. The file `expo-exports.json` of the package lists all of them under `missing`: `node_modules/@rootnative/web-expo/expo-exports.json`, or `node_modules/react-native-web/expo-exports.json` with the alias.

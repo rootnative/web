@@ -131,6 +131,8 @@ export type {
 } from './components/Image'
 export { ImageBackground } from './components/ImageBackground'
 export type { ImageBackgroundInstance, ImageBackgroundProps } from './components/ImageBackground'
+export { InputAccessoryView } from './components/InputAccessoryView'
+export type { InputAccessoryViewProps } from './components/InputAccessoryView'
 export { KeyboardAvoidingView } from './components/KeyboardAvoidingView'
 export type {
   KeyboardAvoidingViewInstance,
@@ -147,6 +149,8 @@ export type {
 } from './components/Pressable'
 export { RefreshControl } from './components/RefreshControl'
 export type { RefreshControlProps } from './components/RefreshControl'
+export { SafeAreaView } from './components/SafeAreaView'
+export type { SafeAreaViewInstance } from './components/SafeAreaView'
 export { ScrollView } from './components/ScrollView'
 export type {
   NativeScrollEvent,
