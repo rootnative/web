@@ -317,7 +317,7 @@ On the web, `withRootNative` sends each import of `react-native` and of react-na
 npx expo start --clear
 ```
 
-Expo warns that react-native-web isn't installed. The warning doesn't stop the dev server or `expo export`.
+Keep `react-dom` in the `dependencies` of your `package.json`. Expo then warns that react-native-web isn't installed, but the warning doesn't stop the dev server or `expo export`. Without `react-dom` there, Expo stops with an error.
 
 Your code doesn't change, and TypeScript keeps the types of the `react-native` package.
 

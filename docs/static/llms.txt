@@ -75,9 +75,11 @@ config with withRootNative:
   const { withRootNative } = require('@rootnative/web-expo/metro.cjs')
   module.exports = withRootNative(getDefaultConfig(__dirname))
 On the web, withRootNative sends each react-native and react-native-web import
-to the package; iOS and Android don't change. Expo warns that react-native-web
-isn't installed; the warning stops nothing. With no Metro config, install the
-package under the name react-native-web instead:
+to the package; iOS and Android don't change. Keep react-dom in the
+dependencies of package.json: Expo then only warns that react-native-web isn't
+installed, and the warning stops nothing. Without react-dom, Expo stops with an
+error. With no Metro config, install the package under the name
+react-native-web instead:
   npm install react-native-web@npm:@rootnative/web-expo
 Restart the dev server with --clear. The app code, the Babel preset, and the
 react-native types stay. Expo's bundler rewrites a named react-native import

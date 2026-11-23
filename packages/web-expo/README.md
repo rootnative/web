@@ -23,7 +23,7 @@ const { withRootNative } = require('@rootnative/web-expo/metro.cjs')
 module.exports = withRootNative(getDefaultConfig(__dirname))
 ```
 
-Expo then warns that react-native-web isn't installed. The warning doesn't stop the dev server or `expo export`.
+Keep `react-dom` in the `dependencies` of your `package.json`. Expo then warns that react-native-web isn't installed, but the warning doesn't stop the dev server or `expo export`. Without `react-dom` there, Expo stops with an error.
 
 Or, with no Metro config, install this package under the name `react-native-web`:
 
