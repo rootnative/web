@@ -14,7 +14,13 @@ import { withHostMethods } from '../../render/hostMethods'
 import { resolveTag } from '../../render/resolveTag'
 import { withServerStyles } from '../../render/serverStyles'
 import { useElementLayout } from '../../render/useElementLayout'
-import { compileReset, compileStyle, flattenStyle, joinClassNames } from '../../style/compile'
+import {
+  compileReset,
+  compileStyle,
+  compileStyleProps,
+  flattenStyle,
+  joinClassNames,
+} from '../../style/compile'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import { hasDOM } from '../../utils/env'
 import { resolveAssetSource, resolveSource, type ImageRequest } from './source'
@@ -293,14 +299,16 @@ function ImageComponent(props: ImageProps): ReactElement {
     width: userBoxStyle['width'] ?? width ?? resolved.width,
     height: userBoxStyle['height'] ?? height ?? resolved.height,
   }
+  const compiledBox = compileStyleProps([sizeStyle, userBoxStyle], registry)
   const boxClassName = joinClassNames(
     compileReset('rn-image', boxStyle, registry),
-    compileStyle([sizeStyle, userBoxStyle], registry),
+    compiledBox.className,
   )
 
   const label = alt ?? rest.accessibilityLabel ?? rest['aria-label']
   const domProps = toDOMProps(rest)
   domProps['className'] = boxClassName
+  if (compiledBox.style !== undefined) domProps['style'] = compiledBox.style
   domProps['ref'] = element
   if (role !== undefined) domProps['role'] = role
   else if (painted && label !== undefined && label !== '') {

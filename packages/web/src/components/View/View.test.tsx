@@ -6,6 +6,7 @@ import { StyleSheet } from '../../apis/StyleSheet'
 import { domEventHandlers } from '../../render/domProps'
 import { ScrollView, type ScrollViewInstance } from '../ScrollView'
 import { cleanup, render } from '../../test/render'
+import { MAX_VALUES_OF_PROPERTY } from '../../style/registry'
 import { resetWarnings } from '../../utils/warn'
 import { View } from './index'
 import type { HostInstance } from './types'
@@ -515,5 +516,66 @@ describe('View', () => {
       await vi.waitFor(() => expect(onLayout).toHaveBeenCalledTimes(2))
       expect(onLayout.mock.calls[1]?.[0].nativeEvent.layout.width).toBe(70)
     })
+  })
+})
+
+// The registry of the page makes a rule for the first values of a property only. See
+// `MAX_VALUES_OF_PROPERTY`.
+const fillTheCap = (): void => {
+  for (let top = 0; top < MAX_VALUES_OF_PROPERTY; top += 1) {
+    render(<View style={{ top: 2000 + top }} />)
+  }
+}
+
+const ruleCount = (): number =>
+  Array.from(document.styleSheets).reduce((total, sheet) => total + sheet.cssRules.length, 0)
+
+describe('View with a style value past the cap of its property', () => {
+  test('writes the value into the style attribute, and the element has it', () => {
+    fillTheCap()
+    const { container } = render(<View style={{ position: 'absolute', top: 7777 }} />)
+    const element = first(container)
+
+    expect(element.style.top).toBe('7777px')
+    expect(getComputedStyle(element).top).toBe('7777px')
+    expect(getComputedStyle(element).position).toBe('absolute')
+  })
+
+  test('a value that has its rule keeps the class, with no style attribute', () => {
+    fillTheCap()
+    const { container } = render(<View style={{ top: 2000 }} />)
+
+    expect(first(container).getAttribute('style')).toBeNull()
+    expect(getComputedStyle(first(container)).top).toBe('2000px')
+  })
+
+  test('the inline longhand beats a shorthand class, and a later render takes it out', () => {
+    for (let margin = 0; margin < MAX_VALUES_OF_PROPERTY; margin += 1) {
+      render(<View style={{ marginTop: 3000 + margin }} />)
+    }
+    const { container, rerender } = render(<View style={{ margin: 4, marginTop: 9999 }} />)
+    const element = first(container)
+    expect(element.style.marginTop).toBe('9999px')
+    expect(getComputedStyle(element).marginTop).toBe('9999px')
+    expect(getComputedStyle(element).marginBottom).toBe('4px')
+
+    rerender(<View style={{ margin: 4, marginTop: 3000 }} />)
+    expect(element.style.marginTop).toBe('')
+    expect(getComputedStyle(element).marginTop).toBe('3000px')
+
+    rerender(<View style={{ margin: 4 }} />)
+    expect(getComputedStyle(element).marginTop).toBe('4px')
+  })
+
+  test('a value that moves adds no rule after the cap', () => {
+    const { container, rerender } = render(<View style={{ top: 0 }} />)
+    for (let top = 1; top <= MAX_VALUES_OF_PROPERTY + 5; top += 1) {
+      rerender(<View style={{ top: 5000 + top }} />)
+    }
+    const before = ruleCount()
+    for (let top = 1; top <= 50; top += 1) rerender(<View style={{ top: 6000 + top }} />)
+
+    expect(ruleCount()).toBe(before)
+    expect(getComputedStyle(first(container)).top).toBe('6050px')
   })
 })

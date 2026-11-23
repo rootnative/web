@@ -78,8 +78,13 @@ export class StyleRegistry {
   private readonly shorthandRules: string[] = []
   private readonly longhandRules: string[] = []
   private readonly sheets: StyleSheets
+  private readonly madeValues = new Map<string, number>()
+  private readonly maxValuesOfProperty: number
 
   // `adopted` are the sheets whose rules the page already has: by default, the three sheets.
+  // `maxValuesOfProperty` is the cap of `classFor`. A registry has none by default, and a server
+  // must have none: one registry serves each page of the process, so a count there has nothing
+  // to do with the rules that one page gets, and the browser can't make the same decision.
   constructor(
     sheets: StyleSheets = { reset: null, shorthand: null, longhand: null },
     adopted: ReadonlyArray<CSSStyleSheet | null> = [
@@ -87,36 +92,50 @@ export class StyleRegistry {
       sheets.shorthand,
       sheets.longhand,
     ],
+    maxValuesOfProperty: number = Infinity,
   ) {
     this.sheets = sheets
+    this.maxValuesOfProperty = maxValuesOfProperty
     for (const sheet of adopted) this.adopt(sheet)
   }
 
-  classFor(property: string, value: string): string {
+  // The atomic class of one declaration. With `inline`, a longhand value past the cap of its
+  // property gets no rule: the declaration goes into `inline`, for the `style` attribute.
+  classFor(property: string, value: string, inline?: CSSDeclarations): string | undefined {
     const key = `${property}:${value}`
     const known = this.classNames.get(key)
     if (known !== undefined) return known
 
     const className = `rn-${hash(key)}`
+    const shorthand = isShorthandProperty(property)
+    const adopted = this.adopted.has(className)
+    if (!adopted && !shorthand) {
+      const made = this.madeValues.get(property) ?? 0
+      if (inline !== undefined && made >= this.maxValuesOfProperty) {
+        inline[property] = value
+        return undefined
+      }
+      this.madeValues.set(property, made + 1)
+    }
     this.classNames.set(key, className)
 
-    const shorthand = isShorthandProperty(property)
     const rule = `.${className}{${toKebab(property)}:${value}}`
     const rules = shorthand ? this.shorthandRules : this.longhandRules
     rules.push(rule)
     this.classRules.set(className, { level: shorthand ? 1 : 2, css: rule })
 
-    if (!this.adopted.has(className)) {
+    if (!adopted) {
       const sheet = shorthand ? this.sheets.shorthand : this.sheets.longhand
       sheet?.insertRule(rule, sheet.cssRules.length)
     }
     return className
   }
 
-  classesFor(declarations: CSSDeclarations): string {
+  classesFor(declarations: CSSDeclarations, inline?: CSSDeclarations): string {
     const names: string[] = []
     for (const property in declarations) {
-      names.push(this.classFor(property, declarations[property] as string))
+      const name = this.classFor(property, declarations[property] as string, inline)
+      if (name !== undefined) names.push(name)
     }
     return names.join(' ')
   }
@@ -219,6 +238,13 @@ let serverRegistry: StyleRegistry | null = null
 // again, so that a server with many dynamic values doesn't grow without end.
 export const MAX_SERVER_CLASSES = 20_000
 
+// In the browser, the rules that the registry makes for one longhand property. A style that
+// React state moves through many values, such as the position of a slider thumb, would add a
+// rule for each value, and no rule ever goes. Past this number, a new value goes into the
+// `style` attribute. A rule from the server doesn't count, and a known value keeps its class.
+// A shorthand has no cap: an inline shorthand would beat a longhand class of the same element.
+export const MAX_VALUES_OF_PROPERTY = 64
+
 export const getStyleRegistry = (): StyleRegistry => {
   if (isServerRender()) {
     if (serverRegistry === null || serverRegistry.size > MAX_SERVER_CLASSES) {
@@ -264,5 +290,6 @@ const domRegistry = (): StyleRegistry => {
   return new StyleRegistry(
     { reset: reset ?? null, shorthand: shorthand ?? null, longhand: longhand ?? null },
     groups.flat().map((element) => element.sheet),
+    MAX_VALUES_OF_PROPERTY,
   )
 }

@@ -18,7 +18,7 @@ import { useElementLayout } from '../../render/useElementLayout'
 import { toCSSColor } from '../../style/color'
 import {
   compileResetRules,
-  compileStyle,
+  compileStyleProps,
   joinClassNames,
   pointerEventsStyle,
 } from '../../style/compile'
@@ -76,7 +76,7 @@ const singleLineStyle = Object.freeze({
   whiteSpace: 'nowrap',
 })
 
-// The style objects of Text are frozen and reused, so `compileStyle` caches their classes.
+// The style objects of Text are frozen and reused, so `compileStyleProps` caches their classes.
 const multiLineStyles = new Map<number, Readonly<Record<string, unknown>>>()
 const multiLineStyle = (lines: number): Readonly<Record<string, unknown>> => {
   let style = multiLineStyles.get(lines)
@@ -167,19 +167,20 @@ export function Text(props: TextProps): ReactElement {
         : multiLineStyle(numberOfLines)
   const pointerStyle = pointerEvents === undefined ? undefined : pointerEventsStyle[pointerEvents]
 
+  const compiled = compileStyleProps(
+    [
+      pressable && pointerCursorStyle,
+      style,
+      lineStyle,
+      ellipsizeMode === 'clip' && clipStyle,
+      selectable === false && notSelectableStyle,
+      pointerStyle,
+    ],
+    registry,
+  )
   let className = joinClassNames(
     compileResetRules('rn-text', resetRules, registry),
-    compileStyle(
-      [
-        pressable && pointerCursorStyle,
-        style,
-        lineStyle,
-        ellipsizeMode === 'clip' && clipStyle,
-        selectable === false && notSelectableStyle,
-        pointerStyle,
-      ],
-      registry,
-    ),
+    compiled.className,
   )
   if (selectionColor !== undefined) {
     const extra = selectionClass(registry, selectionColor)
@@ -203,6 +204,7 @@ export function Text(props: TextProps): ReactElement {
     if (onBlur !== undefined) domProps['onBlur'] = onBlur
   }
   domProps['className'] = className
+  if (compiled.style !== undefined) domProps['style'] = compiled.style
   domProps['ref'] = element
 
   const content = nested

@@ -528,6 +528,8 @@ const styles = StyleSheet.create({
 
 Prefer `StyleSheet.create` for static styles. Its objects are frozen, so their class names compile once. An inline style object compiles again on each render.
 
+A style value that moves, such as a position that you set from state on each frame, doesn't add a CSS rule for each value. In the browser, a property gets a class for its first 64 values. A new value after that goes into the `style` attribute of the element. The result on the screen is the same. For an animation, use [`Animated`](https://rootnative.github.io/web/animated), which writes the `style` attribute too.
+
 ## Defaults
 
 Every `View` starts with the React Native defaults: `display: flex`, `flexDirection: 'column'`, `alignItems: 'stretch'`, `flexShrink: 0`, `position: 'relative'`, and a border box.

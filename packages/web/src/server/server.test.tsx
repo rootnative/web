@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 
 import { Text } from '../components/Text'
 import { View } from '../components/View'
-import { PRECEDENCE_ORDER, resetStyleRegistry } from '../style/registry'
+import { MAX_VALUES_OF_PROPERTY, PRECEDENCE_ORDER, resetStyleRegistry } from '../style/registry'
 import { renderAsServer } from '../utils/env'
 
 // The tests make server HTML in the page with `renderAsServer`, as a server sends it, and
@@ -92,6 +92,36 @@ describe('server render', () => {
 
     await act(async () => root?.render(<Text suppressHydrationWarning>Later time</Text>))
     expect(container.querySelector('span')?.textContent).toBe('Later time')
+
+    act(() => root?.unmount())
+    container.remove()
+  })
+
+  // The server has no cap, and a rule from the server doesn't count in the browser. So both
+  // give each element its classes, however many values a property has.
+  test('a page with more values of a property than the cap hydrates with no inline style', async () => {
+    const widths = Array.from({ length: MAX_VALUES_OF_PROPERTY + 12 }, (_, index) => index + 1)
+    const page = (
+      <View testID="many">
+        {widths.map((width) => (
+          <View key={width} style={{ width }} />
+        ))}
+      </View>
+    )
+    const container = serverPage(page)
+    expect(container.innerHTML).not.toContain('style="')
+    const errors: unknown[] = []
+
+    let root: Root | undefined
+    await act(async () => {
+      root = hydrateRoot(container, page, { onRecoverableError: (error) => errors.push(error) })
+    })
+
+    expect(errors).toEqual([])
+    const boxes = Array.from(byTestId(container, 'many').children) as HTMLElement[]
+    expect(boxes).toHaveLength(widths.length)
+    expect(boxes.filter((box) => box.getAttribute('style') !== null)).toEqual([])
+    expect(getComputedStyle(boxes.at(-1) as HTMLElement).width).toBe(`${widths.at(-1)}px`)
 
     act(() => root?.unmount())
     container.remove()

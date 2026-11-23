@@ -211,6 +211,9 @@ them. In development, a warning names the aria-* prop to use.
 
 - StyleSheet.create freezes the objects, and a frozen style compiles to atomic
   CSS once. An inline style object compiles again on each render.
+- In the browser, a longhand property gets a class for its first 64 values. A
+  new value after that goes into the style attribute, so a value that moves
+  from state adds no rule for each step. A server render writes only classes.
 - View defaults: display flex, flexDirection column, alignItems stretch,
   flexShrink 0, position relative, border box. Text defaults: 14 px, black,
   system font, spaces and line breaks kept.

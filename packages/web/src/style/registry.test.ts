@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { compileReset, compileStyle, MAX_VALUE_NODES } from './compile'
+import { compileReset, compileStyle, compileStyleProps, MAX_VALUE_NODES } from './compile'
 import {
   getStyleRegistry,
   LONGHAND_PRECEDENCE,
+  MAX_VALUES_OF_PROPERTY,
   PRECEDENCE_ORDER,
   RESET_PRECEDENCE,
   resetStyleRegistry,
@@ -206,6 +207,129 @@ describe('StyleRegistry', () => {
     expect(client.staticClass('rn-sel', selectionRules)).toBe('rn-sel')
     expect(groupRules(RESET_PRECEDENCE)).toHaveLength(2)
     expect(groupRules(LONGHAND_PRECEDENCE)).toHaveLength(1)
+  })
+})
+
+const capped = (max: number): StyleRegistry => new StyleRegistry(undefined, undefined, max)
+
+describe('the cap of the values of one property', () => {
+  beforeEach(resetStyleRegistry)
+  afterEach(resetStyleRegistry)
+
+  test('past the cap, a new longhand value gets no rule and goes into the inline style', () => {
+    const registry = capped(3)
+    const inline = {}
+    for (const width of ['1px', '2px', '3px']) {
+      expect(registry.classFor('width', width, inline)).toMatch(/^rn-/)
+    }
+    expect(inline).toEqual({})
+    const rules = registry.ruleCount
+
+    expect(registry.classFor('width', '4px', inline)).toBeUndefined()
+    expect(inline).toEqual({ width: '4px' })
+    expect(registry.ruleCount).toBe(rules)
+    // Each property has its own count.
+    expect(registry.classFor('height', '4px', inline)).toMatch(/^rn-/)
+  })
+
+  test('a value that has its class keeps it past the cap', () => {
+    const registry = capped(2)
+    const first = registry.classFor('width', '1px', {})
+    registry.classFor('width', '2px', {})
+    registry.classFor('width', '3px', {})
+
+    const inline = {}
+    expect(registry.classFor('width', '1px', inline)).toBe(first)
+    expect(inline).toEqual({})
+  })
+
+  test('a shorthand has no cap', () => {
+    const registry = capped(1)
+    const inline = {}
+    expect(registry.classFor('margin', '1px', inline)).toMatch(/^rn-/)
+    expect(registry.classFor('margin', '2px', inline)).toMatch(/^rn-/)
+    expect(inline).toEqual({})
+  })
+
+  test('with no inline style to write to, each value gets its rule', () => {
+    const registry = capped(1)
+    expect(registry.classFor('width', '1px')).toMatch(/^rn-/)
+    expect(registry.classFor('width', '2px')).toMatch(/^rn-/)
+    expect(registry.classesFor({ width: '3px' })).toMatch(/^rn-/)
+  })
+
+  test('classesFor gives the classes, and collects the declarations past the cap', () => {
+    const registry = capped(1)
+    registry.classFor('width', '1px', {})
+    const inline = {}
+    const classes = registry.classesFor({ width: '2px', height: '5px', margin: '0' }, inline)
+    expect(classes.split(' ')).toHaveLength(2)
+    expect(inline).toEqual({ width: '2px' })
+  })
+
+  test('a registry has no cap by default, as a server needs', () => {
+    const registry = new StyleRegistry()
+    const inline = {}
+    for (let width = 0; width < MAX_VALUES_OF_PROPERTY + 10; width += 1) {
+      registry.classFor('width', `${width}px`, inline)
+    }
+    expect(inline).toEqual({})
+    expect(registry.ruleCount).toBe(MAX_VALUES_OF_PROPERTY + 10)
+  })
+
+  test('a rule from the server does not count, and its value keeps the class', () => {
+    const server = new StyleRegistry()
+    const widths = Array.from({ length: MAX_VALUES_OF_PROPERTY + 6 }, (_, index) => `${index}px`)
+    const classes = widths.map((width) => server.classFor('width', width))
+    serverGroup(LONGHAND_PRECEDENCE, server.cssText().longhand)
+
+    const client = getStyleRegistry()
+    const inline = {}
+    // In another order than the server: the decision doesn't depend on the order.
+    for (let index = widths.length - 1; index >= 0; index -= 1) {
+      expect(client.classFor('width', widths[index] as string, inline)).toBe(classes[index])
+    }
+    expect(inline).toEqual({})
+    expect(groupRules(LONGHAND_PRECEDENCE)).toHaveLength(widths.length)
+
+    // The browser can still make its own rules, up to the cap.
+    for (let index = 0; index < MAX_VALUES_OF_PROPERTY; index += 1) {
+      expect(client.classFor('width', `${1000 + index}px`, inline)).toMatch(/^rn-/)
+    }
+    expect(client.classFor('width', '5000px', inline)).toBeUndefined()
+    expect(inline).toEqual({ width: '5000px' })
+  })
+
+  test('the registry of the page stops at the cap, so a moving value adds no rule', () => {
+    const registry = getStyleRegistry()
+    const steps = MAX_VALUES_OF_PROPERTY + 40
+    let inlineCount = 0
+    for (let top = 0; top < steps; top += 1) {
+      const compiled = compileStyleProps({ top, opacity: 1 }, registry)
+      if (compiled.style !== undefined) {
+        inlineCount += 1
+        expect(compiled.style).toEqual({ top: `${top}px` })
+        expect(compiled.className.split(' ')).toHaveLength(1)
+      }
+    }
+    expect(inlineCount).toBe(40)
+    // One rule for each of the first values of `top`, and one for `opacity`.
+    expect(groupRules(LONGHAND_PRECEDENCE)).toHaveLength(MAX_VALUES_OF_PROPERTY + 1)
+  })
+
+  test('compileStyleProps gives the same frozen object for the same style', () => {
+    const registry = capped(0)
+    const first = compileStyleProps({ width: 7 }, registry)
+    const second = compileStyleProps({ width: 7 }, registry)
+    expect(first).toBe(second)
+    expect(first.style).toEqual({ width: '7px' })
+    expect(Object.isFrozen(first.style)).toBe(true)
+    expect(compileStyleProps(undefined, registry)).toEqual({ className: '', style: undefined })
+  })
+
+  test('compileStyle still gives a class for each declaration', () => {
+    const registry = capped(0)
+    expect(compileStyle({ width: 7 }, registry)).toMatch(/^rn-/)
   })
 })
 

@@ -2,7 +2,7 @@ import { createElement, type ElementType, type Key, type ReactElement } from 're
 
 import { isNativeHandler, toDOMProps } from '../../render/domProps'
 import { withServerStyles } from '../../render/serverStyles'
-import { compileStyle } from '../../style/compile'
+import { compileStyleProps } from '../../style/compile'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import type { FlatStyle, StyleProp } from '../../style/types'
 
@@ -37,10 +37,11 @@ function Host({ type, props }: HostProps): ReactElement {
   }
   Object.assign(domProps, toDOMProps(rest as Parameters<typeof toDOMProps>[0]))
 
-  const compiled = compileStyle(style as StyleProp<FlatStyle>, registry)
+  const compiled = compileStyleProps(style as StyleProp<FlatStyle>, registry)
   const classes = typeof className === 'string' && className !== '' ? [className] : []
-  if (compiled !== '') classes.push(compiled)
+  if (compiled.className !== '') classes.push(compiled.className)
   if (classes.length > 0) domProps['className'] = classes.join(' ')
+  if (compiled.style !== undefined) domProps['style'] = compiled.style
 
   return withServerStyles(registry, createElement(type, domProps))
 }

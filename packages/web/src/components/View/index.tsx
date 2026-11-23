@@ -5,7 +5,12 @@ import { withHostMethods } from '../../render/hostMethods'
 import { resolveTag } from '../../render/resolveTag'
 import { withServerStyles } from '../../render/serverStyles'
 import { useElementLayout } from '../../render/useElementLayout'
-import { compileReset, compileStyle, joinClassNames, pointerEventsStyle } from '../../style/compile'
+import {
+  compileReset,
+  compileStyleProps,
+  joinClassNames,
+  pointerEventsStyle,
+} from '../../style/compile'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
 import type { ViewProps } from './types'
 
@@ -64,13 +69,11 @@ export function useViewElement(props: ViewProps, extraClassName?: string): React
 
   const { tag, role } = resolveTag(rest, 'div', children != null)
 
-  let className = joinClassNames(
-    compileReset('rn-view', resetStyle, registry),
-    compileStyle(
-      pointerEvents === undefined ? style : [style, pointerEventsStyle[pointerEvents]],
-      registry,
-    ),
+  const compiled = compileStyleProps(
+    pointerEvents === undefined ? style : [style, pointerEventsStyle[pointerEvents]],
+    registry,
   )
+  let className = joinClassNames(compileReset('rn-view', resetStyle, registry), compiled.className)
   if (extraClassName !== undefined) className = `${className} ${extraClassName}`
 
   const domProps = toDOMProps(rest)
@@ -79,6 +82,7 @@ export function useViewElement(props: ViewProps, extraClassName?: string): React
   // A button submits its form by default. A React Native button never does.
   if (tag === 'button') domProps['type'] = 'button'
   domProps['className'] = className
+  if (compiled.style !== undefined) domProps['style'] = compiled.style
   domProps['ref'] = element
 
   return withServerStyles(registry, createElement(tag, domProps, children))

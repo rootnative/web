@@ -1,7 +1,7 @@
 import { getLeftAndRightSwap } from './direction'
 import { getStyleRegistry, type StyleRegistry } from './registry'
 import { resolveStyle } from './resolveStyle'
-import type { FlatStyle, StyleProp } from './types'
+import type { CSSDeclarations, FlatStyle, StyleProp } from './types'
 
 export const flattenStyle = <T extends object>(style: StyleProp<T>): T | undefined => {
   if (style === null || style === undefined || style === false || style === '') return undefined
@@ -48,13 +48,28 @@ export const pointerEventsStyle: Readonly<
 // Any other object is one step for each of its declarations, by name and value: a component
 // that makes a new style object on each render still makes the same declarations. The classes
 // of a node are the classes of the steps on its path, flattened in that order.
+// The classes of a style, and the declarations that go into the `style` attribute because the
+// registry has no rule for them. See `MAX_VALUES_OF_PROPERTY`.
+export type CompiledStyle = {
+  readonly className: string
+  readonly style: Readonly<CSSDeclarations> | undefined
+}
+
+const NO_STYLE: CompiledStyle = Object.freeze({ className: '', style: undefined })
+
 type CacheNode = {
   classes: string | undefined
+  compiled: CompiledStyle | undefined
   frozen: WeakMap<FlatStyle, CacheNode> | undefined
   values: Map<string, Map<unknown, CacheNode>> | undefined
 }
 
-const newNode = (): CacheNode => ({ classes: undefined, frozen: undefined, values: undefined })
+const newNode = (): CacheNode => ({
+  classes: undefined,
+  compiled: undefined,
+  frozen: undefined,
+  values: undefined,
+})
 
 // One cache for each value of the left and right swap, because the classes of a style differ.
 let caches: readonly [WeakMap<StyleRegistry, CacheNode>, WeakMap<StyleRegistry, CacheNode>] = [
@@ -123,11 +138,25 @@ const compileFlat = (flat: FlatStyle | undefined, registry: StyleRegistry): stri
         boxPointerEventsClass(flat['pointerEvents'], registry),
       )
 
-export const compileStyle = (
-  style: StyleProp<object>,
-  registry: StyleRegistry = getStyleRegistry(),
-): string => {
-  if (style === null || style === undefined || style === false || style === '') return ''
+const compileFlatWithStyle = (
+  flat: FlatStyle | undefined,
+  registry: StyleRegistry,
+): CompiledStyle => {
+  if (flat === undefined) return NO_STYLE
+  const inline: CSSDeclarations = {}
+  const className = joinClassNames(
+    registry.classesFor(resolveStyle(flat), inline),
+    boxPointerEventsClass(flat['pointerEvents'], registry),
+  )
+  let hasInline = false
+  for (const _ in inline) {
+    hasInline = true
+    break
+  }
+  return Object.freeze({ className, style: hasInline ? Object.freeze(inline) : undefined })
+}
+
+const leafOf = (style: StyleProp<object>, registry: StyleRegistry): CacheNode | undefined => {
   if (valueNodes > MAX_VALUE_NODES) {
     caches = [new WeakMap(), new WeakMap()]
     valueNodes = 0
@@ -139,12 +168,40 @@ export const compileStyle = (
     root = newNode()
     cache.set(registry, root)
   }
-  const leaf = walk(style, root)
+  return walk(style, root)
+}
+
+const isNoStyle = (style: StyleProp<object>): boolean =>
+  style === null || style === undefined || style === false || style === ''
+
+// The classes of a style, with a rule for each declaration. The components use
+// `compileStyleProps`, which can put a declaration into the `style` attribute.
+export const compileStyle = (
+  style: StyleProp<object>,
+  registry: StyleRegistry = getStyleRegistry(),
+): string => {
+  if (isNoStyle(style)) return ''
+  const leaf = leafOf(style, registry)
   if (leaf === undefined) {
     return compileFlat(flattenStyle(style) as FlatStyle | undefined, registry)
   }
   leaf.classes ??= compileFlat(flattenStyle(style) as FlatStyle | undefined, registry)
   return leaf.classes
+}
+
+// The `className` and the `style` of the element of a component. The result of one style is one
+// frozen object, so React sees the same `style` on each render.
+export const compileStyleProps = (
+  style: StyleProp<object>,
+  registry: StyleRegistry = getStyleRegistry(),
+): CompiledStyle => {
+  if (isNoStyle(style)) return NO_STYLE
+  const leaf = leafOf(style, registry)
+  if (leaf === undefined) {
+    return compileFlatWithStyle(flattenStyle(style) as FlatStyle | undefined, registry)
+  }
+  leaf.compiled ??= compileFlatWithStyle(flattenStyle(style) as FlatStyle | undefined, registry)
+  return leaf.compiled
 }
 
 /**
