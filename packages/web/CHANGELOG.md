@@ -53,7 +53,8 @@ The first stable release. A React Native app runs in the browser as a real web a
 - **For libraries:** `unstable_createElement`, `findNodeHandle`, `TurboModuleRegistry`, and the entries `@rootnative/web/assets-registry` and `@rootnative/web/style`. See [Compat exports](https://rootnative.github.io/web/compat).
 - **The Vite plugin**, `rootnative()` from `@rootnative/web/vite`. It resolves `react-native` to this package, resolves `.web` files first, defines `__DEV__`, and puts `'web'` in place of `Platform.OS`. Its `worklets` option runs the Babel plugin of `react-native-worklets`, for Reanimated. It resolves `expo-font` to a module that throws, so a project with Expo installed still builds. See [Vite plugin](https://rootnative.github.io/web/vite-plugin).
 
-[unreleased]: https://github.com/rootnative/web/compare/web@0.0.4...HEAD
+[unreleased]: https://github.com/rootnative/web/compare/web@0.0.5...HEAD
+[0.0.5]: https://github.com/rootnative/web/releases/tag/web@0.0.5
 [0.0.4]: https://github.com/rootnative/web/releases/tag/web@0.0.4
 [0.0.3]: https://github.com/rootnative/web/releases/tag/web@0.0.3
 [0.0.2]: https://github.com/rootnative/web/releases/tag/web@0.0.2
