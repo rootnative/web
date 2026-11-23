@@ -1,6 +1,6 @@
 {
   "name": "@rootnative/web-expo",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Runs an Expo app on @rootnative/web, with the file layout of react-native-web",
   "license": "MIT",
   "homepage": "https://rootnative.github.io/web/",
