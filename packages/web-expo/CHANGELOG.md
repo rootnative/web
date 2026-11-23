@@ -6,6 +6,8 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-11-23
+
 ### Changed
 
 - **`ImageBackground`, `SafeAreaView`, and `InputAccessoryView` are no longer stubs.** They load the components of `@rootnative/web`. The names that stay stubs aren't React Native APIs.
