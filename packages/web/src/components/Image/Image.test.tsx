@@ -367,6 +367,43 @@ describe('Image', () => {
       expect(onLoad).toHaveBeenCalledTimes(1)
       expect(getComputedStyle(img(container)).visibility).toBe('visible')
     })
+
+    // No load event comes after the hydration, so a probe of the URL decides.
+    test('an image of the server HTML that loaded with a natural width of 0 reports onLoad', async () => {
+      const small = png(1, 1, '#0f0')
+      const large = png(2, 2, '#0f0')
+      const onLoad = vi.fn()
+      const onError = vi.fn()
+      const app = (
+        <Image
+          source={[
+            { uri: small, width: 400 },
+            { uri: large, width: 800 },
+          ]}
+          style={{ width: 300, height: 10 }}
+          onLoad={onLoad}
+          onError={onError}
+        />
+      )
+      const container = document.createElement('div')
+      container.innerHTML = renderAsServer(() => renderToString(app))
+      document.body.appendChild(container)
+      const image = container.querySelector('img') as HTMLImageElement
+      try {
+        await nextLoad()
+        expect(image.complete).toBe(true)
+        expect(image.naturalWidth).toBe(0)
+
+        const root = await act(async () => hydrateRoot(container, app))
+        await settle()
+        expect(onError).not.toHaveBeenCalled()
+        expect(onLoad).toHaveBeenCalledTimes(1)
+        act(() => root.unmount())
+      } finally {
+        container.remove()
+        resetStyleRegistry()
+      }
+    })
   })
 
   // A browser draws a broken image as an icon and the alt text. Native keeps the box empty.
@@ -432,6 +469,8 @@ describe('Image', () => {
         const root = await act(async () =>
           hydrateRoot(container, app, { onRecoverableError: (error) => errors.push(error) }),
         )
+        // The broken image completed before hydration, so a probe of its URL decides, a task later.
+        await settle()
         expect(errors).toEqual([])
         expectHidden(image, image.parentElement as HTMLElement, 'Logo')
         act(() => root.unmount())

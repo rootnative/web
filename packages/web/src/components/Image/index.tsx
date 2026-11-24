@@ -243,6 +243,7 @@ function ImageComponent(props: ImageProps): ReactElement {
   // A browser draws a failed image as an icon and the alt text. Native keeps
   // the box empty, so the <img> hides while its `src` is the one that failed.
   const [failedSrc, setFailedSrc] = useState<string | undefined>(undefined)
+  const probing = useRef<string | undefined>(undefined)
 
   useEffect(() => {
     if (resolved.src === undefined) return
@@ -293,16 +294,23 @@ function ImageComponent(props: ImageProps): ReactElement {
       return
     }
     // A natural width of 0 isn't proof of a broken image: a 1 px image that a
-    // `w` descriptor scales down has one, and so can an SVG with no size.
-    // `decode()` rejects only for a broken image.
-    target.decode().then(
-      () => {
-        if ((target.currentSrc || target.src) === uri) fireLoad(target)
-      },
-      () => {
-        if ((target.currentSrc || target.src) === uri) fireError(target)
-      },
-    )
+    // `w` descriptor scales down has one, and so can an SVG with no size. A new
+    // image of the same URL tells: it comes from the cache, and fires `error`
+    // only for a broken image. (Firefox rejects `decode()` of such an element.)
+    if (probing.current === uri) return
+    probing.current = uri
+    const probe = document.createElement('img')
+    probe.crossOrigin = target.crossOrigin
+    probe.referrerPolicy = target.referrerPolicy
+    const settle = (loaded: boolean) => (): void => {
+      if (probing.current === uri) probing.current = undefined
+      if ((target.currentSrc || target.src) !== uri) return
+      if (loaded) fireLoad(target)
+      else fireError(target)
+    }
+    probe.addEventListener('load', settle(true), { once: true })
+    probe.addEventListener('error', settle(false), { once: true })
+    probe.src = uri
   })
 
   const requestError = requested.error
