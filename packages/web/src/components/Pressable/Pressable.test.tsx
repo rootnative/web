@@ -195,6 +195,23 @@ describe('Pressable', () => {
       const rect = child.getBoundingClientRect()
       expect(document.elementFromPoint(rect.left + 5, rect.top + 5)).toBe(child)
     })
+
+    // The empty content of the box is a line of text. With the font of a default Text, the page
+    // loads no font for it alone.
+    test('has the font of a default Text', () => {
+      render(
+        <View>
+          <Pressable testID="p" role="button" hitSlop={20} style={{ width: 40, height: 40 }} />
+          <Text testID="text">Text</Text>
+        </View>,
+      )
+      const hitArea = getComputedStyle(byTestId('p'), '::before')
+      const text = getComputedStyle(byTestId('text'))
+      expect(byTestId('p').tagName).toBe('BUTTON')
+      expect(hitArea.fontFamily).toBe(text.fontFamily)
+      expect(hitArea.fontSize).toBe(text.fontSize)
+      expect(hitArea.fontWeight).toBe(text.fontWeight)
+    })
   })
 
   test('cancelable false sets touch-action none', () => {
