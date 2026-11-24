@@ -7,6 +7,7 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 ### Fixed
 
 - **An `onKeyDown` that calls `preventDefault()` on Enter or Space stops the key press of a `Pressable`, as in the DOM.** Before, the press came anyway. An app that presses on Space itself, because react-native-web presses only on Enter for most roles, then pressed two times: once in its handler on key down, and again on key up. A checkbox or a switch with such a handler changed two times and kept its value. Now the handler owns the key. The same applies to `usePressability`. See [Pressable](https://rootnative.github.io/web/pressable#how-a-press-works).
+- **A Jest test with jsdom can render `onLayout`, `onContentSizeChange`, and the lists.** jsdom has no `ResizeObserver`, and no `scrollTo` on an element. Before, these threw on mount there: a `View` or a `Text` with `onLayout`, a `KeyboardAvoidingView`, a `TextInput` with `onContentSizeChange`, a `ScrollView` with a `ref`, and each `FlatList`, `SectionList`, and `VirtualizedList`. Now, without `ResizeObserver`, `onLayout` doesn't fire, and `onContentSizeChange` reports one time on mount. Without `scrollTo`, a scroll does nothing.
 
 ## [0.0.7] - 2026-11-24
 

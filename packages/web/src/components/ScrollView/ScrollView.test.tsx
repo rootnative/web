@@ -1,5 +1,5 @@
 import { createRef } from 'react'
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, describe, expect, onTestFinished, test, vi } from 'vitest'
 
 import { installFakeMatchMedia } from '../../test/matchMedia'
 import { cleanup, render } from '../../test/render'
@@ -393,6 +393,26 @@ describe('ScrollView', () => {
       )
       ref.current?.scrollToEnd({ animated: false })
       expect(scroller(container).scrollLeft).toBe(900)
+    })
+
+    test('without scrollTo on the element, as in jsdom, mounts and scrolls nothing', () => {
+      const scrollTo = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTo')
+      Reflect.deleteProperty(Element.prototype, 'scrollTo')
+      onTestFinished(() => {
+        if (scrollTo) Object.defineProperty(Element.prototype, 'scrollTo', scrollTo)
+      })
+      expect(typeof document.body.scrollTo).toBe('undefined')
+
+      const ref = createRef<ScrollViewInstance>()
+      const { container } = render(
+        <ScrollView ref={ref} style={{ height: 100 }}>
+          {tall()}
+        </ScrollView>,
+      )
+      ref.current?.scrollTo({ y: 100, animated: false })
+      ref.current?.scrollTo(0, 200)
+      ref.current?.scrollToEnd()
+      expect(scroller(container).scrollTop).toBe(0)
     })
   })
 

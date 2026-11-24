@@ -351,6 +351,7 @@ function TextInputComponent(props: TextInputProps): ReactElement {
     const element = field.current
     if (element === null || !wantsContentSize) return
     reportContentSize(element)
+    if (typeof ResizeObserver === 'undefined') return
     const observer = new ResizeObserver(() => reportContentSize(element))
     observer.observe(element)
     return () => observer.disconnect()

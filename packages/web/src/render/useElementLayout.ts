@@ -26,7 +26,8 @@ export const useElementLayout = (
   const enabled = onLayout !== undefined
   useEffect(() => {
     const element = ref.current
-    if (element === null || !enabled) return
+    // jsdom, which a Jest test uses, has no ResizeObserver. There onLayout doesn't fire.
+    if (element === null || !enabled || typeof ResizeObserver === 'undefined') return
 
     const observer = new ResizeObserver(() => latest.current?.(measure(element)))
     observer.observe(element)

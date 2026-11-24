@@ -1,5 +1,5 @@
 import { act, createRef, useState } from 'react'
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, describe, expect, onTestFinished, test, vi } from 'vitest'
 
 import { cleanup, render } from '../../test/render'
 import { TextInput } from './index'
@@ -325,6 +325,16 @@ describe('TextInput', () => {
     type(field(container), 'one\ntwo\nthree\nfour\nfive')
     const last = onContentSizeChange.mock.calls.at(-1)?.[0].nativeEvent.contentSize
     expect(last.height).toBeGreaterThan(first.height)
+  })
+
+  test('without ResizeObserver, as in jsdom, onContentSizeChange reports once', () => {
+    vi.stubGlobal('ResizeObserver', undefined)
+    onTestFinished(() => {
+      vi.unstubAllGlobals()
+    })
+    const onContentSizeChange = vi.fn()
+    render(<TextInput multiline onContentSizeChange={onContentSizeChange} />)
+    expect(onContentSizeChange).toHaveBeenCalledTimes(1)
   })
 
   describe('ref', () => {

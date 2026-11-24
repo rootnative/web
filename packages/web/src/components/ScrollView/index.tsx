@@ -578,7 +578,9 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
 
   useImperativeHandle(ref, () => {
     const element = scroller.current as HTMLElement
-    const nativeScrollTo = element.scrollTo.bind(element)
+    // jsdom, which a Jest test uses, has no scrollTo on an element. There a scroll does nothing.
+    const nativeScrollTo: HTMLElement['scrollTo'] =
+      typeof element.scrollTo === 'function' ? element.scrollTo.bind(element) : () => {}
     const instance = element as ScrollViewInstance
     const methods: Pick<
       ScrollViewInstance,

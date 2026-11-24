@@ -1,5 +1,5 @@
 import { createRef } from 'react'
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, describe, expect, onTestFinished, test, vi } from 'vitest'
 
 import { I18nManager, resetI18nManager } from '../../apis/I18nManager'
 import { StyleSheet } from '../../apis/StyleSheet'
@@ -515,6 +515,17 @@ describe('View', () => {
       )
       await vi.waitFor(() => expect(onLayout).toHaveBeenCalledTimes(2))
       expect(onLayout.mock.calls[1]?.[0].nativeEvent.layout.width).toBe(70)
+    })
+
+    test('without ResizeObserver, as in jsdom, mounts and does not fire', async () => {
+      vi.stubGlobal('ResizeObserver', undefined)
+      onTestFinished(() => {
+        vi.unstubAllGlobals()
+      })
+      const onLayout = vi.fn()
+      render(<View onLayout={onLayout} style={{ width: 50, height: 20 }} />)
+      await new Promise((resolve) => requestAnimationFrame(resolve))
+      expect(onLayout).not.toHaveBeenCalled()
     })
   })
 })
