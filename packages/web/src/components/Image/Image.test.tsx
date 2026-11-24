@@ -2,6 +2,7 @@ import { act, createRef } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server.browser'
 import { afterEach, describe, expect, test, vi } from 'vitest'
+import { server } from 'vitest/browser'
 
 import { resetStyleRegistry } from '../../style/registry'
 import { cleanup, render } from '../../test/render'
@@ -339,8 +340,8 @@ describe('Image', () => {
       expect(onLoad).toHaveBeenCalledTimes(2)
     })
 
-    // A `w` descriptor of 400 at a layout width of 300 makes 1 px into 0.75, and
-    // `naturalWidth` truncates it to 0.
+    // A `w` descriptor of 400 at a layout width of 300 makes 1 px into 0.75. Chromium truncates
+    // `naturalWidth` to 0, so only there the image looks broken; Firefox rounds it to 1.
     test('a cached image with a natural width of 0 loads with no error', async () => {
       const small = png(1, 1, '#00f')
       const large = png(2, 2, '#00f')
@@ -362,7 +363,7 @@ describe('Image', () => {
       )
       await settle()
 
-      expect(img(container).naturalWidth).toBe(0)
+      if (server.browser === 'chromium') expect(img(container).naturalWidth).toBe(0)
       expect(onError).not.toHaveBeenCalled()
       expect(onLoad).toHaveBeenCalledTimes(1)
       expect(getComputedStyle(img(container)).visibility).toBe('visible')
@@ -392,7 +393,7 @@ describe('Image', () => {
       try {
         await nextLoad()
         expect(image.complete).toBe(true)
-        expect(image.naturalWidth).toBe(0)
+        if (server.browser === 'chromium') expect(image.naturalWidth).toBe(0)
 
         const root = await act(async () => hydrateRoot(container, app))
         await settle()

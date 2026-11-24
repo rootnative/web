@@ -296,7 +296,7 @@ function ImageComponent(props: ImageProps): ReactElement {
     // A natural width of 0 isn't proof of a broken image: a 1 px image that a
     // `w` descriptor scales down has one, and so can an SVG with no size. A new
     // image of the same URL tells: it comes from the cache, and fires `error`
-    // only for a broken image. (Firefox rejects `decode()` of such an element.)
+    // only for a broken image.
     if (probing.current === uri) return
     probing.current = uri
     const probe = document.createElement('img')
