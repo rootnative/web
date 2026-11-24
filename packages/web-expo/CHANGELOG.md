@@ -58,7 +58,8 @@ The first stable release. An Expo app, also with Expo Router, runs on `@rootnati
 - **`createSheet`**, with the four reset rules of react-native-web, such as `body { margin: 0 }`.
 - **A stub for each name that `@rootnative/web` doesn't have**, such as `Picker`. The import works, and a use throws an error with the name. `expo-exports.json` lists these names under `missing`.
 
-[unreleased]: https://github.com/rootnative/web/compare/web@0.0.6...HEAD
+[unreleased]: https://github.com/rootnative/web/compare/web@0.0.7...HEAD
+[0.0.7]: https://github.com/rootnative/web/releases/tag/web@0.0.7
 [0.0.6]: https://github.com/rootnative/web/releases/tag/web@0.0.6
 [0.0.5]: https://github.com/rootnative/web/releases/tag/web@0.0.5
 [0.0.4]: https://github.com/rootnative/web/releases/tag/web@0.0.4
