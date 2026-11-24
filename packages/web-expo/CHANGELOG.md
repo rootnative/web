@@ -6,6 +6,12 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.8] - 2026-11-24
+
+### Changed
+
+- **Depends on `@rootnative/web` `0.0.8`.** An `onKeyDown` that calls `preventDefault()` on Enter or Space stops the key press of a `Pressable`. So a Space handler that an app wrote for react-native-web, and that calls `preventDefault()`, presses one time. A Jest test with the `jest-expo/web` preset can render `onLayout`, `onContentSizeChange`, and the lists. To set up Jest, see [Tests](https://rootnative.github.io/web/expo#tests). The [changelog of `@rootnative/web`](https://github.com/rootnative/web/blob/main/packages/web/CHANGELOG.md) has the details.
+
 ## [0.0.7] - 2026-11-24
 
 ### Changed
