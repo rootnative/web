@@ -6,6 +6,12 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.7] - 2026-11-24
+
+### Changed
+
+- **Depends on `@rootnative/web` `0.0.7`.** In a `Modal` or an `Alert` on iOS Safari, `keyboardDidShow` fires once for each show. The [changelog of `@rootnative/web`](https://github.com/rootnative/web/blob/main/packages/web/CHANGELOG.md) has the details.
+
 ## [0.0.6] - 2026-11-24
 
 ### Changed
