@@ -41,7 +41,7 @@ Give an action `role="button"`. It renders a `<button type="button">`, so screen
 ## How a press works
 
 - **Mouse, pen, or touch.** The primary button only. `onPressIn` fires on the pointer down, and `onPress` fires when you release inside the press area. The press area is the element, plus `hitSlop`, plus `pressRetentionOffset`.
-- **Keyboard.** Enter or Space, while the `Pressable` has focus. `onPressIn` fires on key down, and `onPress` on key up. Space doesn't scroll the page. With `role="button"`, the browser handles the key, and only `onPress` fires.
+- **Keyboard.** Enter or Space, while the `Pressable` has focus. `onPressIn` fires on key down, and `onPress` on key up. Space doesn't scroll the page. With `role="button"`, the browser handles the key, and only `onPress` fires. If your `onKeyDown` calls `preventDefault()` on the key, the key doesn't press. So a Space handler that you wrote for react-native-web doesn't press two times.
 - **Assistive technology, or `element.click()`.** `onPress` fires with the click event.
 - **Long press.** `onLongPress` fires after `delayLongPress`, 500 ms by default. On a touch screen, a long press with `onLongPress` doesn't open the context menu.
 - **Quick taps.** `onPressOut` waits until the press is at least 130 ms long, so a quick tap still shows the pressed style, as on native.

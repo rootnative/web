@@ -322,6 +322,9 @@ export class Pressability {
         const element = event.currentTarget
         if (event.target !== element || this.config.disabled === true) return
         if (hasNativeActivation(element)) return
+        // As in the DOM, a handler that prevents the default owns the key. An app that presses on
+        // Space itself, for react-native-web, then presses once.
+        if (event.defaultPrevented) return
         // Space scrolls the page.
         if (event.key === ' ') event.preventDefault()
         if (this.pointerId !== null || this.key !== null) return

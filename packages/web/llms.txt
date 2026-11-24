@@ -308,7 +308,8 @@ Pressable
 - style and children can be functions of { pressed, hovered, focused }.
   hovered (web only) is a mouse or pen, never touch. focused (web only) is
   keyboard focus.
-- Mouse, pen, touch: primary button only. Keyboard: Enter or Space.
+- Mouse, pen, touch: primary button only. Keyboard: Enter or Space. An
+  onKeyDown that calls preventDefault() on the key stops the press.
 - onLongPress after delayLongPress, 500 ms by default. A press shows at least
   130 ms, as on native.
 - onPress gets the pointer up event, or the click event for a keyboard or

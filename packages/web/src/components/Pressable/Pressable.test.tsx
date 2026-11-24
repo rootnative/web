@@ -282,6 +282,36 @@ describe('Pressable', () => {
     expect(onPress).toHaveBeenCalledTimes(2)
   })
 
+  test('an app onKeyDown that prevents the default owns the key', async () => {
+    const onPress = vi.fn()
+    const onPressIn = vi.fn()
+    // An app that presses on Space itself, because react-native-web presses only on Enter.
+    const onKeyDown = (event: { key: string; preventDefault: () => void }): void => {
+      if (event.key !== ' ') return
+      event.preventDefault()
+      onPress()
+    }
+    render(
+      <Pressable
+        testID="p"
+        role="checkbox"
+        style={box}
+        onKeyDown={onKeyDown}
+        onPress={onPress}
+        onPressIn={onPressIn}
+      />,
+    )
+    const element = byTestId('p')
+    act(() => element.focus())
+    await user(() => userEvent.keyboard(' '))
+    expect(onPress).toHaveBeenCalledTimes(1)
+    expect(onPressIn).not.toHaveBeenCalled()
+
+    await user(() => userEvent.keyboard('{Enter}'))
+    expect(onPress).toHaveBeenCalledTimes(2)
+    expect(onPressIn).toHaveBeenCalledTimes(1)
+  })
+
   test('onFocus and onBlur get the focus events', () => {
     const onFocus = vi.fn()
     const onBlur = vi.fn()
