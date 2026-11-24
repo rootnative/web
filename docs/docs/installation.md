@@ -6,7 +6,7 @@ description: Install @rootnative/web, add its Vite plugin, give TypeScript the r
 
 # Installation
 
-You need React 19 and React DOM 19. This page uses Vite 8 and the package's Vite plugin. For another bundler, see [Without the plugin](/vite-plugin#without-the-plugin). For an Expo app, see [Expo](/expo).
+You need React 19 and React DOM 19. This page uses Vite 8 and the package's Vite plugin. For another bundler, see [Without the plugin](/vite-plugin#without-the-plugin). For an Expo app, see [Expo](/expo). If your app uses react-native-web now, also read [From react-native-web](/from-react-native-web).
 
 ## Install the package
 

@@ -112,6 +112,27 @@ and more) loads as a stub that throws
 expo-exports.json of the package lists them under "missing"
 (node_modules/@rootnative/web-expo/, or node_modules/react-native-web/ with
 the alias).
+Jest: the jest-expo/web preset maps react-native to react-native-web. Map
+react-native, react-native-web, and react-native-web/(.*) to
+@rootnative/web-expo (and /$1) in moduleNameMapper, and add @rootnative to
+the packages that transformIgnorePatterns lets Babel transform (ES modules).
+jsdom has no layout: sizes are 0, onLayout doesn't fire, onContentSizeChange
+fires once on mount, and a scroll does nothing.
+
+## From react-native-web
+
+App code stays. Change: flat accessibility props (accessibilityDisabled) to
+aria-* props; CheckBox, Picker, ProgressBar (not React Native APIs) to a
+library; @expo/html-elements to View and Text with a role; Jest (see Expo).
+Remove web-only workarounds, because these work here and not in
+react-native-web 0.21: Space presses a Pressable of any role (an app
+onKeyDown that presses on Space must call preventDefault(), or onPress fires
+two times); Alert.alert shows a dialog; Keyboard events fire and
+KeyboardAvoidingView moves; snapToInterval and snapToOffsets snap;
+onScrollBeginDrag, onScrollEndDrag, and the momentum events fire.
+Changes with no code change: isScreenReaderEnabled() resolves false
+(react-native-web: true); RefreshControl pulls with touch (keep a button for
+a mouse); a tap outside a focused TextInput keeps the keyboard, as on native.
 
 ## Entry points
 

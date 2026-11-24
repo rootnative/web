@@ -42,3 +42,28 @@ This package depends on the same version of `@rootnative/web`, and works only wi
 An Expo app, also with Expo Router, on the dev server and in a web export (`expo export --platform web`) with `web.output: 'single'` or `'static'`. Reanimated 4 animates the components, image imports load, and `react-native-svg` renders.
 
 The names of React Native that `@rootnative/web` doesn't have yet load as stubs, and a stub throws when your code uses it. `expo-exports.json` lists them under `missing`.
+
+Some web-only code that you wrote for react-native-web isn't necessary now. See [From react-native-web](https://rootnative.github.io/web/from-react-native-web).
+
+## Tests
+
+The `jest-expo/web` preset maps `react-native` to react-native-web. Map it to this package, so your web tests run on the runtime that your app ships. Also let Babel transform `@rootnative`, because its packages are ES modules:
+
+```js
+// jest.config.js
+module.exports = {
+  preset: 'jest-expo/web',
+  moduleNameMapper: {
+    '^react-native$': '@rootnative/web-expo',
+    '^react-native-web$': '@rootnative/web-expo',
+    '^react-native-web/(.*)$': '@rootnative/web-expo/$1',
+  },
+  transformIgnorePatterns: [
+    '/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|@rootnative))',
+    '/node_modules/react-native-reanimated/plugin/',
+    '/node_modules/@react-native/babel-preset/',
+  ],
+}
+```
+
+jsdom has no layout, so `onLayout` doesn't fire, and a scroll does nothing. See [Tests](https://rootnative.github.io/web/expo#tests).

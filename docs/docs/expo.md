@@ -34,7 +34,7 @@ npx expo start --clear
 
 Keep `react-dom` in the `dependencies` of your `package.json`. Expo then warns that react-native-web isn't installed, but the warning doesn't stop the dev server or `expo export`. Without `react-dom` there, Expo stops with an error.
 
-Your code doesn't change, and TypeScript keeps the types of the `react-native` package.
+Your code doesn't change, and TypeScript keeps the types of the `react-native` package. Some web-only code that you wrote for react-native-web isn't necessary now: see [From react-native-web](/from-react-native-web).
 
 ### Without a Metro config
 
@@ -86,3 +86,35 @@ Expo's libraries import `UIManager`, `NativeModules`, `LogBox`, `DeviceEventEmit
 A name that Expo's bundler asks for and `@rootnative/web` doesn't have loads as a stub. The import works, so a library that imports the name and doesn't use it still loads. A use throws an error that names it, such as `Picker is not in @rootnative/web yet`.
 
 These names aren't in React Native 0.88: `CheckBox`, `Picker`, `ProgressBar`, and the others come from react-native-web, and React Native removed `InteractionManager`. The file `expo-exports.json` of the package lists all of them under `missing`: `node_modules/@rootnative/web-expo/expo-exports.json`, or `node_modules/react-native-web/expo-exports.json` with the alias.
+
+## Tests
+
+The `jest-expo/web` preset maps `react-native` to react-native-web. Without react-native-web, Jest can't find `react-native`. If you keep react-native-web for Jest, your web tests run on react-native-web, and not on the runtime that your app ships.
+
+So map `react-native` and react-native-web to the package. Also let Babel transform `@rootnative`, because its packages are ES modules:
+
+```js title="jest.config.js"
+module.exports = {
+  preset: 'jest-expo/web',
+  moduleNameMapper: {
+    '^react-native$': '@rootnative/web-expo',
+    '^react-native-web$': '@rootnative/web-expo',
+    '^react-native-web/(.*)$': '@rootnative/web-expo/$1',
+  },
+  transformIgnorePatterns: [
+    '/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|@rootnative))',
+    '/node_modules/react-native-reanimated/plugin/',
+    '/node_modules/@react-native/babel-preset/',
+  ],
+}
+```
+
+The two `react-native-web` lines are for libraries that import react-native-web, such as `expo-system-ui`. `transformIgnorePatterns` is the list of `jest-expo` 58 with `@rootnative` added. If your config has its own list, add `@rootnative` to it.
+
+Jest runs your tests in jsdom, which has no layout:
+
+- Each size is 0.
+- `onLayout` doesn't fire, and `onContentSizeChange` fires one time, on mount.
+- A scroll does nothing, for example `scrollTo` on a ref.
+
+Test layout and scroll in a browser.
