@@ -59,6 +59,8 @@ type Responder = {
   config: PanResponderCallbacks
   gestureState: PanResponderGestureState
   pointers: Map<number, Pointer>
+  // The element of the handlers, from the first pointer down to the end of the gesture.
+  host: HTMLElement | null
   element: HTMLElement | null
   last: { x: number; y: number; time: number } | null
   blocksNative: boolean
@@ -69,8 +71,78 @@ let current: Responder | null = null
 // The DOM event that granted the current responder, so no other responder
 // asks again during the same dispatch.
 let grantEvent: Event | null = null
+// The responders that track a pointer.
+const tracking = new Set<Responder>()
 
 let nextStateID = 1
+
+type Axis = 'x' | 'y'
+
+// The start of the current one-finger touch, and what can scroll along each axis from its target.
+let touchOrigin: { x: number; y: number; scrolls: Partial<Record<Axis, boolean>> } | null = null
+
+const rememberTouchStart = (event: TouchEvent): void => {
+  const touch = event.touches.length === 1 ? event.touches.item(0) : null
+  touchOrigin = touch === null ? null : { x: touch.clientX, y: touch.clientY, scrolls: {} }
+}
+
+const scrollsAlong = (element: Element, axis: Axis): boolean => {
+  const style = getComputedStyle(element)
+  const overflow = axis === 'x' ? style.overflowX : style.overflowY
+  if (overflow !== 'auto' && overflow !== 'scroll') return false
+  return axis === 'x'
+    ? element.scrollWidth > element.clientWidth
+    : element.scrollHeight > element.clientHeight
+}
+
+const pageScrollsAlong = (axis: Axis): boolean => {
+  const root = document.documentElement
+  const overflowOf = (element: Element): string => {
+    const style = getComputedStyle(element)
+    return axis === 'x' ? style.overflowX : style.overflowY
+  }
+  // The viewport takes the overflow of <html>, or of <body> when <html> keeps the default.
+  let overflow = overflowOf(root)
+  if (overflow === 'visible') overflow = overflowOf(document.body)
+  if (overflow === 'hidden' || overflow === 'clip') return false
+  return axis === 'x' ? root.scrollWidth > root.clientWidth : root.scrollHeight > root.clientHeight
+}
+
+const canScrollAlong = (target: Element, axis: Axis): boolean => {
+  // A zoomed page pans along both axes.
+  if ((window.visualViewport?.scale ?? 1) > 1) return true
+  for (let node: Element | null = target; node !== null; node = node.parentElement) {
+    if (node === document.documentElement) break
+    if (scrollsAlong(node, axis)) return true
+  }
+  return pageScrollsAlong(axis)
+}
+
+const asksOnMove = (config: PanResponderCallbacks): boolean =>
+  config.onMoveShouldSetPanResponder !== undefined ||
+  config.onMoveShouldSetPanResponderCapture !== undefined
+
+// On native, only a scroll view competes with a responder, so a responder can take the touch
+// after any distance. A browser starts its own pan at the first `touchmove`, also where nothing
+// scrolls, and the responder then gets `pointercancel`. So while a responder that asks on a move
+// hasn't decided, the move is canceled, unless something can scroll along it: then the browser
+// gets the touch, as a scroll view does on native. Two fingers stay with the browser, for zoom.
+const holdsForUndecided = (event: TouchEvent): boolean => {
+  // `touches` is missing on a plain `Event` named `touchmove`.
+  const touch = event.touches?.length === 1 ? event.touches.item(0) : null
+  const { target } = event
+  if (touch === null || touchOrigin === null || !(target instanceof Element)) return false
+  let undecided = false
+  for (const responder of tracking) {
+    if (responder.host?.contains(target) === true && asksOnMove(responder.config)) undecided = true
+  }
+  if (!undecided) return false
+  const dx = Math.abs(touch.clientX - touchOrigin.x)
+  const dy = Math.abs(touch.clientY - touchOrigin.y)
+  const axis: Axis = dx >= dy ? 'x' : 'y'
+  touchOrigin.scrolls[axis] ??= canScrollAlong(target, axis)
+  return !touchOrigin.scrolls[axis]
+}
 
 // React Native stops the native scroll while a responder holds the gesture. A browser does
 // that only when the page cancels `touchmove`. Else it scrolls, and the responder gets
@@ -79,12 +151,15 @@ let nextStateID = 1
 let listening = false
 
 const blockNativeScroll = (event: TouchEvent): void => {
-  if (current !== null && current.blocksNative && event.cancelable) event.preventDefault()
+  if (!event.cancelable) return
+  const block = current === null ? holdsForUndecided(event) : current.blocksNative
+  if (block) event.preventDefault()
 }
 
 const listenForTouchMove = (): void => {
   if (listening || typeof document === 'undefined') return
   listening = true
+  document.addEventListener('touchstart', rememberTouchStart, { passive: true })
   document.addEventListener('touchmove', blockNativeScroll, { passive: false })
 }
 
@@ -233,6 +308,8 @@ const releaseCapture = (responder: Responder): void => {
 const finish = (responder: Responder): void => {
   releaseCapture(responder)
   if (current === responder) current = null
+  tracking.delete(responder)
+  responder.host = null
   responder.element = null
   responder.last = null
 }
@@ -269,7 +346,11 @@ const createHandlers = (responder: Responder): GestureResponderHandlers => {
     const pointer = pointerOf(event)
     const first = responder.pointers.size === 0
     if (capture) {
-      if (first) responder.gestureState = newGestureState()
+      if (first) {
+        responder.gestureState = newGestureState()
+        responder.host = event.currentTarget
+        tracking.add(responder)
+      }
       responder.pointers.set(pointer.id, pointer)
       rebase(responder, event.timeStamp)
     }
@@ -351,6 +432,7 @@ export const PanResponder: {
       config,
       gestureState: newGestureState(),
       pointers: new Map(),
+      host: null,
       element: null,
       last: null,
       blocksNative: true,
@@ -368,4 +450,6 @@ export const PanResponder: {
 export const resetPanResponder = (): void => {
   current = null
   grantEvent = null
+  tracking.clear()
+  touchOrigin = null
 }

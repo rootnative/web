@@ -30,9 +30,11 @@ export function Draggable() {
 
 While a responder holds the gesture, the page doesn't scroll, as on native. Return `false` from `onShouldBlockNativeResponder` to let the page scroll during the gesture.
 
-:::warning A responder that takes the gesture on a move
+A responder that takes the gesture on a move can say yes after any distance, as on native. Until it says yes, the browser doesn't start its own pan for one finger. The exception is a move along an axis that the page, or a `ScrollView` around the element, can scroll: then the browser gets the touch, as a scroll view does on native. So a horizontal swipe in a vertical list needs no extra style. Two fingers always go to the browser, so the page can zoom.
 
-A responder with only `onMoveShouldSetPanResponder` gets the gesture after the finger moves. The browser can start to scroll first, and then it ends the gesture. Put `touchAction: 'none'` in the style of the element, or `'pan-y'` for a horizontal drag inside a vertical scroll.
+:::warning A drag along a scroll
+
+To take a drag along the axis of a scroll, put `touchAction` in the style of the element, for example `'none'`. Else the browser scrolls, and the responder doesn't get the gesture.
 
 :::
 

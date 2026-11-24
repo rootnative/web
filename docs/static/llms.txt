@@ -694,12 +694,14 @@ StatusBar
   it can't parse.
 - PanResponder: runs on pointer events. panHandlers are six pointer handlers;
   spread them on a View. While a responder holds the gesture, the page
-  doesn't scroll (onShouldBlockNativeResponder false lets it scroll). A
-  responder that takes the gesture on a move needs touchAction: 'none' in
-  the style (or 'pan-y' for a horizontal drag in a vertical scroll).
+  doesn't scroll (onShouldBlockNativeResponder false lets it scroll). Until
+  a responder that takes the gesture on a move decides, the browser doesn't
+  pan for one finger, unless the page or a ScrollView around the element
+  scrolls along the move. To take a drag along a scroll, set touchAction in
+  the style, for example 'none'.
   The element captures the pointer at the grant. Negotiation works as on
   native. dx and dy are CSS pixels; vx and vy are pixels per millisecond.
-  onShouldBlockNativeResponder is ignored. getInteractionHandle() is null.
+  getInteractionHandle() is null.
 - Easing: every curve and helper of React Native, with the same math. ease is
   cubic-bezier(0.42, 0, 1, 1) (CSS ease-in, not CSS ease). bezier throws for
   an x out of [0, 1]. Type of a curve: EasingFunction. Pass a curve as the
