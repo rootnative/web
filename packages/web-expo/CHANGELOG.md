@@ -6,6 +6,12 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-11-24
+
+### Changed
+
+- **Depends on `@rootnative/web` `0.0.6`.** A failed image leaves its box empty, a tap outside a focused field keeps the keyboard open, `keyboardShouldPersistTaps` works, a `PanResponder` can take the gesture after any distance, and a touch scroll far from a `PanResponder` no longer waits for the main thread. The [changelog of `@rootnative/web`](https://github.com/rootnative/web/blob/main/packages/web/CHANGELOG.md) has the details.
+
 ## [0.0.5] - 2026-11-23
 
 ### Changed
