@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { stubNavigator } from '../../test/navigator'
 import { nextFrame, stubKeyboard, type KeyboardStub } from '../../test/keyboard'
+import { lockScroll, unlockScroll } from '../../utils/scrollLock'
 import { Keyboard, type KeyboardEvent } from './index'
 
 const root = document.documentElement
@@ -150,6 +151,43 @@ describe('Keyboard events', () => {
     stub.setOffsetTop(0)
     await nextFrame()
     expect(tops).toEqual([root.clientHeight - 300, root.clientHeight, root.clientHeight - 300])
+  })
+
+  // Safari moves the visual viewport down a page to show the field, and the scroll lock of a
+  // Modal scrolls it back. Only the state after that scroll counts.
+  test('fire keyboardDidShow once under a scroll lock that undoes the move', async () => {
+    const tops: number[] = []
+    Keyboard.addListener('keyboardDidShow', (event) => tops.push(event.endCoordinates.screenY))
+    field().focus()
+    lockScroll()
+    try {
+      stub.setKeyboard(300)
+      stub.setOffsetTop(300)
+      await nextFrame()
+      expect(tops).toEqual([])
+
+      stub.setOffsetTop(0)
+      await nextFrame()
+      expect(tops).toEqual([root.clientHeight - 300])
+    } finally {
+      unlockScroll()
+    }
+  })
+
+  test("report the moved state after a short wait when the scroll back doesn't come", async () => {
+    const tops: number[] = []
+    Keyboard.addListener('keyboardDidShow', (event) => tops.push(event.endCoordinates.screenY))
+    field().focus()
+    lockScroll()
+    try {
+      stub.setKeyboard(300)
+      stub.setOffsetTop(300)
+      await nextFrame()
+      expect(tops).toEqual([])
+      await expect.poll(() => tops, { timeout: 1000 }).toEqual([root.clientHeight])
+    } finally {
+      unlockScroll()
+    }
   })
 
   test('never fire the Will and ChangeFrame events', async () => {

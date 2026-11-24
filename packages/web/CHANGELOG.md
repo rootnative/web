@@ -4,6 +4,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Fixed
+
+- **In a `Modal` or an `Alert` on iOS Safari, `keyboardDidShow` fires once for each show.** Safari moves the page up to show the focused field, and the scroll lock of the modal moves it back. Before, `Keyboard` reported both states, so the event fired two times, the first one with a keyboard that covers nothing. Now the state after the scroll back is the only one. If that scroll doesn't come, the moved state is reported after 250 ms.
+
 ## [0.0.6] - 2026-11-24
 
 ### Fixed

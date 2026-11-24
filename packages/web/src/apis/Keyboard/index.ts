@@ -1,6 +1,7 @@
 import type { EventSubscription } from '../../events/types'
 import { isEditable } from '../../utils/editable'
 import { hasDOM } from '../../utils/env'
+import { scrollLockUndoesMove } from '../../utils/scrollLock'
 
 export type KeyboardEventName =
   | 'keyboardWillShow'
@@ -59,6 +60,7 @@ let observed: {
 } | null = null
 let current: KeyboardMetrics | null = null
 let frame: number | null = null
+let settle: ReturnType<typeof setTimeout> | null = null
 
 // The keyboard as the browser shows it now, or null.
 const read = (): KeyboardMetrics | null => {
@@ -117,15 +119,30 @@ const emit = (name: KeyboardEventName, event: KeyboardEvent): void => {
   for (const listener of set) listener(event)
 }
 
+// Under a Modal or an Alert, the scroll lock undoes the move of the visual viewport that Safari
+// makes to show a focused field (`utils/scrollLock.ts`). The moved state lasts until that
+// scroll, so it isn't reported: else each show fires `keyboardDidShow` two times. If the scroll
+// doesn't come, the state is reported after a short wait.
+const SETTLE_MS = 250
+
 // As on Android: a new height while the keyboard shows fires `keyboardDidShow` again.
-const update = (): void => {
+const report = (force: boolean): void => {
   frame = null
+  if (settle !== null) clearTimeout(settle)
+  settle = null
+  const viewport = keyboardSources.visualViewport()
+  if (!force && viewport !== null && scrollLockUndoesMove(viewport)) {
+    settle = setTimeout(() => report(true), SETTLE_MS)
+    return
+  }
   const next = read()
   if (sameMetrics(next, current)) return
   current = next
   if (next === null) emit('keyboardDidHide', toEvent(hiddenMetrics()))
   else emit('keyboardDidShow', toEvent(next))
 }
+
+const update = (): void => report(false)
 
 // The viewport can resize on each frame while the keyboard moves. One read per frame is enough.
 const schedule = (): void => {
@@ -155,6 +172,8 @@ const stopObserving = (): void => {
   observed = null
   if (frame !== null) cancelAnimationFrame(frame)
   frame = null
+  if (settle !== null) clearTimeout(settle)
+  settle = null
   current = null
 }
 

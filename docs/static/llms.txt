@@ -656,7 +656,9 @@ StatusBar
   viewport, which shrinks by it, and counts only while a text field has the
   focus; with navigator.virtualKeyboard.overlaysContent, from its rectangle.
   Events: duration 0, easing 'keyboard', endCoordinates in CSS px (screenY =
-  top of the keyboard from the window top). dismiss() blurs the focused text
+  top of the keyboard from the window top). Under a Modal or an Alert, the
+  scroll lock moves the page back, and keyboardDidShow fires once, after that.
+  dismiss() blurs the focused text
   field. isVisible(), metrics(). scheduleLayoutAnimation does nothing. No
   event on a desktop or with a hardware keyboard.
 - KeyboardAvoidingView: React Native 0.88 math. behavior 'padding'
