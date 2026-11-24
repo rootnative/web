@@ -1019,6 +1019,8 @@ The `src` and `srcSet` props work too, as on native.
 
 With `resizeMode="repeat"` or a `tintColor`, the box paints the image as a CSS background or mask. The `<img>` stays in the box, hidden, so that the load events still fire.
 
+An image that fails to load leaves the box empty, as on native. The `<img>` hides, so the browser doesn't draw its broken-image icon or the `alt` text, and the box carries `role="img"` and the label. A new `source` shows the image again. The same applies while a source with `headers` loads. In server HTML, a failed image shows the browser's icon until the page hydrates.
+
 ## Statics
 
 | Method                                   | On the web                                                                                            |

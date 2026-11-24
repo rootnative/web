@@ -1,7 +1,11 @@
 import { act, createRef } from 'react'
+import { hydrateRoot } from 'react-dom/client'
+import { renderToString } from 'react-dom/server.browser'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
+import { resetStyleRegistry } from '../../style/registry'
 import { cleanup, render } from '../../test/render'
+import { renderAsServer } from '../../utils/env'
 import { Image } from './index'
 import type { HostInstance } from '../View/types'
 
@@ -39,6 +43,15 @@ const nextLoad = (): Promise<void> =>
 
 const settle = async (): Promise<void> => {
   await act(nextLoad)
+}
+
+// The <img> of a failed image hides, and the box carries the label.
+const expectHidden = (image: HTMLImageElement, element: HTMLElement, label: string): void => {
+  expect(getComputedStyle(image).visibility).toBe('hidden')
+  expect(image.getAttribute('alt')).toBe('')
+  expect(image.getAttribute('aria-hidden')).toBe('true')
+  expect(element.getAttribute('role')).toBe('img')
+  expect(element.getAttribute('aria-label')).toBe(label)
 }
 
 describe('Image', () => {
@@ -324,6 +337,108 @@ describe('Image', () => {
 
       expect(onLoadStart).toHaveBeenCalledTimes(2)
       expect(onLoad).toHaveBeenCalledTimes(2)
+    })
+
+    // A `w` descriptor of 400 at a layout width of 300 makes 1 px into 0.75, and
+    // `naturalWidth` truncates it to 0.
+    test('a cached image with a natural width of 0 loads with no error', async () => {
+      const small = png(1, 1, '#00f')
+      const large = png(2, 2, '#00f')
+      await Image.prefetch(small)
+      await Image.prefetch(large)
+      const onLoad = vi.fn()
+      const onError = vi.fn()
+
+      const { container } = render(
+        <Image
+          source={[
+            { uri: small, width: 400 },
+            { uri: large, width: 800 },
+          ]}
+          style={{ width: 300, height: 10 }}
+          onLoad={onLoad}
+          onError={onError}
+        />,
+      )
+      await settle()
+
+      expect(img(container).naturalWidth).toBe(0)
+      expect(onError).not.toHaveBeenCalled()
+      expect(onLoad).toHaveBeenCalledTimes(1)
+      expect(getComputedStyle(img(container)).visibility).toBe('visible')
+    })
+  })
+
+  // A browser draws a broken image as an icon and the alt text. Native keeps the box empty.
+  describe('a failed image', () => {
+    test('hides the img, and the box carries the label', async () => {
+      const { container } = render(
+        <Image source={{ uri: BROKEN }} alt="Logo" style={{ width: 20, height: 20 }} />,
+      )
+      expect(img(container).getAttribute('alt')).toBe('Logo')
+      expect(box(container).getAttribute('role')).toBeNull()
+
+      await settle()
+      expectHidden(loader(container), box(container), 'Logo')
+    })
+
+    test('a new source shows the img again', async () => {
+      const { container, rerender } = render(<Image source={{ uri: BROKEN }} alt="Logo" />)
+      await settle()
+      rerender(<Image source={{ uri: png(2, 2) }} alt="Logo" />)
+      await settle()
+
+      const image = img(container)
+      expect(getComputedStyle(image).visibility).toBe('visible')
+      expect(image.getAttribute('alt')).toBe('Logo')
+      expect(box(container).getAttribute('role')).toBeNull()
+      expect(box(container).getAttribute('aria-label')).toBeNull()
+    })
+
+    // The host of a failed URL can come back, so a load ends the failure.
+    test('a source that failed gets a new try after another source loads', async () => {
+      const { container, rerender } = render(<Image source={{ uri: BROKEN }} />)
+      await settle()
+      rerender(<Image source={{ uri: png(2, 2) }} />)
+      await settle()
+
+      rerender(<Image source={{ uri: BROKEN }} />)
+      expect(getComputedStyle(img(container)).visibility).toBe('visible')
+      await settle()
+      expect(getComputedStyle(loader(container)).visibility).toBe('hidden')
+    })
+
+    test('a failed request hides the img', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 403 }))
+      const { container } = render(
+        <Image source={{ uri: 'https://example.test/x.png', headers: { a: 'b' } }} alt="Avatar" />,
+      )
+      await settle()
+      expectHidden(loader(container), box(container), 'Avatar')
+    })
+
+    test('a broken image in the server HTML hides when the page hydrates', async () => {
+      const app = <Image source={{ uri: BROKEN }} alt="Logo" style={{ width: 20, height: 20 }} />
+      const container = document.createElement('div')
+      container.innerHTML = renderAsServer(() => renderToString(app))
+      document.body.appendChild(container)
+      const image = container.querySelector('img') as HTMLImageElement
+      const errors: unknown[] = []
+      try {
+        // The browser reports the error before React attaches `onError`.
+        await nextLoad()
+        expect(image.complete).toBe(true)
+
+        const root = await act(async () =>
+          hydrateRoot(container, app, { onRecoverableError: (error) => errors.push(error) }),
+        )
+        expect(errors).toEqual([])
+        expectHidden(image, image.parentElement as HTMLElement, 'Logo')
+        act(() => root.unmount())
+      } finally {
+        container.remove()
+        resetStyleRegistry()
+      }
     })
   })
 

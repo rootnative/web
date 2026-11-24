@@ -280,6 +280,8 @@ Image
   warns once.
 - resizeMode: cover (default), contain, stretch, center, repeat.
 - tintColor, blurRadius, defaultSource work. onProgress never fires.
+- A failed image leaves the box empty, as on native: the <img> hides, and
+  the box carries role="img" and the label. A new source shows it again.
 - loading, fetchPriority, decoding: web only, passed to the <img>.
 - Statics: getSize (rejects on the server), getSizeWithHeaders, prefetch
   (resolves true), queryCache (resolves {}), resolveAssetSource (null for a

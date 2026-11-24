@@ -4,6 +4,11 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Fixed
+
+- **An `Image` that fails to load leaves the box empty, as on native.** Before, the browser drew its broken-image icon in the box, and the `alt` text over it. Now the `<img>` hides, and the box carries `role="img"` and the label, so the image keeps its accessible name. A new `source` shows the image again. The same applies while a source with `headers` loads. See [Image](https://rootnative.github.io/web/image).
+- **An `Image` that completes before React attaches `onLoad` and has a natural width of 0 fires `onLoad`, not `onError`.** This is a cached image, or one that loaded from the server HTML before hydration. Before, a natural width of 0 counted as broken, but a loaded image can have one: for example, a 1 px image that a `width` in a source list scales down. Now the browser decodes the image to check.
+
 ## [0.0.5] - 2026-11-23
 
 ### Added

@@ -240,6 +240,10 @@ function ImageComponent(props: ImageProps): ReactElement {
   const [loadedSrc, setLoadedSrc] = useState<string | undefined>(undefined)
   const firedFor = useRef<string | undefined>(undefined)
 
+  // A browser draws a failed image as an icon and the alt text. Native keeps
+  // the box empty, so the <img> hides while its `src` is the one that failed.
+  const [failedSrc, setFailedSrc] = useState<string | undefined>(undefined)
+
   useEffect(() => {
     if (resolved.src === undefined) return
     firedFor.current = undefined
@@ -251,6 +255,7 @@ function ImageComponent(props: ImageProps): ReactElement {
     if (firedFor.current === uri) return
     firedFor.current = uri
     setLoadedSrc(target.src)
+    setFailedSrc(undefined)
     const { width: naturalWidth, height: naturalHeight } = sizeOf(target)
     handlers.current.onLoad?.({
       nativeEvent: { source: { uri, width: naturalWidth, height: naturalHeight } },
@@ -262,6 +267,7 @@ function ImageComponent(props: ImageProps): ReactElement {
     const uri = target.currentSrc || target.src
     if (firedFor.current === uri) return
     firedFor.current = uri
+    setFailedSrc(target.getAttribute('src') ?? undefined)
     handlers.current.onError?.({ nativeEvent: { error: loadError(uri) } })
     handlers.current.onLoadEnd?.()
   }, [])
@@ -280,8 +286,23 @@ function ImageComponent(props: ImageProps): ReactElement {
   useEffect(() => {
     const target = img.current
     if (target === null || currentSrc === undefined || !target.complete) return
-    if (target.naturalWidth > 0) fireLoad(target)
-    else fireError(target)
+    const uri = target.currentSrc || target.src
+    if (firedFor.current === uri) return
+    if (target.naturalWidth > 0) {
+      fireLoad(target)
+      return
+    }
+    // A natural width of 0 isn't proof of a broken image: a 1 px image that a
+    // `w` descriptor scales down has one, and so can an SVG with no size.
+    // `decode()` rejects only for a broken image.
+    target.decode().then(
+      () => {
+        if ((target.currentSrc || target.src) === uri) fireLoad(target)
+      },
+      () => {
+        if ((target.currentSrc || target.src) === uri) fireError(target)
+      },
+    )
   })
 
   const requestError = requested.error
@@ -292,6 +313,9 @@ function ImageComponent(props: ImageProps): ReactElement {
     handlers.current.onError?.({ nativeEvent: { error: requestError } })
     handlers.current.onLoadEnd?.()
   }, [requestError, resolved.src])
+
+  // No `src`: no source, or a request that is in flight or failed.
+  const hidden = painted || currentSrc === undefined || failedSrc === currentSrc
 
   const { tag, role } = resolveTag(rest, 'div', true)
 
@@ -311,7 +335,7 @@ function ImageComponent(props: ImageProps): ReactElement {
   if (compiledBox.style !== undefined) domProps['style'] = compiledBox.style
   domProps['ref'] = element
   if (role !== undefined) domProps['role'] = role
-  else if (painted && label !== undefined && label !== '') {
+  else if (hidden && label !== undefined && label !== '') {
     domProps['role'] = 'img'
     domProps['aria-label'] = label
   }
@@ -357,8 +381,8 @@ function ImageComponent(props: ImageProps): ReactElement {
       src={currentSrc}
       srcSet={resolved.srcSet}
       sizes={resolved.sizes}
-      alt={painted ? '' : (label ?? '')}
-      aria-hidden={painted ? true : undefined}
+      alt={hidden ? '' : (label ?? '')}
+      aria-hidden={hidden ? true : undefined}
       draggable={false}
       crossOrigin={crossOrigin}
       referrerPolicy={referrerPolicy}
@@ -367,7 +391,7 @@ function ImageComponent(props: ImageProps): ReactElement {
       decoding={decoding}
       onLoad={handleLoad}
       onError={handleError}
-      className={compileStyle([fillStyle, imgStyle, painted && hiddenStyle], registry)}
+      className={compileStyle([fillStyle, imgStyle, hidden && hiddenStyle], registry)}
     />,
   ]
   if (showPlaceholder) {
