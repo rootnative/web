@@ -7,6 +7,7 @@ import {
   type ReactElement,
 } from 'react'
 
+import { usePanHost } from '../../events/panTouch'
 import { pointerCursorStyle, usePressability } from '../../events/press'
 import { mergeHandlers } from '../../events/press/mergeHandlers'
 import type { PressabilityConfig } from '../../events/press/types'
@@ -130,6 +131,7 @@ export function Text(props: TextProps): ReactElement {
   const element = useRef<HTMLElement | null>(null)
   useImperativeHandle(ref, () => withHostMethods(element.current as HTMLElement), [])
   useElementLayout(element, onLayout)
+  usePanHost(element, rest.onPointerDownCapture)
   const registry = useStyleRegistry()
 
   // As in React Native, onPress or onLongPress makes a Text pressable. onPressIn and onPressOut

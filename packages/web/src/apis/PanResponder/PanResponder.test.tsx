@@ -4,6 +4,7 @@ import { cdp, server } from 'vitest/browser'
 
 import { Pressable } from '../../components/Pressable'
 import { ScrollView } from '../../components/ScrollView'
+import { Text } from '../../components/Text'
 import { View } from '../../components/View'
 import type { GestureResponderEvent } from '../../events/types'
 import { cleanup, render } from '../../test/render'
@@ -81,6 +82,26 @@ const fingerUp = (element: HTMLElement, x: number, y: number): void => {
 }
 
 const box = (container: HTMLElement): HTMLElement => container.firstElementChild as HTMLElement
+
+const byTestId = (container: HTMLElement, id: string): HTMLElement =>
+  container.querySelector(`[data-testid="${id}"]`) as HTMLElement
+
+// A one-finger drag with real touch input in Chromium, from (20, 50) in the element, 2 px a step.
+const realDrag = async (element: HTMLElement, distance: number, axis: 'x' | 'y'): Promise<void> => {
+  const rect = element.getBoundingClientRect()
+  // CDP takes the point in the page of the test runner, which holds this page in a frame.
+  const frame = window.frameElement?.getBoundingClientRect() ?? { left: 0, top: 0 }
+  const x = frame.left + rect.left + 20
+  const y = frame.top + rect.top + 50
+  const at = (d: number): { x: number; y: number } =>
+    axis === 'x' ? { x: x + d, y } : { x, y: y + d }
+  const session: CDPSession = cdp()
+  await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [at(0)] })
+  for (let d = 2; d <= distance; d += 2) {
+    await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [at(d)] })
+  }
+  await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+}
 
 const style = { width: 100, height: 100 }
 
@@ -502,26 +523,78 @@ describe('PanResponder', () => {
       const { container } = render(
         <View style={{ width: 300, height: 100 }} {...PanResponder.create(config).panHandlers} />,
       )
-      const rect = box(container).getBoundingClientRect()
-      // CDP takes the point in the page of the test runner, which holds this page in a frame.
-      const frame = window.frameElement?.getBoundingClientRect() ?? { left: 0, top: 0 }
-      const x = frame.left + rect.left + 20
-      const y = frame.top + rect.top + 50
-      const session: CDPSession = cdp()
-      const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', dx: number): Promise<unknown> =>
-        session.send('Input.dispatchTouchEvent', {
-          type,
-          touchPoints: type === 'touchEnd' ? [] : [{ x: x + dx, y }],
-        })
-
-      await touch('touchStart', 0)
-      for (let dx = 2; dx <= 80; dx += 2) await touch('touchMove', dx)
-      await touch('touchEnd', 80)
+      await realDrag(box(container), 80, 'x')
 
       await expect.poll(() => config.onPanResponderRelease.mock.calls.length).toBe(1)
       expect(config.onPanResponderGrant).toHaveBeenCalledTimes(1)
       expect(config.onPanResponderTerminate).not.toHaveBeenCalled()
     })
+
+    // A `touchmove` that the page can cancel makes the browser wait for the main thread.
+    test('a touch outside the responders scrolls with no wait for the main thread', async () => {
+      const { container } = render(
+        <View>
+          <View
+            testID="responder"
+            style={{ width: 300, height: 100 }}
+            {...PanResponder.create(spyConfig()).panHandlers}
+          />
+          <View testID="elsewhere" style={{ width: 300, height: 100 }} />
+        </View>,
+      )
+      const cancelable: boolean[] = []
+      const record = (event: TouchEvent): void => {
+        cancelable.push(event.cancelable)
+      }
+      document.addEventListener('touchmove', record, { passive: true })
+      try {
+        await realDrag(byTestId(container, 'elsewhere'), 40, 'y')
+        await expect.poll(() => cancelable.length).toBeGreaterThan(0)
+        expect(cancelable[0]).toBe(false)
+
+        cancelable.length = 0
+        await realDrag(byTestId(container, 'responder'), 40, 'y')
+        await expect.poll(() => cancelable.length).toBeGreaterThan(0)
+        expect(cancelable[0]).toBe(true)
+      } finally {
+        document.removeEventListener('touchmove', record)
+      }
+    })
+
+    test('a host that is not a View or a Text gets the listener with its first touch', async () => {
+      const config = spyConfig({ onMoveShouldSetPanResponder: vi.fn(byDx(40)) })
+      const { container } = render(
+        <div style={{ width: 300, height: 100 }} {...PanResponder.create(config).panHandlers} />,
+      )
+      await realDrag(box(container), 80, 'x')
+
+      await expect.poll(() => config.onPanResponderRelease.mock.calls.length).toBe(1)
+      expect(config.onPanResponderTerminate).not.toHaveBeenCalled()
+    })
+  })
+
+  test('a View or a Text with pan handlers listens for touchmove from its mount, the document never', () => {
+    const add = vi.spyOn(EventTarget.prototype, 'addEventListener')
+    try {
+      const { container } = render(
+        <View>
+          <View testID="view" {...PanResponder.create(spyConfig()).panHandlers} />
+          <Text testID="text" {...PanResponder.create(spyConfig()).panHandlers}>
+            Drag
+          </Text>
+          <View testID="plain" />
+        </View>,
+      )
+      const targets = add.mock.calls.flatMap((call, index) =>
+        call[0] === 'touchmove' ? [add.mock.contexts[index]] : [],
+      )
+      expect(targets).toContain(byTestId(container, 'view'))
+      expect(targets).toContain(byTestId(container, 'text'))
+      expect(targets).not.toContain(byTestId(container, 'plain'))
+      expect(targets).not.toContain(document)
+    } finally {
+      add.mockRestore()
+    }
   })
 
   test('a new gesture gets a new stateID', () => {

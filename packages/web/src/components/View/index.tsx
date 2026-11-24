@@ -1,5 +1,6 @@
 import { createElement, useImperativeHandle, useRef, type ReactElement } from 'react'
 
+import { usePanHost } from '../../events/panTouch'
 import { toDOMProps } from '../../render/domProps'
 import { withHostMethods } from '../../render/hostMethods'
 import { resolveTag } from '../../render/resolveTag'
@@ -65,6 +66,7 @@ export function useViewElement(props: ViewProps, extraClassName?: string): React
   const element = useRef<HTMLElement | null>(null)
   useImperativeHandle(ref, () => withHostMethods(element.current as HTMLElement), [])
   useElementLayout(element, onLayout)
+  usePanHost(element, rest.onPointerDownCapture)
   const registry = useStyleRegistry()
 
   const { tag, role } = resolveTag(rest, 'div', children != null)

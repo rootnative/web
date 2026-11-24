@@ -1,5 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from 'react'
 
+import { listenForTouchMoveOn, markPanHandler, setTouchMoveDecision } from '../../events/panTouch'
 import { claimPress, isPressClaimed, terminatePress } from '../../events/press/Pressability'
 import type { GestureResponderEvent, NativeTouchEvent } from '../../events/types'
 
@@ -146,8 +147,7 @@ const holdsForUndecided = (event: TouchEvent): boolean => {
 
 // React Native stops the native scroll while a responder holds the gesture. A browser does
 // that only when the page cancels `touchmove`. Else it scrolls, and the responder gets
-// `pointercancel`. The browser decides at the touch start if a `touchmove` can be canceled,
-// so the listener can't wait for the grant: it goes on the document with the first responder.
+// `pointercancel`. The listener goes on the element of each responder (`events/panTouch.ts`).
 let listening = false
 
 const blockNativeScroll = (event: TouchEvent): void => {
@@ -156,11 +156,10 @@ const blockNativeScroll = (event: TouchEvent): void => {
   if (block) event.preventDefault()
 }
 
-const listenForTouchMove = (): void => {
+const listenForTouchStart = (): void => {
   if (listening || typeof document === 'undefined') return
   listening = true
   document.addEventListener('touchstart', rememberTouchStart, { passive: true })
-  document.addEventListener('touchmove', blockNativeScroll, { passive: false })
 }
 
 const newGestureState = (): PanResponderGestureState => ({
@@ -350,6 +349,8 @@ const createHandlers = (responder: Responder): GestureResponderHandlers => {
         responder.gestureState = newGestureState()
         responder.host = event.currentTarget
         tracking.add(responder)
+        // A host that isn't a View or a Text gets the listener with its first touch.
+        listenForTouchMoveOn(event.currentTarget)
       }
       responder.pointers.set(pointer.id, pointer)
       rebase(responder, event.timeStamp)
@@ -415,7 +416,9 @@ const createHandlers = (responder: Responder): GestureResponderHandlers => {
   }
 
   return {
-    onPointerDownCapture: (event) => down(event, true),
+    onPointerDownCapture: markPanHandler((event: ReactPointerEvent<HTMLElement>) =>
+      down(event, true),
+    ),
     onPointerDown: (event) => down(event, false),
     onPointerMoveCapture: (event) => move(event, true),
     onPointerMove: (event) => move(event, false),
@@ -437,7 +440,8 @@ export const PanResponder: {
       last: null,
       blocksNative: true,
     }
-    listenForTouchMove()
+    listenForTouchStart()
+    setTouchMoveDecision(blockNativeScroll)
     return {
       panHandlers: createHandlers(responder),
       // No interaction manager on the web.
