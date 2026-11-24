@@ -390,6 +390,10 @@ ScrollView
 - scrollEnabled={false} hides the overflow.
 - snapToInterval, snapToOffsets, pagingEnabled snap after the scroll settles.
 - stickyHeaderIndices: vertical only. keyboardDismissMode: on-drag works.
+- keyboardShouldPersistTaps works for a touch or a pen tap while a text
+  field has the focus: never (default) lets the tap blur the field, handled
+  keeps the focus when a pressable or responder takes the tap, always keeps
+  it. With never, the tap also reaches its target (native swallows it).
 - maintainVisibleContentPosition: after a content change, the scroll offset
   moves as far as the first visible child at or after minIndexForVisible
   moved, as on native. autoscrollToTopThreshold works. It turns off the
@@ -532,6 +536,9 @@ TextInput
 - autoComplete and textContentType use the HTML tokens. React Native-only
   values map (name-given to given-name, sms-otp to one-time-code).
 - A value with no change handler stays fixed, with no React warning.
+- A touch or pen tap outside the focused field keeps the focus, so the
+  keyboard stays, as on native; inside a ScrollView, keyboardShouldPersistTaps
+  decides. A mouse click moves the focus as on any web page.
 - Ref: the element plus clear(), isFocused(), getNativeRef(),
   setNativeProps({ text, style }). TextInput.State has currentlyFocusedInput(),
   focusTextInput(element), blurTextInput(element).

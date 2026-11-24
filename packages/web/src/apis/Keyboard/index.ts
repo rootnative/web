@@ -1,4 +1,5 @@
 import type { EventSubscription } from '../../events/types'
+import { isEditable } from '../../utils/editable'
 import { hasDOM } from '../../utils/env'
 
 export type KeyboardEventName =
@@ -58,28 +59,6 @@ let observed: {
 } | null = null
 let current: KeyboardMetrics | null = null
 let frame: number | null = null
-
-// The input types that take no text, so the browser shows no keyboard for them.
-const noTextInputTypes = new Set([
-  'button',
-  'checkbox',
-  'color',
-  'file',
-  'hidden',
-  'image',
-  'radio',
-  'range',
-  'reset',
-  'submit',
-])
-
-const isEditable = (element: Element | null): element is HTMLElement => {
-  if (element instanceof HTMLTextAreaElement) return !element.readOnly && !element.disabled
-  if (element instanceof HTMLInputElement) {
-    return !element.readOnly && !element.disabled && !noTextInputTypes.has(element.type)
-  }
-  return element instanceof HTMLElement && element.isContentEditable
-}
 
 // The keyboard as the browser shows it now, or null.
 const read = (): KeyboardMetrics | null => {

@@ -15,6 +15,7 @@ import {
 
 import { Platform } from '../../apis/Platform'
 import { StyleSheet } from '../../apis/StyleSheet'
+import { clearPersistTaps, setPersistTaps } from '../../events/keyboardTaps'
 import type { StyleRegistry } from '../../style/registry'
 import { splitLayoutProps } from '../../style/splitLayoutProps'
 import { useStyleRegistry } from '../../style/StyleRegistryContext'
@@ -184,7 +185,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     endFillColor: _endFillColor,
     fadingEdgeLength: _fadingEdgeLength,
     indicatorStyle: _indicatorStyle,
-    keyboardShouldPersistTaps: _keyboardShouldPersistTaps,
+    keyboardShouldPersistTaps,
     maintainVisibleContentPosition,
     maximumZoomScale: _maximumZoomScale,
     minimumZoomScale: _minimumZoomScale,
@@ -529,6 +530,13 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
 
   // After useViewElement: its handle fills `scroller` in the same layout phase,
   // and layout effects run in hook order.
+  useLayoutEffect(() => {
+    const element = scroller.current
+    if (element === null) return
+    setPersistTaps(element, keyboardShouldPersistTaps)
+    return () => clearPersistTaps(element)
+  }, [keyboardShouldPersistTaps])
+
   const offsetX = contentOffset?.x
   const offsetY = contentOffset?.y
   useLayoutEffect(() => {

@@ -42,6 +42,12 @@ With `multiline`, the field grows with its text. `numberOfLines` is the minimum 
 
 `submitBehavior` and `blurOnSubmit` work as on native.
 
+## A tap outside the field
+
+A tap outside a focused field keeps the focus in the field, so the keyboard stays, as on native. The tap still reaches what it lands on, so a `Pressable` fires. Inside a [`ScrollView`](/scrollview), its `keyboardShouldPersistTaps` decides. A tap on another text field moves the focus there.
+
+This applies to a touch or a pen tap. A mouse click moves the focus as on any web page.
+
 ## Props
 
 | Prop                                                                                        | On the web                                                                                                                                                                                            |

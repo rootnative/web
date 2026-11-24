@@ -14,6 +14,7 @@ import {
   type UIEvent,
 } from 'react'
 
+import { listenForTapsOutsideField } from '../../events/keyboardTaps'
 import { toDOMProps } from '../../render/domProps'
 import { applyNativeProps, withHostMethods } from '../../render/hostMethods'
 import { withServerStyles } from '../../render/serverStyles'
@@ -260,6 +261,7 @@ function TextInputComponent(props: TextInputProps): ReactElement {
   )
 
   const handleFocus = useCallback((event: FocusEvent<Field>) => {
+    listenForTapsOutsideField()
     const element = event.currentTarget
     const current = handlers.current
     if (current.clearTextOnFocus === true && element.value !== '') {
