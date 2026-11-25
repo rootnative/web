@@ -128,14 +128,13 @@ Remove web-only workarounds, because these work here and not in
 react-native-web 0.21: Space presses a Pressable of any role (an app
 onKeyDown that presses on Space must call preventDefault(), or onPress fires
 two times); Alert.alert shows a dialog; Keyboard events fire and
-KeyboardAvoidingView moves; onScrollBeginDrag, onScrollEndDrag, and the
-momentum events fire.
+KeyboardAvoidingView moves; snapToInterval and snapToOffsets snap (with a
+finger, a pen, or the wheel, the browser's own scroll snap stops the scroll on
+a snap offset); onScrollBeginDrag, onScrollEndDrag, and the momentum events
+fire.
 Changes with no code change: isScreenReaderEnabled() resolves false
 (react-native-web: true); RefreshControl pulls with touch (keep a button for
-a mouse); a tap outside a focused TextInput keeps the keyboard, as on native;
-snapToInterval and snapToOffsets snap after the scroll settles, so a fling
-can scroll back to a snap point (keep a CSS scroll snap that stands in for
-them, with the same snap points).
+a mouse); a tap outside a focused TextInput keeps the keyboard, as on native.
 
 ## Benchmarks
 
@@ -424,11 +423,14 @@ ScrollView
 - A scroll while a pointer is down is a drag. A scroll after the release, or
   with no pointer (wheel, keyboard, scrollTo), is momentum. The scroll ends at
   scrollend, or 150 ms after the last scroll event. A wheel scroll ends 150 ms
-  after the last wheel event, so a spin of the wheel snaps once.
+  after the last wheel event, so a spin of the wheel is one scroll.
 - scrollEnabled={false} hides the overflow.
-- snapToInterval, snapToOffsets, pagingEnabled snap after the scroll settles,
-  so a fling can scroll back to a snap point. Keep a CSS scroll snap that
-  stands in for them, with the same snap points.
+- snapToInterval, snapToOffsets, pagingEnabled snap as on native. With a
+  finger, a pen, or the wheel, the browser's own scroll snap stops the scroll
+  on a snap offset, and disableIntervalMomentum stops it at the next one. After
+  a keyboard scroll, a scrollbar drag, or scrollTo, the list snaps when the
+  scroll settles. snapToOffsets with snapToStart or snapToEnd false always
+  snaps when the scroll settles.
 - stickyHeaderIndices: vertical only. keyboardDismissMode: on-drag works.
 - keyboardShouldPersistTaps works for a touch or a pen tap while a text
   field has the focus: never (default) lets the tap blur the field, handled

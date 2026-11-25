@@ -39,8 +39,8 @@ const tall = (count = 20): React.ReactElement[] =>
 const wide = (count = 20): React.ReactElement[] =>
   Array.from({ length: count }, (_, i) => <View key={i} style={{ width: 50, height: 50 }} />)
 
-const pointerDown = (element: HTMLElement): void => {
-  element.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }))
+const pointerDown = (element: HTMLElement, pointerType = 'touch'): void => {
+  element.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType }))
 }
 
 function RefreshWrapper(props: { children?: React.ReactNode }): React.ReactElement {
@@ -51,20 +51,74 @@ const pointerUp = (): void => {
   window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch' }))
 }
 
-// From 90, a snapToInterval of 200 snaps back to 0. A user scroll to 330 then snaps to 400.
+// snapToStart={false} keeps the browser's scroll snap off, so the ScrollView snaps after each
+// scroll. From 290, the list snaps back to 200, and this waits until that smooth scroll is under
+// way. A user scroll to 330 then snaps to 400.
 const renderSnapping = async (): Promise<HTMLElement> => {
   const { container } = render(
-    <ScrollView horizontal snapToInterval={200} style={{ width: 100 }}>
+    <ScrollView
+      horizontal
+      snapToOffsets={[200, 400, 600, 800]}
+      snapToStart={false}
+      style={{ width: 100 }}
+    >
       {wide()}
     </ScrollView>,
   )
   const element = scroller(container)
-  element.scrollLeft = 90
+  element.scrollLeft = 290
   await waitFor(() => {
-    expect(element.scrollLeft).toBeGreaterThan(0)
-    expect(element.scrollLeft).toBeLessThan(90)
+    expect(element.scrollLeft).toBeGreaterThan(200)
+    expect(element.scrollLeft).toBeLessThan(290)
   })
   return element
+}
+
+// The places of the markers for the browser's scroll snap, along the axis.
+const snapMarkers = (element: HTMLElement, axis: 'x' | 'y'): number[] => {
+  const layer = element.children[1]
+  if (layer === undefined) return []
+  return Array.from(layer.children, (marker) => {
+    const { style } = marker as HTMLElement
+    return Number.parseFloat(axis === 'x' ? style.insetInlineStart : style.insetBlockStart)
+  })
+}
+
+// The scroll-snap-stop values of the markers that a touch adds.
+const snapStops = (disableIntervalMomentum: boolean): string[] => {
+  const { container } = render(
+    <ScrollView
+      horizontal
+      snapToInterval={100}
+      disableIntervalMomentum={disableIntervalMomentum}
+      style={{ width: 100 }}
+    >
+      {wide()}
+    </ScrollView>,
+  )
+  const element = scroller(container)
+  pointerDown(element)
+  const layer = element.children[1] as HTMLElement
+  const values = Array.from(
+    layer.children,
+    (marker) => (marker as HTMLElement).style.scrollSnapStop,
+  )
+  pointerUp()
+  return [...new Set(values)]
+}
+
+// Waits until the scroll offset stays the same for 300 ms.
+const waitForRest = async (element: HTMLElement): Promise<void> => {
+  let last = Number.NaN
+  await vi.waitFor(
+    () => {
+      const now = element.scrollLeft
+      const moved = now !== last
+      last = now
+      if (moved) throw new Error(`still scrolling at ${now}`)
+    },
+    { timeout: 5000, interval: 300 },
+  )
 }
 
 describe('ScrollView', () => {
@@ -331,29 +385,133 @@ describe('ScrollView', () => {
       }
     })
 
-    // Each step is less than half the interval, so a snap after each step goes back to 0.
-    test('a spin of the wheel snaps once, after the wheel stops', async () => {
-      const media = installFakeMatchMedia()
-      media.get('(prefers-reduced-motion: reduce)').matches = true
-      try {
+    describe("the browser's scroll snap", () => {
+      test('a touch turns it on, with a marker at each snap offset', async () => {
         const { container } = render(
           <ScrollView horizontal snapToInterval={100} style={{ width: 100 }}>
             {wide()}
           </ScrollView>,
         )
         const element = scroller(container)
-        const offsets: number[] = []
-        for (let step = 0; step < 4; step++) {
+        pointerDown(element)
+        expect(element.style.scrollSnapType).toBe('x mandatory')
+        expect(snapMarkers(element, 'x')).toEqual([0, 100, 200, 300, 400, 500, 600, 700, 800, 900])
+        // The browser snaps this scroll, and the ScrollView doesn't scroll after it.
+        element.scrollLeft = 130
+        pointerUp()
+        await waitFor(() => expect(element.style.scrollSnapType).toBe(''))
+        expect(element.scrollLeft).toBe(100)
+        expect(snapMarkers(element, 'x')).toEqual([])
+      })
+
+      test('a press with no scroll turns it off', async () => {
+        const { container } = render(
+          <ScrollView snapToInterval={50} style={{ height: 100 }}>
+            {tall()}
+          </ScrollView>,
+        )
+        const element = scroller(container)
+        pointerDown(element, 'pen')
+        expect(element.style.scrollSnapType).toBe('y mandatory')
+        expect(snapMarkers(element, 'y')).toEqual(Array.from({ length: 19 }, (_, i) => i * 50))
+        pointerUp()
+        await waitFor(() => expect(element.style.scrollSnapType).toBe(''))
+        expect(snapMarkers(element, 'y')).toEqual([])
+      })
+
+      test('a mouse leaves it off', () => {
+        const { container } = render(
+          <ScrollView horizontal snapToInterval={100} style={{ width: 100 }}>
+            {wide()}
+          </ScrollView>,
+        )
+        const element = scroller(container)
+        pointerDown(element, 'mouse')
+        expect(element.style.scrollSnapType).toBe('')
+        pointerUp()
+      })
+
+      test('a wheel turns it on until the wheel stops', async () => {
+        const { container } = render(
+          <ScrollView horizontal pagingEnabled style={{ width: 100 }}>
+            {wide()}
+          </ScrollView>,
+        )
+        const element = scroller(container)
+        const wheel = (): boolean =>
           element.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaX: 30 }))
-          element.scrollLeft += 30
-          await delay(50)
-          offsets.push(element.scrollLeft)
-        }
-        expect(offsets).toEqual([30, 60, 90, 120])
-        await waitFor(() => expect(element.scrollLeft).toBe(100))
-      } finally {
-        media.restore()
-      }
+        wheel()
+        expect(element.style.scrollSnapType).toBe('x mandatory')
+        expect(snapMarkers(element, 'x')).toEqual([0, 100, 200, 300, 400, 500, 600, 700, 800, 900])
+        await delay(100)
+        wheel()
+        await delay(100)
+        expect(element.style.scrollSnapType).toBe('x mandatory')
+        await waitFor(() => expect(element.style.scrollSnapType).toBe(''))
+      })
+
+      test('the markers follow snapToAlignment and snapToOffsets', () => {
+        const centered = render(
+          <ScrollView
+            horizontal
+            snapToInterval={60}
+            snapToAlignment="center"
+            style={{ width: 100 }}
+          >
+            {wide()}
+          </ScrollView>,
+        )
+        // Items of 60 centered in 100 start 20 before the item: 40, 100, 160, and so on.
+        pointerDown(scroller(centered.container))
+        expect(snapMarkers(scroller(centered.container), 'x')).toEqual([
+          0,
+          ...Array.from({ length: 15 }, (_, i) => 40 + i * 60),
+        ])
+        pointerUp()
+
+        const listed = render(
+          <ScrollView horizontal snapToOffsets={[400, 150]} style={{ width: 100 }}>
+            {wide()}
+          </ScrollView>,
+        )
+        pointerDown(scroller(listed.container))
+        expect(snapMarkers(scroller(listed.container), 'x')).toEqual([0, 150, 400, 900])
+        pointerUp()
+      })
+
+      test('in a right-to-left layout, the markers count from the right edge', async () => {
+        const { container } = render(
+          <View style={{ direction: 'rtl' }}>
+            <ScrollView horizontal snapToInterval={100} style={{ width: 100 }}>
+              {wide()}
+            </ScrollView>
+          </View>,
+        )
+        const element = container.firstElementChild?.firstElementChild as HTMLElement
+        pointerDown(element)
+        element.scrollLeft = -130
+        pointerUp()
+        await waitFor(() => expect(element.style.scrollSnapType).toBe(''))
+        expect(element.scrollLeft).toBe(-100)
+      })
+
+      test('snapToOffsets with a free start leaves it off', () => {
+        const { container } = render(
+          <ScrollView horizontal snapToOffsets={[150]} snapToStart={false} style={{ width: 100 }}>
+            {wide()}
+          </ScrollView>,
+        )
+        const element = scroller(container)
+        pointerDown(element)
+        expect(element.style.scrollSnapType).toBe('')
+        expect(snapMarkers(element, 'x')).toEqual([])
+        pointerUp()
+      })
+
+      test('disableIntervalMomentum makes each marker stop the scroll', () => {
+        expect(snapStops(true)).toEqual(['always'])
+        expect(snapStops(false)).toEqual(['normal'])
+      })
     })
 
     describe('a user scroll during the smooth scroll of a snap', () => {
@@ -381,6 +539,63 @@ describe('ScrollView', () => {
         } finally {
           media.restore()
         }
+      })
+    })
+
+    describe.runIf(server.browser === 'chromium')('with real touch input in Chromium', () => {
+      // A fling with the JS snap alone goes on, stops, and then scrolls back to a snap offset.
+      test('a fling moves one way after the finger lifts, and stops on a snap offset', async () => {
+        const { container } = render(
+          <ScrollView horizontal snapToInterval={100} style={{ width: 200 }}>
+            {wide(60)}
+          </ScrollView>,
+        )
+        const element = scroller(container)
+        const rect = element.getBoundingClientRect()
+        // CDP takes the point in the page of the test runner, which holds this page in a frame.
+        const runner = window.frameElement?.getBoundingClientRect() ?? { left: 0, top: 0 }
+        const y = runner.top + rect.top + 25
+        const at = (x: number): { x: number; y: number } => ({ x: runner.left + rect.left + x, y })
+
+        let lifted = false
+        let sampling = true
+        const afterLift: number[] = []
+        // The snap types of the frames where the list moves after the lift.
+        const snapTypes = new Set<string>()
+        const sample = (): void => {
+          if (lifted) {
+            if (element.scrollLeft !== afterLift.at(-1)) snapTypes.add(element.style.scrollSnapType)
+            afterLift.push(element.scrollLeft)
+          }
+          if (sampling) requestAnimationFrame(sample)
+        }
+        requestAnimationFrame(sample)
+
+        const session: CDPSession = cdp()
+        await session.send('Input.dispatchTouchEvent', {
+          type: 'touchStart',
+          touchPoints: [at(180)],
+        })
+        for (let x = 165; x >= 30; x -= 15) {
+          await session.send('Input.dispatchTouchEvent', {
+            type: 'touchMove',
+            touchPoints: [at(x)],
+          })
+        }
+        await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+        lifted = true
+        await waitForRest(element)
+        sampling = false
+
+        expect([...snapTypes]).toEqual(['x mandatory'])
+        const steps = afterLift
+          .slice(1)
+          .map((value, index) => Math.sign(value - (afterLift[index] ?? value)))
+        expect(new Set(steps.filter((step) => step !== 0)).size).toBeLessThanOrEqual(1)
+        const end = element.scrollLeft
+        expect(end).toBeGreaterThan(0)
+        expect(end % 100).toBe(0)
+        expect(element.style.scrollSnapType).toBe('')
       })
     })
 
