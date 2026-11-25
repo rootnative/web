@@ -61,6 +61,10 @@ const styles = StyleSheet.create({
 
 In the browser, this is a `<main>` with an `<h1>` and an `<a href="/about">`, styled with atomic CSS classes. The same code runs on iOS and Android.
 
+## Benchmarks
+
+Three apps moved from react-native-web 0.21 to `@rootnative/web`. In each app, the script time at load is 8–20 % lower, and the JavaScript is 2–4 % smaller after gzip. With static output, the server HTML is 31–57 % smaller after gzip. Some interactions cost more style work. [Benchmarks](https://rootnative.github.io/web/benchmarks) gives every number, also the worse ones.
+
 ## For AI agents
 
 This package ships `llms.txt`. `node_modules/@rootnative/web/llms.txt` describes the API of the version you installed. The docs site has [llms-full.txt](https://rootnative.github.io/web/llms-full.txt) with every page.

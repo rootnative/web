@@ -80,6 +80,10 @@ const styles = StyleSheet.create({
 
 In the browser, this is a `<main>` with an `<h1>` and an `<a href="/about">`, styled with atomic CSS classes. The same code runs on iOS and Android.
 
+## Benchmarks
+
+Three apps moved from react-native-web 0.21 to `@rootnative/web`. In each app, the script time at load is 8–20 % lower, and the JavaScript is 2–4 % smaller after gzip. With static output, the server HTML is 31–57 % smaller after gzip. Some interactions cost more style work. [Benchmarks](https://rootnative.github.io/web/benchmarks) gives every number, also the worse ones.
+
 ## Learn more
 
 - [Status](https://rootnative.github.io/web/status): what ships, what's planned, and what's out of scope.

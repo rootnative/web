@@ -134,6 +134,18 @@ Changes with no code change: isScreenReaderEnabled() resolves false
 (react-native-web: true); RefreshControl pulls with touch (keep a button for
 a mouse); a tap outside a focused TextInput keeps the keyboard, as on native.
 
+## Benchmarks
+
+Three apps on react-native-web 0.21.4 and on @rootnative/web 0.0.8 (Chromium,
+CPU throttled 4x, 10 runs of each). Script time at load: 8 to 20 % lower.
+JavaScript: 2 to 4 % smaller after gzip. With static output: server HTML 31
+to 57 % smaller after gzip, about half the CSS rules, 1 style attribute in
+place of 220. A menu and a dialog open 24 to 26 % faster. Worse: style
+recalculation in some interactions (+54 % for button presses, +90 % for a
+menu), and the images of the server HTML load before the first paint (use
+loading="lazy" for an image below the fold). Details:
+https://rootnative.github.io/web/benchmarks
+
 ## Entry points
 
 - @rootnative/web: the React Native components and APIs. Import it as
