@@ -1,5 +1,7 @@
+import type { CDPSession } from '@vitest/browser-playwright'
 import { createRef } from 'react'
 import { afterEach, describe, expect, onTestFinished, test, vi } from 'vitest'
+import { cdp, server } from 'vitest/browser'
 
 import { installFakeMatchMedia } from '../../test/matchMedia'
 import { cleanup, render } from '../../test/render'
@@ -25,6 +27,11 @@ const frame = (): Promise<void> =>
 const waitFor = async (check: () => void): Promise<void> => {
   await vi.waitFor(check, { timeout: 2000, interval: 10 })
 }
+
+const delay = (ms: number): Promise<void> =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
 
 const tall = (count = 20): React.ReactElement[] =>
   Array.from({ length: count }, (_, i) => <View key={i} style={{ height: 50 }} />)
@@ -306,6 +313,63 @@ describe('ScrollView', () => {
       } finally {
         media.restore()
       }
+    })
+
+    // Each step is less than half the interval, so a snap after each step goes back to 0.
+    test('a spin of the wheel snaps once, after the wheel stops', async () => {
+      const media = installFakeMatchMedia()
+      media.get('(prefers-reduced-motion: reduce)').matches = true
+      try {
+        const { container } = render(
+          <ScrollView horizontal snapToInterval={100} style={{ width: 100 }}>
+            {wide()}
+          </ScrollView>,
+        )
+        const element = scroller(container)
+        const offsets: number[] = []
+        for (let step = 0; step < 4; step++) {
+          element.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaX: 30 }))
+          element.scrollLeft += 30
+          await delay(50)
+          offsets.push(element.scrollLeft)
+        }
+        expect(offsets).toEqual([30, 60, 90, 120])
+        await waitFor(() => expect(element.scrollLeft).toBe(100))
+      } finally {
+        media.restore()
+      }
+    })
+
+    describe.runIf(server.browser === 'chromium')('with real wheel input in Chromium', () => {
+      test('a quick spin of the wheel moves to the next snap point', async () => {
+        const media = installFakeMatchMedia()
+        media.get('(prefers-reduced-motion: reduce)').matches = true
+        try {
+          const { container } = render(
+            <ScrollView horizontal snapToInterval={100} style={{ width: 100 }}>
+              {wide()}
+            </ScrollView>,
+          )
+          const element = scroller(container)
+          const rect = element.getBoundingClientRect()
+          // CDP takes the point in the page of the test runner, which holds this page in a frame.
+          const runner = window.frameElement?.getBoundingClientRect() ?? { left: 0, top: 0 }
+          const point = { x: runner.left + rect.left + 50, y: runner.top + rect.top + 25 }
+          const session: CDPSession = cdp()
+          for (let step = 0; step < 4; step++) {
+            await session.send('Input.dispatchMouseEvent', {
+              type: 'mouseWheel',
+              ...point,
+              deltaX: 30,
+              deltaY: 0,
+            })
+            await delay(50)
+          }
+          await waitFor(() => expect(element.scrollLeft).toBe(100))
+        } finally {
+          media.restore()
+        }
+      })
     })
   })
 

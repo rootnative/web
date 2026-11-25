@@ -134,9 +134,8 @@ Changes with no code change: isScreenReaderEnabled() resolves false
 (react-native-web: true); RefreshControl pulls with touch (keep a button for
 a mouse); a tap outside a focused TextInput keeps the keyboard, as on native;
 snapToInterval and snapToOffsets snap after the scroll settles, so a fling
-can scroll back to a snap point and a quick wheel spin can end where it
-started (keep a CSS scroll snap that stands in for them, with the same snap
-points).
+can scroll back to a snap point (keep a CSS scroll snap that stands in for
+them, with the same snap points).
 
 ## Benchmarks
 
@@ -424,12 +423,12 @@ ScrollView
   layoutMeasurement. No velocity. scrollEventThrottle isn't needed.
 - A scroll while a pointer is down is a drag. A scroll after the release, or
   with no pointer (wheel, keyboard, scrollTo), is momentum. The scroll ends at
-  scrollend, or 150 ms after the last scroll event.
+  scrollend, or 150 ms after the last scroll event. A wheel scroll ends 150 ms
+  after the last wheel event, so a spin of the wheel snaps once.
 - scrollEnabled={false} hides the overflow.
 - snapToInterval, snapToOffsets, pagingEnabled snap after the scroll settles,
-  so a fling can scroll back to a snap point and a quick wheel spin can end
-  where it started. Keep a CSS scroll snap that stands in for them, with the
-  same snap points.
+  so a fling can scroll back to a snap point. Keep a CSS scroll snap that
+  stands in for them, with the same snap points.
 - stickyHeaderIndices: vertical only. keyboardDismissMode: on-drag works.
 - keyboardShouldPersistTaps works for a touch or a pen tap while a text
   field has the focus: never (default) lets the tap blur the field, handled

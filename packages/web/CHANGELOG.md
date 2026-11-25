@@ -4,6 +4,10 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Fixed
+
+- **A quick spin of the mouse wheel on a `ScrollView` with `snapToInterval`, `snapToOffsets`, or `pagingEnabled` snaps once, after the wheel stops.** The wheel scrolls in steps, and a browser can fire `scrollend` after each step. Before, the snap ran after each step. So a spin of steps shorter than half the interval went back each time, and the list didn't move. Now a scroll with the wheel ends when no wheel event comes for 150 ms. `onMomentumScrollEnd` of a wheel scroll comes at the same time. See [ScrollView](https://rootnative.github.io/web/scrollview#scroll-events).
+
 ## [0.0.8] - 2026-11-24
 
 ### Fixed

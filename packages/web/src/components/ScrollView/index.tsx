@@ -11,6 +11,7 @@ import {
   type ReactElement,
   type ReactNode,
   type UIEvent,
+  type WheelEvent as ReactWheelEvent,
 } from 'react'
 
 import { Platform } from '../../apis/Platform'
@@ -81,6 +82,10 @@ const supportsScrollEnd = hasDOM() && 'onscrollend' in window
 
 // For browsers without the scrollend event.
 const SCROLL_END_DELAY = 150
+
+// A mouse wheel scrolls in steps, and the browser can fire scrollend after each step. So a scroll
+// with the wheel ends only when no wheel event came for this long, and a spin snaps once.
+const WHEEL_END_DELAY = 150
 
 const behaviorFor = (animated: boolean | undefined): ScrollBehavior =>
   animated !== false && !Platform.isDisableAnimations ? 'smooth' : 'auto'
@@ -153,6 +158,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     onScroll,
     onScrollBeginDrag,
     onScrollEndDrag,
+    onWheel,
     pagingEnabled,
     ref,
     refreshControl,
@@ -255,6 +261,8 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     lastOffset: number
     timer: ReturnType<typeof setTimeout> | undefined
     snapping: boolean
+    scrolling: boolean
+    wheelTimer: ReturnType<typeof setTimeout> | undefined
   }>({
     phase: 'idle',
     pointerDown: false,
@@ -262,6 +270,8 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     lastOffset: 0,
     timer: undefined,
     snapping: false,
+    scrolling: false,
+    wheelTimer: undefined,
   })
   const stickyHeaders = useRef<HTMLElement[]>([])
 
@@ -370,6 +380,12 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     domScrollTo(element, axis ? { x: target } : { y: target })
   }, [refreshEvent])
 
+  const endScroll = useCallback((): void => {
+    const state = sequence.current
+    state.scrolling = false
+    if (state.wheelTimer === undefined) settle()
+  }, [settle])
+
   const handleScroll = (event: UIEvent<HTMLElement>): void => {
     const element = event.currentTarget
     if (event.target !== element) return
@@ -377,6 +393,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     const scrollEvent = event as unknown as ScrollEvent
     Object.assign(scrollEvent.nativeEvent, describeScroll(element))
     state.lastEvent = scrollEvent
+    state.scrolling = true
 
     const config = snap.current
     const offset = config.horizontal ? element.scrollLeft : element.scrollTop
@@ -413,13 +430,24 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
 
     if (!supportsScrollEnd) {
       if (state.timer !== undefined) clearTimeout(state.timer)
-      state.timer = setTimeout(settle, SCROLL_END_DELAY)
+      state.timer = setTimeout(endScroll, SCROLL_END_DELAY)
     }
   }
 
   const handleScrollEnd = (event: UIEvent<HTMLElement>): void => {
     if (event.target !== event.currentTarget) return
-    settle()
+    endScroll()
+  }
+
+  const handleWheel = (event: ReactWheelEvent<HTMLElement>): void => {
+    onWheel?.(event)
+    const state = sequence.current
+    if (state.wheelTimer !== undefined) clearTimeout(state.wheelTimer)
+    state.wheelTimer = setTimeout(() => {
+      state.wheelTimer = undefined
+      // A scroll that is still in progress settles at its own end.
+      if (!state.scrolling) settle()
+    }, WHEEL_END_DELAY)
   }
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLElement>): void => {
@@ -446,6 +474,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     const state = sequence.current
     return () => {
       if (state.timer !== undefined) clearTimeout(state.timer)
+      if (state.wheelTimer !== undefined) clearTimeout(state.wheelTimer)
     }
   }, [])
 
@@ -523,6 +552,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
       onScroll: handleScroll,
       onScrollEnd: handleScrollEnd,
       onPointerDown: handlePointerDown,
+      onWheel: handleWheel,
       children: contentElement,
     },
     hideScrollbar ? hiddenScrollbarClass(registry) : undefined,
