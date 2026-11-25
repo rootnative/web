@@ -128,11 +128,15 @@ Remove web-only workarounds, because these work here and not in
 react-native-web 0.21: Space presses a Pressable of any role (an app
 onKeyDown that presses on Space must call preventDefault(), or onPress fires
 two times); Alert.alert shows a dialog; Keyboard events fire and
-KeyboardAvoidingView moves; snapToInterval and snapToOffsets snap;
-onScrollBeginDrag, onScrollEndDrag, and the momentum events fire.
+KeyboardAvoidingView moves; onScrollBeginDrag, onScrollEndDrag, and the
+momentum events fire.
 Changes with no code change: isScreenReaderEnabled() resolves false
 (react-native-web: true); RefreshControl pulls with touch (keep a button for
-a mouse); a tap outside a focused TextInput keeps the keyboard, as on native.
+a mouse); a tap outside a focused TextInput keeps the keyboard, as on native;
+snapToInterval and snapToOffsets snap after the scroll settles, so a fling
+can scroll back to a snap point and a quick wheel spin can end where it
+started (keep a CSS scroll snap that stands in for them, with the same snap
+points).
 
 ## Benchmarks
 
