@@ -51,6 +51,22 @@ const pointerUp = (): void => {
   window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch' }))
 }
 
+// From 90, a snapToInterval of 200 snaps back to 0. A user scroll to 330 then snaps to 400.
+const renderSnapping = async (): Promise<HTMLElement> => {
+  const { container } = render(
+    <ScrollView horizontal snapToInterval={200} style={{ width: 100 }}>
+      {wide()}
+    </ScrollView>,
+  )
+  const element = scroller(container)
+  element.scrollLeft = 90
+  await waitFor(() => {
+    expect(element.scrollLeft).toBeGreaterThan(0)
+    expect(element.scrollLeft).toBeLessThan(90)
+  })
+  return element
+}
+
 describe('ScrollView', () => {
   test('a vertical scroller with the content in a View', () => {
     const { container } = render(
@@ -340,8 +356,37 @@ describe('ScrollView', () => {
       }
     })
 
+    describe('a user scroll during the smooth scroll of a snap', () => {
+      test('with the wheel snaps again after it', async () => {
+        const media = installFakeMatchMedia()
+        try {
+          const element = await renderSnapping()
+          element.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaX: 240 }))
+          element.scrollLeft = 330
+          await waitFor(() => expect(element.scrollLeft).toBe(400))
+        } finally {
+          media.restore()
+        }
+      })
+
+      test('with a touch snaps again after it', async () => {
+        const media = installFakeMatchMedia()
+        try {
+          const element = await renderSnapping()
+          pointerDown(element)
+          element.scrollLeft = 330
+          await frame()
+          pointerUp()
+          await waitFor(() => expect(element.scrollLeft).toBe(400))
+        } finally {
+          media.restore()
+        }
+      })
+    })
+
     describe.runIf(server.browser === 'chromium')('with real wheel input in Chromium', () => {
-      test('a quick spin of the wheel moves to the next snap point', async () => {
+      // A slow CDP call can split the spin, so the test checks for a snap point past the start.
+      test('a quick spin of the wheel ends on a snap point past the start', async () => {
         const media = installFakeMatchMedia()
         media.get('(prefers-reduced-motion: reduce)').matches = true
         try {
@@ -365,7 +410,11 @@ describe('ScrollView', () => {
             })
             await delay(50)
           }
-          await waitFor(() => expect(element.scrollLeft).toBe(100))
+          await delay(400)
+          await waitFor(() => {
+            expect(element.scrollLeft).toBeGreaterThan(0)
+            expect(element.scrollLeft % 100).toBe(0)
+          })
         } finally {
           media.restore()
         }

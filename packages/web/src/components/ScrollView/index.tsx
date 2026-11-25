@@ -260,6 +260,8 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     lastEvent: ScrollEvent | null
     lastOffset: number
     timer: ReturnType<typeof setTimeout> | undefined
+    // The settle at the end of the snap's own scroll is skipped. A wheel or a pointer takes the
+    // scroll from the snap, so it clears this, and the list snaps again after it.
     snapping: boolean
     scrolling: boolean
     wheelTimer: ReturnType<typeof setTimeout> | undefined
@@ -442,6 +444,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
   const handleWheel = (event: ReactWheelEvent<HTMLElement>): void => {
     onWheel?.(event)
     const state = sequence.current
+    state.snapping = false
     if (state.wheelTimer !== undefined) clearTimeout(state.wheelTimer)
     state.wheelTimer = setTimeout(() => {
       state.wheelTimer = undefined
@@ -455,6 +458,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     const state = sequence.current
     if (state.pointerDown) return
     state.pointerDown = true
+    state.snapping = false
 
     const release = (): void => {
       window.removeEventListener('pointerup', release)
