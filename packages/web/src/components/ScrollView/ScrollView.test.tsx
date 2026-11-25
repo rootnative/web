@@ -52,24 +52,31 @@ const pointerUp = (): void => {
 }
 
 // snapToStart={false} keeps the browser's scroll snap off, so the ScrollView snaps after each
-// scroll. From 290, the list snaps back to 200, and this waits until that smooth scroll is under
-// way. A user scroll to 330 then snaps to 400.
+// scroll. The list rests at 290 before the snap props come, because WebKit starts a smooth scroll
+// from the offset that it drew last. Then a scroll to 291 snaps back to 200, and this waits until
+// that smooth scroll is under way. A user scroll to 330 then snaps to 400.
+const offsetList = (snaps: boolean): React.ReactElement => (
+  <ScrollView
+    horizontal
+    snapToOffsets={snaps ? [200, 400, 600, 800] : undefined}
+    snapToStart={false}
+    style={{ width: 100 }}
+  >
+    {wide()}
+  </ScrollView>
+)
+
 const renderSnapping = async (): Promise<HTMLElement> => {
-  const { container } = render(
-    <ScrollView
-      horizontal
-      snapToOffsets={[200, 400, 600, 800]}
-      snapToStart={false}
-      style={{ width: 100 }}
-    >
-      {wide()}
-    </ScrollView>,
-  )
+  const { container, rerender } = render(offsetList(false))
   const element = scroller(container)
   element.scrollLeft = 290
+  await delay(200)
+  rerender(offsetList(true))
+  await frame()
+  element.scrollLeft = 291
   await waitFor(() => {
     expect(element.scrollLeft).toBeGreaterThan(200)
-    expect(element.scrollLeft).toBeLessThan(290)
+    expect(element.scrollLeft).toBeLessThan(291)
   })
   return element
 }
@@ -515,6 +522,28 @@ describe('ScrollView', () => {
         expect(element.scrollLeft).toBe(-100)
       })
 
+      test('if it stops off a snap offset, the snap after the scroll finishes it', async () => {
+        const media = installFakeMatchMedia()
+        media.get('(prefers-reduced-motion: reduce)').matches = true
+        try {
+          const { container } = render(
+            <ScrollView horizontal snapToInterval={100} style={{ width: 100 }}>
+              {wide()}
+            </ScrollView>,
+          )
+          const element = scroller(container)
+          pointerDown(element)
+          // The markers stay, but the browser doesn't snap.
+          element.style.scrollSnapType = 'none'
+          element.scrollLeft = 130
+          pointerUp()
+          await waitFor(() => expect(element.scrollLeft).toBe(100))
+          expect(snapMarkers(element, 'x')).toEqual([])
+        } finally {
+          media.restore()
+        }
+      })
+
       test('snapToOffsets with a free start leaves it off', () => {
         const { container } = render(
           <ScrollView horizontal snapToOffsets={[150]} snapToStart={false} style={{ width: 100 }}>
@@ -532,6 +561,34 @@ describe('ScrollView', () => {
         expect(snapStops(true)).toEqual(['always'])
         expect(snapStops(false)).toEqual(['normal'])
       })
+    })
+
+    // As if the last scroll event of the scroll came after its scrollend.
+    test('a scroll event after scrollend still lets the wheel snap', async () => {
+      const media = installFakeMatchMedia()
+      try {
+        const { container } = render(
+          <ScrollView
+            horizontal
+            snapToOffsets={[200, 400, 600, 800]}
+            snapToStart={false}
+            style={{ width: 100 }}
+          >
+            {wide()}
+          </ScrollView>,
+        )
+        const element = scroller(container)
+        const ended = new Promise((resolve) => {
+          element.addEventListener('scrollend', resolve, { once: true })
+        })
+        element.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaX: 330 }))
+        element.scrollLeft = 330
+        await ended
+        element.dispatchEvent(new Event('scroll'))
+        await waitFor(() => expect(element.scrollLeft).toBe(400))
+      } finally {
+        media.restore()
+      }
     })
 
     describe('a user scroll during the smooth scroll of a snap', () => {
@@ -604,6 +661,11 @@ describe('ScrollView', () => {
         }
         await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
         lifted = true
+        // The ScrollView turns the browser's snap off when the scroll ends.
+        await vi.waitFor(() => expect(element.style.scrollSnapType).toBe(''), {
+          timeout: 5000,
+          interval: 20,
+        })
         await waitForRest(element)
         sampling = false
 
@@ -615,7 +677,6 @@ describe('ScrollView', () => {
         const end = element.scrollLeft
         expect(end).toBeGreaterThan(0)
         expect(end % 100).toBe(0)
-        expect(element.style.scrollSnapType).toBe('')
       })
     })
 

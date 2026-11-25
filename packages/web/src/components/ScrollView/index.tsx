@@ -137,10 +137,16 @@ type Sequence = {
   // scroll from the snap, so it clears this, and the list snaps again after it.
   snapping: boolean
   scrolling: boolean
+  lastScrollAt: number
   wheelTimer: ReturnType<typeof setTimeout> | undefined
   // The parent of the snap markers, while the browser's scroll snap is on.
   snapLayer: HTMLElement | null
 }
+
+// If a scroll event comes after the scrollend of its scroll, nothing turns `scrolling` off. So a
+// scroller with no scroll event for SCROLL_END_DELAY counts as stopped.
+const isScrolling = (state: Sequence): boolean =>
+  state.scrolling && performance.now() - state.lastScrollAt < SCROLL_END_DELAY
 
 type SnapProps = {
   horizontal: boolean
@@ -356,6 +362,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     timer: undefined,
     snapping: false,
     scrolling: false,
+    lastScrollAt: 0,
     wheelTimer: undefined,
     snapLayer: null,
   })
@@ -444,11 +451,12 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
 
     if (state.snapLayer !== null) {
       // The browser snapped this scroll. A finger that is still down keeps its snap on.
-      if (!state.pointerDown) stopBrowserSnap(element, state)
       state.snapping = false
-      return
-    }
-    if (state.snapping) {
+      if (state.pointerDown) return
+      stopBrowserSnap(element, state)
+      // If the browser's snap stopped short of a snap offset, the snap below finishes it. On a
+      // snap offset, it does nothing.
+    } else if (state.snapping) {
       state.snapping = false
       return
     }
@@ -481,6 +489,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     Object.assign(scrollEvent.nativeEvent, describeScroll(element))
     state.lastEvent = scrollEvent
     state.scrolling = true
+    state.lastScrollAt = performance.now()
 
     const config = snap.current
     const offset = config.horizontal ? element.scrollLeft : element.scrollTop
@@ -532,12 +541,17 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     state.snapping = false
     const element = scroller.current
     if (element !== null && state.snapLayer === null) startBrowserSnap(element, state, snap.current)
-    if (state.wheelTimer !== undefined) clearTimeout(state.wheelTimer)
-    state.wheelTimer = setTimeout(() => {
+    // While the timer runs, scrollend doesn't settle, so the timer settles when the scroll stops.
+    const wheelStopped = (): void => {
+      if (isScrolling(state)) {
+        state.wheelTimer = setTimeout(wheelStopped, SCROLL_END_DELAY)
+        return
+      }
       state.wheelTimer = undefined
-      // A scroll that is still in progress settles at its own end.
-      if (!state.scrolling) settle()
-    }, WHEEL_END_DELAY)
+      settle()
+    }
+    if (state.wheelTimer !== undefined) clearTimeout(state.wheelTimer)
+    state.wheelTimer = setTimeout(wheelStopped, WHEEL_END_DELAY)
   }
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLElement>): void => {
@@ -565,7 +579,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
       // scrollend comes, so nothing else settles. The browser can still snap after a touch, so
       // this waits.
       setTimeout(() => {
-        if (element === null || state.pointerDown || state.scrolling) return
+        if (element === null || state.pointerDown || isScrolling(state)) return
         if (state.phase === 'released') settle()
         else if (state.phase === 'idle') stopBrowserSnap(element, state)
       }, SCROLL_END_DELAY)
