@@ -385,6 +385,26 @@ describe('ScrollView', () => {
       }
     })
 
+    // A right-to-left scroller has a scrollLeft of 0 or less.
+    test('in a right-to-left layout, snaps from the right edge', async () => {
+      const media = installFakeMatchMedia()
+      media.get('(prefers-reduced-motion: reduce)').matches = true
+      try {
+        const { container } = render(
+          <View style={{ direction: 'rtl' }}>
+            <ScrollView horizontal snapToInterval={100} style={{ width: 100 }}>
+              {wide()}
+            </ScrollView>
+          </View>,
+        )
+        const element = container.firstElementChild?.firstElementChild as HTMLElement
+        element.scrollLeft = -130
+        await waitFor(() => expect(element.scrollLeft).toBe(-100))
+      } finally {
+        media.restore()
+      }
+    })
+
     describe("the browser's scroll snap", () => {
       test('a touch turns it on, with a marker at each snap offset', async () => {
         const { container } = render(

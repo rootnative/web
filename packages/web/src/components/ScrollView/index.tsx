@@ -153,6 +153,14 @@ type SnapProps = {
   disableIntervalMomentum: boolean
 }
 
+const hasSnap = (props: SnapProps): boolean =>
+  props.snapToOffsets !== undefined || props.snapToInterval !== undefined || props.pagingEnabled
+
+const flowAxis = (element: HTMLElement, horizontal: boolean): FlowAxis => ({
+  horizontal,
+  rtl: horizontal && getComputedStyle(element).direction === 'rtl',
+})
+
 const snapConfig = (props: SnapProps, viewport: number): SnapConfig => ({
   offsets: props.snapToOffsets,
   interval: props.pagingEnabled ? viewport : props.snapToInterval,
@@ -180,12 +188,11 @@ const snapMarker = (position: number, horizontal: boolean, stop: boolean): HTMLE
 // on only during that input: at rest, a change of the content makes the browser snap again, and
 // that moves the list.
 const startBrowserSnap = (element: HTMLElement, state: Sequence, props: SnapProps): void => {
-  const { horizontal, pagingEnabled, snapToInterval, snapToOffsets } = props
-  if (snapToOffsets === undefined && snapToInterval === undefined && !pagingEnabled) return
+  if (!hasSnap(props)) return
+  const { horizontal } = props
   const viewport = horizontal ? element.clientWidth : element.clientHeight
-  const rtl = horizontal && getComputedStyle(element).direction === 'rtl'
   const positions = snapPositions(
-    scrollFlow(element, { horizontal, rtl }),
+    scrollFlow(element, flowAxis(element, horizontal)),
     viewport,
     horizontal ? element.scrollWidth : element.scrollHeight,
     snapConfig(props, viewport),
@@ -446,17 +453,18 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
       return
     }
     const config = snap.current
-    const axis = config.horizontal
-    const viewport = axis ? element.clientWidth : element.clientHeight
+    if (!hasSnap(config)) return
+    const axis = flowAxis(element, config.horizontal)
+    const viewport = axis.horizontal ? element.clientWidth : element.clientHeight
     const target = snapTarget(
-      axis ? element.scrollLeft : element.scrollTop,
+      scrollFlow(element, axis),
       viewport,
-      axis ? element.scrollWidth : element.scrollHeight,
+      axis.horizontal ? element.scrollWidth : element.scrollHeight,
       snapConfig(config, viewport),
     )
     if (target === undefined) return
     state.snapping = true
-    domScrollTo(element, axis ? { x: target } : { y: target })
+    domScrollTo(element, axis.horizontal ? { x: axis.rtl ? -target : target } : { y: target })
   }, [refreshEvent])
 
   const endScroll = useCallback((): void => {
