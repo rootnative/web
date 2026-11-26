@@ -100,6 +100,10 @@ describe('resolveTag', () => {
         expect(resolveTag({ role }, 'div')).toEqual({ tag: 'div', role })
       },
     )
+
+    test("a role outside React Native's list, such as the search landmark, passes as it is", () => {
+      expect(resolveTag({ role: 'search' }, 'div')).toEqual({ tag: 'div', role: 'search' })
+    })
   })
 
   describe('legacy accessibilityRole', () => {

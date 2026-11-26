@@ -134,7 +134,9 @@ a snap offset); onScrollBeginDrag, onScrollEndDrag, and the momentum events
 fire.
 Changes with no code change: isScreenReaderEnabled() resolves false
 (react-native-web: true); RefreshControl pulls with touch (keep a button for
-a mouse); a tap outside a focused TextInput keeps the keyboard, as on native.
+a mouse); a tap outside a focused TextInput keeps the keyboard, as on native;
+accessibilityRole="search" renders role="searchbox" (react-native-web: the
+search landmark; use role="search" for the landmark).
 
 ## Benchmarks
 
