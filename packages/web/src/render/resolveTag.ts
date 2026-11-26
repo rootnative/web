@@ -49,13 +49,18 @@ const headingLevel = (level: number | undefined): number =>
 // Elements that take no children. React throws when one gets children.
 const voidTags = new Set(['hr'])
 
+// The ARIA role of an element that keeps its tag, such as the field of a `TextInput`.
+export const resolveRole = (
+  props: Pick<ResolveTagInput, 'role' | 'accessibilityRole'>,
+): string | undefined => props.role ?? mapLegacyRole(props.accessibilityRole)
+
 // `hasChildren` matches React's check for a void element: children that are not null.
 export const resolveTag = (
   props: ResolveTagInput,
   defaultTag: string,
   hasChildren = false,
 ): ResolvedTag => {
-  const role = props.role ?? mapLegacyRole(props.accessibilityRole)
+  const role = resolveRole(props)
   const resolved = tagForRole(role, props, defaultTag)
   return hasChildren && voidTags.has(resolved.tag) ? { tag: defaultTag, role } : resolved
 }

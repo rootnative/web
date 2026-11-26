@@ -212,6 +212,7 @@ The role prop picks the element:
 - separator: hr. With children: a div with the role.
 - Any other role, and the table roles: the default element (div for View,
   span for Text) with a role attribute.
+- TextInput keeps its input or textarea. Each role is a role attribute.
 
 href on a View or a Text renders an <a> (web only). On Text, target, rel,
 download, and lang pass to the element (web only).

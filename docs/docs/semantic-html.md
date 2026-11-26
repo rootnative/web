@@ -59,6 +59,8 @@ Screen readers, search engines, and browser features such as reader mode get the
 
 Every other role keeps the default element, `<div>` for `View` and `<span>` for `Text`, with a `role` attribute.
 
+A `TextInput` always keeps its `<input>` or `<textarea>`. Each role is a `role` attribute there, for example `role="searchbox"` or `role="combobox"`.
+
 The table roles (`table`, `row`, `cell`, and the others) also stay on a `<div>` with the ARIA role. A real `<table>` would let the HTML parser move elements around, so the server HTML wouldn't match the React tree, and flex layout wouldn't apply.
 
 ## Links

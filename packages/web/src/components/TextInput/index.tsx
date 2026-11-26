@@ -17,6 +17,7 @@ import {
 import { listenForTapsOutsideField } from '../../events/keyboardTaps'
 import { toDOMProps } from '../../render/domProps'
 import { applyNativeProps, withHostMethods } from '../../render/hostMethods'
+import { resolveRole } from '../../render/resolveTag'
 import { withServerStyles } from '../../render/serverStyles'
 import { useElementLayout } from '../../render/useElementLayout'
 import { toCSSColor } from '../../style/color'
@@ -395,6 +396,8 @@ function TextInputComponent(props: TextInputProps): ReactElement {
   if (selectionName !== undefined) className = `${className} ${selectionName}`
 
   const domProps = toDOMProps(rest)
+  const role = resolveRole(rest)
+  if (role !== undefined) domProps['role'] = role
   domProps['className'] = className
   if (compiled.style !== undefined) domProps['style'] = compiled.style
   domProps['value'] = value

@@ -145,6 +145,32 @@ describe('TextInput', () => {
       expect(element.getAttribute('data-testid')).toBe('search')
       expect(element.id).toBe('q')
     })
+
+    test('role sets the ARIA role and keeps the element', () => {
+      const { container, rerender } = render(<TextInput role="searchbox" />)
+      expect(field(container).tagName).toBe('INPUT')
+      expect(field(container).getAttribute('role')).toBe('searchbox')
+
+      rerender(<TextInput role="combobox" multiline />)
+      expect(field(container).tagName).toBe('TEXTAREA')
+      expect(field(container).getAttribute('role')).toBe('combobox')
+
+      // A role that picks another element on a View stays an attribute here.
+      rerender(<TextInput role="button" />)
+      expect(field(container).tagName).toBe('INPUT')
+      expect(field(container).getAttribute('role')).toBe('button')
+    })
+
+    test('accessibilityRole maps to its ARIA role, and role wins', () => {
+      const { container, rerender } = render(<TextInput accessibilityRole="search" />)
+      expect(field(container).getAttribute('role')).toBe('searchbox')
+
+      rerender(<TextInput accessibilityRole="search" role="combobox" />)
+      expect(field(container).getAttribute('role')).toBe('combobox')
+
+      rerender(<TextInput />)
+      expect(field(container).hasAttribute('role')).toBe(false)
+    })
   })
 
   describe('value', () => {
