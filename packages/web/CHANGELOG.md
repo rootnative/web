@@ -4,6 +4,8 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+## [0.0.9] - 2026-11-26
+
 ### Added
 
 - **`disableIntervalMomentum` on a `ScrollView`.** With a finger, a pen, or the mouse wheel, the scroll stops at the next snap offset. Before, the prop had no effect.

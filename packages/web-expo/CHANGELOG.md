@@ -6,6 +6,12 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.9] - 2026-11-26
+
+### Changed
+
+- **Depends on `@rootnative/web` `0.0.9`.** A fling on a `ScrollView` with `snapToInterval`, `snapToOffsets`, or `pagingEnabled` ends on a snap offset, and a quick spin of the mouse wheel is one scroll that snaps once. `disableIntervalMomentum` works. `role` and `accessibilityRole` on a `TextInput` reach the element. The [changelog of `@rootnative/web`](https://github.com/rootnative/web/blob/main/packages/web/CHANGELOG.md) has the details.
+
 ## [0.0.8] - 2026-11-24
 
 ### Changed
