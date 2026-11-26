@@ -543,20 +543,39 @@ describe('PanResponder', () => {
         </View>,
       )
       const cancelable: boolean[] = []
+      // For the failure message: CI on Linux failed the first check, and macOS passes it.
+      const events: string[] = []
       const record = (event: TouchEvent): void => {
-        cancelable.push(event.cancelable)
+        if (event.type === 'touchmove') cancelable.push(event.cancelable)
+        if (events.length >= 12) return
+        const target = event.target instanceof Element ? event.target : null
+        const name =
+          target?.closest('[data-testid]')?.getAttribute('data-testid') ?? target?.tagName
+        const y = Math.round(event.touches[0]?.clientY ?? Number.NaN)
+        events.push(`${event.type} on ${name} at y ${y}, cancelable ${event.cancelable}`)
       }
+      const rects = (): string => {
+        const frame = window.frameElement?.getBoundingClientRect()
+        const [responder, elsewhere] = ['responder', 'elsewhere'].map((id) =>
+          Math.round(byTestId(container, id).getBoundingClientRect().top),
+        )
+        return `frame top ${frame?.top}, responder top ${responder}, elsewhere top ${elsewhere}`
+      }
+      document.addEventListener('touchstart', record, { passive: true })
       document.addEventListener('touchmove', record, { passive: true })
       try {
+        const before = rects()
         await realDrag(byTestId(container, 'elsewhere'), 40, 'y')
         await expect.poll(() => cancelable.length).toBeGreaterThan(0)
-        expect(cancelable[0]).toBe(false)
+        expect(cancelable[0], `${before}; ${events.join(', ')}`).toBe(false)
 
         cancelable.length = 0
+        events.length = 0
         await realDrag(byTestId(container, 'responder'), 40, 'y')
         await expect.poll(() => cancelable.length).toBeGreaterThan(0)
-        expect(cancelable[0]).toBe(true)
+        expect(cancelable[0], `${rects()}; ${events.join(', ')}`).toBe(true)
       } finally {
+        document.removeEventListener('touchstart', record)
         document.removeEventListener('touchmove', record)
       }
     })

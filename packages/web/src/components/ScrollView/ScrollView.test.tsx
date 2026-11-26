@@ -620,7 +620,9 @@ describe('ScrollView', () => {
     })
 
     describe.runIf(server.browser === 'chromium')('with real touch input in Chromium', () => {
-      // A fling with the JS snap alone goes on, stops, and then scrolls back to a snap offset.
+      // A fling with the JS snap alone goes on, stops, and then scrolls back to a snap offset. The
+      // browser's snap must be on until the browser's scroll ends. Chromium on Linux can stop that
+      // scroll short of a snap offset (CI run 45695647730), and then the JS snap finishes it.
       test('a fling moves one way after the finger lifts, and stops on a snap offset', async () => {
         const { container } = render(
           <ScrollView horizontal snapToInterval={100} style={{ width: 200 }}>
@@ -635,18 +637,36 @@ describe('ScrollView', () => {
         const at = (x: number): { x: number; y: number } => ({ x: runner.left + rect.left + x, y })
 
         let lifted = false
+        let browserScrollEnded = false
         let sampling = true
         const afterLift: number[] = []
         // The snap types of the frames where the list moves after the lift.
         const snapTypes = new Set<string>()
+        const start = performance.now()
+        const timeline: string[] = []
+        const note = (what: string): void => {
+          const snapType = element.style.scrollSnapType || 'no snap'
+          timeline.push(
+            `${Math.round(performance.now() - start)} ms ${what} ${element.scrollLeft} ${snapType}`,
+          )
+        }
         const sample = (): void => {
-          if (lifted) {
-            if (element.scrollLeft !== afterLift.at(-1)) snapTypes.add(element.style.scrollSnapType)
+          if (lifted && !browserScrollEnded) {
+            if (element.scrollLeft !== afterLift.at(-1)) {
+              snapTypes.add(element.style.scrollSnapType)
+              note('frame')
+            }
             afterLift.push(element.scrollLeft)
           }
           if (sampling) requestAnimationFrame(sample)
         }
         requestAnimationFrame(sample)
+        // A frame runs its scroll events before its frame callbacks. So the sampler skips the frame
+        // of the scrollend, where the ScrollView has already turned the browser's snap off.
+        element.addEventListener('scrollend', () => {
+          note('scrollend')
+          if (lifted) browserScrollEnded = true
+        })
 
         const session: CDPSession = cdp()
         await session.send('Input.dispatchTouchEvent', {
@@ -660,23 +680,26 @@ describe('ScrollView', () => {
           })
         }
         await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+        note('lift')
         lifted = true
-        // The ScrollView turns the browser's snap off when the scroll ends.
-        await vi.waitFor(() => expect(element.style.scrollSnapType).toBe(''), {
+        await vi.waitFor(() => expect(browserScrollEnded, timeline.join(', ')).toBe(true), {
           timeout: 5000,
           interval: 20,
         })
         await waitForRest(element)
         sampling = false
+        note('rest')
+        const log = timeline.join(', ')
 
-        expect([...snapTypes]).toEqual(['x mandatory'])
+        expect([...snapTypes], log).toEqual(['x mandatory'])
         const steps = afterLift
           .slice(1)
           .map((value, index) => Math.sign(value - (afterLift[index] ?? value)))
-        expect(new Set(steps.filter((step) => step !== 0)).size).toBeLessThanOrEqual(1)
+        expect(new Set(steps.filter((step) => step !== 0)).size, log).toBeLessThanOrEqual(1)
         const end = element.scrollLeft
-        expect(end).toBeGreaterThan(0)
-        expect(end % 100).toBe(0)
+        expect(end, log).toBeGreaterThan(0)
+        expect(end % 100, log).toBe(0)
+        expect(element.style.scrollSnapType, log).toBe('')
       })
     })
 
