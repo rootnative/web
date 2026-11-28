@@ -91,3 +91,33 @@ describe('withRootNative and the config', () => {
     expect(() => withRootNative({ resolver: {} })).toThrow(/projectRoot/)
   })
 })
+
+// Each package keeps its own copy of the map, so that web-expo needs no web-metro at run time.
+const metro = createRequire(import.meta.url)('../../web-metro/metro.cjs')
+
+// The name that one helper sends to the next resolver on the web.
+const targetOf = (helper, moduleName) => {
+  const next = vi.fn(() => ({ type: 'empty' }))
+  const context = { originModulePath: libraryOrigin, resolveRequest: next }
+  helper.withRootNative({ projectRoot }).resolver.resolveRequest(context, moduleName, 'web')
+  return next.mock.calls[0][1]
+}
+
+describe('withRootNative and web-metro', () => {
+  test.each([
+    'react-native',
+    'react-native/index.js',
+    'react-native/asset-registry',
+    'react-native/Libraries/Image/AssetRegistry.js',
+    '@react-native/assets-registry/registry',
+    'react-native-web',
+    'react-native-web/dist/exports/View',
+    'react-native-web/dist/cjs/exports/StyleSheet/preprocess',
+    'react-native/Libraries/Utilities/codegenNativeComponent',
+    'react',
+  ])('maps %s as web-metro does, to its own package', (moduleName) => {
+    const own = targetOf({ withRootNative }, moduleName)
+    const other = targetOf(metro, moduleName).replace('@rootnative/web-metro', FACADE)
+    expect(own).toBe(other)
+  })
+})

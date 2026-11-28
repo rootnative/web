@@ -7,7 +7,9 @@ const { join } = require('node:path')
 // `index.web.js` on the web when the app has one.
 const DEV_BUNDLE = '/index.bundle?platform=web&dev=true&minify=false'
 
-const escapeHTML = (text) => text.replace(/[&<>"]/g, (char) => `&#${char.charCodeAt(0)};`)
+const ENTITIES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }
+
+const escapeHTML = (text) => text.replace(/[&<>"]/g, (char) => ENTITIES[char])
 
 const appTitle = (projectRoot) => {
   try {

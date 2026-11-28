@@ -11,3 +11,5 @@ coverage/
 .docusaurus/
 .expo/
 docs/build/
+# Written by the build of web-expo, from packages/web-metro/facade-exports.json.
+packages/web-expo/expo-exports.json

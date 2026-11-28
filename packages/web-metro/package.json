@@ -28,6 +28,7 @@
   "files": [
     "dist",
     "bin",
+    "facade-exports.json",
     "asset-registry.js",
     "metro.cjs",
     "babel-transformer.cjs",

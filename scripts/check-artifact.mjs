@@ -4,8 +4,8 @@
 // - each `exports` target is in the tarball, and each JavaScript entry has its .d.ts beside it,
 // - package.json, LICENSE, README.md, CHANGELOG.md, and llms.txt are in it.
 // packages/web-expo:
-// - each file that its build writes is in the tarball, so each name of expo-exports.json has its
-//   file under dist/exports/,
+// - each file that its build writes from the facade of packages/web-metro is in the tarball, so
+//   each name of expo-exports.json has its file under dist/exports/,
 // - package.json, LICENSE, README.md, CHANGELOG.md, expo-exports.json, asset-registry.js, and the
 //   `main` file are in it, and nothing from src/, scripts/, or test/,
 // - each `@rootnative/web/internal/*.js` file that it imports is in the tarball of packages/web.
@@ -20,7 +20,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { facadeFiles, SOURCE_FILES } from '../packages/web-expo/scripts/build.mjs'
+import { facadeFiles, SOURCE_FILES } from '../packages/web-metro/scripts/facade.mjs'
 
 const packagesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'packages')
 const problems = []
@@ -106,7 +106,7 @@ const requireFiles = (name, files, required) => {
     problems.push(`The tarball of web-expo has files of the repo: ${sources.join(', ')}.`)
   }
   const sourceTexts = SOURCE_FILES.map((file) =>
-    readFileSync(join(packagesDir, 'web-expo', 'src', file), 'utf8'),
+    readFileSync(join(packagesDir, 'web-metro', 'src', file), 'utf8'),
   )
   const imported = [...facadeFiles().values(), ...sourceTexts].flatMap((text) =>
     [...text.matchAll(/'@rootnative\/web\/internal\/([^']+)'/g)].map((match) => `dist/${match[1]}`),

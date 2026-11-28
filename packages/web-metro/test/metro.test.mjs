@@ -163,7 +163,7 @@ describe('the page on the dev server', () => {
     const root = mkdtempSync(join(tmpdir(), 'web-metro-'))
     writeFileSync(join(root, 'app.json'), JSON.stringify({ name: 'shop', displayName: 'A & B' }))
     const { res } = request(withRootNative({ projectRoot: root }), 'GET', '/index.html')
-    expect(res.end.mock.calls[0][0]).toContain('<title>A &#38; B</title>')
+    expect(res.end.mock.calls[0][0]).toContain('<title>A &amp; B</title>')
   })
 
   test.each([

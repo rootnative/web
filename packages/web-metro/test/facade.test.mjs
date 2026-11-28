@@ -10,7 +10,7 @@ import {
   runtimeModules,
   SOURCE_FILES,
   SUPPLIED,
-} from '../scripts/build.mjs'
+} from '../scripts/facade.mjs'
 import { missing as missingExport } from '../src/missing.js'
 import { normalizeColor } from '../src/normalizeColor.js'
 

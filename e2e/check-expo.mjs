@@ -1,6 +1,6 @@
 // Checks that an Expo app runs on `@rootnative/web`. Run it after `pnpm build`:
-// - each name that Expo's bundler rewrites to a file of react-native-web is in the list of
-//   `@rootnative/web-expo`, so a new Expo release can't add a path with no file,
+// - each name that Expo's bundler rewrites to a file of react-native-web is in the list of the
+//   facade, which `@rootnative/web-expo` ships, so a new Expo release can't add a path with no file,
 // - the app in packages/expo-demo exports for the web with Expo, as static output: Expo Router
 //   renders each route on the server,
 // - the exported page hydrates and works in Chromium, and its runtime is `@rootnative/web`.
@@ -11,7 +11,7 @@
 // `pnpm --filter @rootnative/expo-demo dev:source` starts one on the source of `@rootnative/web`,
 // so that path needs no build, and with `EXPO_WEB_DEV_HYDRATE=1`, so the page hydrates as an
 // export does. Run `node packages/web-expo/scripts/build.mjs` first: it writes the files of the
-// facade.
+// facade, from packages/web-metro.
 
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, statSync } from 'node:fs'
@@ -25,7 +25,7 @@ import { chromium } from 'playwright'
 const e2eDir = dirname(fileURLToPath(import.meta.url))
 const repoDir = join(e2eDir, '..')
 const appDir = join(repoDir, 'packages', 'expo-demo')
-const facadeDir = join(repoDir, 'packages', 'web-expo')
+const exportsFile = join(repoDir, 'packages', 'web-metro', 'facade-exports.json')
 const outDir = join(appDir, 'dist')
 
 const urlFlag = process.argv.indexOf('--url')
@@ -75,13 +75,13 @@ function checkNames() {
     '@expo/metro-config': metroNames(fromApp),
     'babel-preset-expo': babelNames(fromApp),
   }
-  const { names } = JSON.parse(readFileSync(join(facadeDir, 'expo-exports.json'), 'utf8'))
+  const { names } = JSON.parse(readFileSync(exportsFile, 'utf8'))
   const known = new Set(names)
   for (const [source, expoNames] of Object.entries(lists)) {
     for (const name of expoNames) {
       if (!known.has(name)) {
         problems.push(
-          `${source} rewrites "${name}" to react-native-web/dist/exports/${name}, and packages/web-expo/expo-exports.json doesn't have it. Add it to "names", and to "missing" if @rootnative/web has no such export.`,
+          `${source} rewrites "${name}" to react-native-web/dist/exports/${name}, and packages/web-metro/facade-exports.json doesn't have it. Add it to "names", and to "missing" if @rootnative/web has no such export.`,
         )
       }
     }
