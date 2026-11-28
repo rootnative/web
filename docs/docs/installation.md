@@ -1,7 +1,7 @@
 ---
 id: installation
 title: Installation
-description: Set up @rootnative/web in an Expo app on Metro, or in a Vite app with its plugin.
+description: Set up @rootnative/web in an Expo app or a React Native CLI app on Metro, or in a Vite app with its plugin.
 ---
 
 # Installation
@@ -9,6 +9,7 @@ description: Set up @rootnative/web in an Expo app on Metro, or in a Vite app wi
 You need React 19 and React DOM 19. Pick the setup for your app:
 
 - [Expo (Metro)](#expo-metro): an Expo app, also with Expo Router.
+- [React Native CLI (Metro)](#react-native-cli-metro): a React Native app with no Expo.
 - [Vite](#vite): a web-only app, or server rendering on Vite.
 
 If your app uses react-native-web now, also read [From react-native-web](/from-react-native-web).
@@ -40,6 +41,37 @@ npx expo start --clear
 Keep `react-dom` in the `dependencies` of your `package.json`, or Expo stops with an error. Expo still warns that react-native-web isn't installed, but the warning stops nothing.
 
 Your app code and its types don't change. [Expo](/expo) shows a setup with no Metro config, what works, and the Jest setup.
+
+## React Native CLI (Metro)
+
+The app needs React Native 0.88. Install `@rootnative/web-metro`:
+
+```bash npm2yarn
+npm install @rootnative/web-metro react-dom
+```
+
+Wrap your Metro config with `withRootNative`, as the last step of the config:
+
+```js title="metro.config.js"
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config')
+const { withRootNative } = require('@rootnative/web-metro/metro.cjs')
+
+module.exports = withRootNative(mergeConfig(getDefaultConfig(__dirname), {}))
+```
+
+Add `index.web.js` beside `index.js`. It starts the app on the web:
+
+```js title="index.web.js"
+import { AppRegistry } from 'react-native'
+
+import App from './App'
+import { name } from './app.json'
+
+AppRegistry.registerComponent(name, () => App)
+AppRegistry.runApplication(name, { rootTag: document.getElementById('root') })
+```
+
+Run `npx react-native start`, and open `http://localhost:8081/index.html`. [React Native CLI](/react-native-cli) shows the build, your own page, and what works.
 
 ## Vite
 

@@ -51,6 +51,16 @@ module.exports = withRootNative(getDefaultConfig(__dirname))
 
 Your app code doesn't change. [Expo](https://rootnative.github.io/web/expo) shows a setup with no Metro config, and what works.
 
+### React Native CLI (Metro)
+
+For a React Native app with no Expo, on React Native 0.88:
+
+```bash
+npm install @rootnative/web-metro react-dom
+```
+
+Wrap your Metro config with `withRootNative`, and add an `index.web.js` that calls `AppRegistry.runApplication`. Then run `npx react-native start`, and open `http://localhost:8081/index.html`. `npx rootnative-web build` writes the production build. [React Native CLI](https://rootnative.github.io/web/react-native-cli) shows each step.
+
 ### Vite
 
 ```bash
@@ -132,7 +142,11 @@ The monorepo uses pnpm, TypeScript 7, tsdown, Vitest 5 in browser mode with Play
 ```
 packages/
   web/          @rootnative/web
+  web-expo/     @rootnative/web-expo, for an Expo app
+  web-metro/    @rootnative/web-metro, for a React Native app with no Expo
   playground/   Vite app with one route per component
+  expo-demo/    Expo app for check:expo
+  metro-demo/   React Native CLI app for check:metro
 docs/           the docs site
 scripts/        the llms, brand, and check scripts
 ```

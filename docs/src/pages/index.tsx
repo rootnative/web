@@ -473,10 +473,10 @@ function Layers() {
         <span className={styles.sectionEyebrow}>How it works</span>
         <h2 className={styles.sectionTitle}>One import. Three layers.</h2>
         <p className={styles.sectionLead}>
-          Your app imports <code>react-native</code>. On Metro, <code>@rootnative/web-expo</code>{' '}
-          resolves that name to <code>@rootnative/web</code>. On Vite, the plugin does it. Import
-          the web entry only in code that runs on the web. A server render needs nothing from this
-          package.
+          Your app imports <code>react-native</code>. On Metro, <code>@rootnative/web-expo</code> or{' '}
+          <code>@rootnative/web-metro</code> resolves that name to <code>@rootnative/web</code>. On
+          Vite, the plugin does it. Import the web entry only in code that runs on the web. A server
+          render needs nothing from this package.
         </p>
         <div className={styles.layersGrid}>
           {layers.map((layer, index) => (
@@ -503,9 +503,9 @@ function Setup() {
             Point <code>react-native</code> at the package.
           </h2>
           <p className={styles.sectionLead}>
-            In an Expo app, wrap your Metro config with <code>withRootNative</code>. In a Vite app,
-            add the Vite plugin. The rest of your app stays the same code that runs on iOS and
-            Android.
+            In an Expo app or a React Native CLI app, wrap your Metro config with{' '}
+            <code>withRootNative</code>. In a Vite app, add the Vite plugin. The rest of your app
+            stays the same code that runs on iOS and Android.
           </p>
           <Link className={styles.ctaPrimary} to="/installation">
             Read the installation guide

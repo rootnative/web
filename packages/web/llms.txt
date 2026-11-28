@@ -1,10 +1,11 @@
 # @rootnative/web
 
 > A standalone web runtime for React Native apps. The app imports
-> react-native. In an Expo app, @rootnative/web-expo resolves that name to
-> @rootnative/web on Metro; in a Vite app, the Vite plugin does. The app runs
-> in the browser as a real web app: semantic HTML, atomic CSS, server
-> rendering, and SEO tags. It doesn't use react-native-web.
+> react-native. On Metro, @rootnative/web-expo (an Expo app) or
+> @rootnative/web-metro (a React Native app with no Expo) resolves that name
+> to @rootnative/web; in a Vite app, the Vite plugin does. The app runs in the
+> browser as a real web app: semantic HTML, atomic CSS, server rendering, and
+> SEO tags. It doesn't use react-native-web.
 
 Every component and API has tests that run in real browsers: Chromium,
 Firefox, and WebKit, the engine of Safari.
@@ -13,8 +14,8 @@ Docs: https://rootnative.github.io/web/
 Full: https://rootnative.github.io/web/llms-full.txt
 Source: https://github.com/rootnative/web
 
-Peers: react ^19.0.0, react-dom ^19.0.0. ESM only. Two setups: an Expo app
-on Metro, or a Vite app.
+Peers: react ^19.0.0, react-dom ^19.0.0. ESM only. Three setups: an Expo app
+on Metro, a React Native CLI app on Metro, or a Vite app.
 
 ## Install: Expo (Metro)
 
@@ -69,6 +70,41 @@ react-native, react-native-web, and react-native-web/(.*) to
 the packages that transformIgnorePatterns lets Babel transform (ES modules).
 jsdom has no layout: sizes are 0, onLayout doesn't fire, onContentSizeChange
 fires once on mount, and a scroll does nothing.
+
+## Install: React Native CLI (Metro)
+
+A React Native app with no Expo (React Native 0.88) runs on @rootnative/web
+through @rootnative/web-metro:
+  npm install @rootnative/web-metro react-dom
+  // metro.config.js, withRootNative last
+  const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config')
+  const { withRootNative } = require('@rootnative/web-metro/metro.cjs')
+  module.exports = withRootNative(mergeConfig(getDefaultConfig(__dirname), {}))
+  // index.web.js, beside index.js: native code starts the app on iOS and
+  // Android, this file starts it on the web
+  AppRegistry.registerComponent(name, () => App)
+  AppRegistry.runApplication(name, { rootTag: document.getElementById('root') })
+On the web, withRootNative adds the web platform, sends react-native and each
+react-native-web path to the package, loads the browser build of each library
+(no .native file, no react-native condition), runs the app's Babel
+transformer with two more plugins (one module of @rootnative/web for each
+named react-native import; React Refresh in development), and serves a page.
+iOS and Android don't change.
+Dev: npx react-native start, then http://localhost:8081/index.html (the CLI
+answers / itself). Fast Refresh keeps the state of a component; errors of the
+dev server go to the console.
+Build: npx rootnative-web build [--entry-file] [--output-dir dist]
+[--sourcemap] [--reset-cache] writes index.html, index-<hash>.js, and the
+images. Serve dist/ at the site root. An index.html in the app folder is the
+page of both: keep <div id="root"> and the script
+/index.bundle?platform=web&dev=true&minify=false, which the build replaces.
+Limits: no tree shaking (larger than a Vite bundle), served from the site
+root only, image names have no hash, other files of the app aren't copied,
+no static export. In a monorepo, set resolver.nodeModulesPaths to the app's
+node_modules (React Native's preset adds @babel/runtime imports to linked
+packages) and watchFolders to the workspace root.
+web-metro depends on the exact same version of @rootnative/web. Its
+facade-exports.json lists the names that load as stubs under "missing".
 
 ## Install: Vite
 
@@ -155,7 +191,7 @@ https://rootnative.github.io/web/benchmarks
 ## Entry points
 
 - @rootnative/web: the React Native components and APIs. Import it as
-  react-native, through web-expo or the Vite plugin.
+  react-native, through web-expo, web-metro, or the Vite plugin.
 - @rootnative/web/dom: web-only features. Head.
 - @rootnative/web/vite: rootnative(), the Vite plugin. Only in vite.config.ts.
 - Server render: react-dom/server only. Each component puts its CSS into the
@@ -190,7 +226,6 @@ Compat, for libraries only, do not call in app code: unstable_createElement,
 findNodeHandle, TurboModuleRegistry. Compat props: hrefAttrs and dataSet.
 
 NOT IMPLEMENTED, do not import:
-- A Metro setup for a React Native CLI app. Metro works only through Expo.
 - A Next.js plugin, and templates for a Vite app with and without server
   rendering.
 
@@ -317,7 +352,7 @@ Image
   size in the style or the source, it's 0 x 0, as on native.
 - source: { uri }; an array with scale (srcset x) or width (srcset w);
   { uri, headers } with method and body (loads with fetch); a URL string from
-  a bundler import (web only). A number from require() with Metro loads from
+  a bundler import (web only). A number from require() with web-metro loads from
   the URL in the asset registry, with a srcset of the @2x and @3x files and
   the size of the image as the default size. On the dev server the URL has
   ?platform=web, so a .web.png file wins. An id that nobody registered (Vite
@@ -848,7 +883,7 @@ StatusBar
 - TurboModuleRegistry: compat. get() returns null, getEnforcing() throws.
 - @rootnative/web/assets-registry: compat entry with registerAsset and
   getAssetByID. The Vite plugin aliases @react-native/assets-registry/registry
-  to it. On the web, Metro registers each required image here, and Image
+  to it. With web-metro, Metro registers each required image here, and Image
   loads an asset id from it. With Vite it's empty unless your code registers
   an asset.
 - @rootnative/web/style: compat entry for Reanimated 4. createReactDOMStyle

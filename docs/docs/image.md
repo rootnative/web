@@ -40,13 +40,13 @@ The `src` and `srcSet` props work too, as on native.
 
 ## Local images
 
-With Metro, `require('./logo.png')` gives a number, as on native. Metro registers the image, and `Image` loads it from the URL that Metro gives:
+In a React Native app with no Expo, on [`@rootnative/web-metro`](/react-native-cli), `require('./logo.png')` gives a number, as on native. Metro registers the image, and `Image` loads it from the URL that Metro gives:
 
 - A `srcset` lists the `@2x` and `@3x` files of the image, so the browser loads the file for the pixel density of the screen.
 - The box takes the size of the image when the style has none, as on native.
 - On the dev server, the URL asks for the `.web.png` file of the image when the image has one.
 
-Vite gives no number for `require`. An id that Metro didn't register loads nothing, and the image warns once. With Vite, import the image and pass the URL:
+In an Expo app, `require` gives the URL and the size of the image, and `Image` reads them: see [Expo](/expo). Vite gives no number for `require`. An id that Metro didn't register loads nothing, and the image warns once. With Vite, import the image and pass the URL:
 
 ```tsx
 import { Image } from 'react-native'
