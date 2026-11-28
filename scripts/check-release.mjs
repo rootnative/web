@@ -4,10 +4,10 @@
 //   node scripts/check-release.mjs --version 0.0.0-alpha.1 --dist-tag latest
 //
 // - npm is new enough for `npm stage publish` with trusted publishing.
-// - packages/web/package.json and packages/web-expo/package.json have the version asked for, and
-//   web-expo isn't private.
-// - packages/web-expo/CHANGELOG.md has a dated section for it. check-versions.mjs lets that file
-//   have only Unreleased before the first release, so this is where a missing note stops.
+// - packages/web, packages/web-expo, and packages/web-metro have the version asked for, and
+//   web-expo and web-metro aren't private.
+// - The CHANGELOGs of web-expo and web-metro have a dated section for it. check-versions.mjs lets
+//   them have only Unreleased before their first release, so this is where a missing note stops.
 // - The tag web@<version> doesn't exist yet. A CI checkout needs `fetch-depth: 0` for this.
 // - A prerelease on `latest` doesn't replace a stable release there.
 
@@ -62,24 +62,26 @@ if (version !== requested) {
   problems.push(`You asked for ${requested}, but packages/web/package.json has ${version}.`)
 }
 
-// @rootnative/web-expo releases in the same run, at the same version.
-const expo = JSON.parse(read('packages/web-expo/package.json'))
-if (expo.version !== requested) {
-  problems.push(
-    `You asked for ${requested}, but packages/web-expo/package.json has ${expo.version}.`,
-  )
-}
-if (expo.private === true) {
-  problems.push(`packages/web-expo/package.json is private, so npm won't publish it.`)
-}
-const expoSection = new RegExp(
+// @rootnative/web-expo and @rootnative/web-metro release in the same run, at the same version.
+const section = new RegExp(
   `^## \\[${requested.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\] - \\d{4}-\\d{2}-\\d{2}$`,
   'm',
 )
-if (!expoSection.test(read('packages/web-expo/CHANGELOG.md'))) {
-  problems.push(
-    `packages/web-expo/CHANGELOG.md has no "## [${requested}] - <date>" section. It ships in this release, so write its note too.`,
-  )
+for (const name of ['web-expo', 'web-metro']) {
+  const manifest = JSON.parse(read(`packages/${name}/package.json`))
+  if (manifest.version !== requested) {
+    problems.push(
+      `You asked for ${requested}, but packages/${name}/package.json has ${manifest.version}.`,
+    )
+  }
+  if (manifest.private === true) {
+    problems.push(`packages/${name}/package.json is private, so npm won't publish it.`)
+  }
+  if (!section.test(read(`packages/${name}/CHANGELOG.md`))) {
+    problems.push(
+      `packages/${name}/CHANGELOG.md has no "## [${requested}] - <date>" section. It ships in this release, so write its note too.`,
+    )
+  }
 }
 
 const tag = `web@${version}`

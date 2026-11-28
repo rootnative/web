@@ -1,7 +1,6 @@
 {
   "name": "@rootnative/web-metro",
   "version": "0.0.9",
-  "private": true,
   "description": "Runs a React Native app with no Expo on @rootnative/web, with Metro",
   "license": "MIT",
   "homepage": "https://rootnative.github.io/web/",
@@ -35,7 +34,8 @@
     "dev-client.js",
     "page.cjs",
     "cli.mjs",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -48,9 +48,13 @@
   },
   "peerDependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-native": ">=0.88.0 <0.89.0"
   },
   "devDependencies": {
     "vitest": "5.0.5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

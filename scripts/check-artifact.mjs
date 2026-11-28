@@ -1,17 +1,18 @@
-// Checks the npm tarballs of the two published packages against their manifests. Run it after
+// Checks the npm tarballs of the three published packages against their manifests. Run it after
 // `pnpm build`.
 // packages/web:
 // - each `exports` target is in the tarball, and each JavaScript entry has its .d.ts beside it,
 // - package.json, LICENSE, README.md, CHANGELOG.md, and llms.txt are in it.
-// packages/web-expo:
-// - each file that its build writes from the facade of packages/web-metro is in the tarball, so
-//   each name of expo-exports.json has its file under dist/exports/,
-// - package.json, LICENSE, README.md, CHANGELOG.md, expo-exports.json, asset-registry.js, and the
-//   `main` file are in it, and nothing from src/, scripts/, or test/,
-// - each `@rootnative/web/internal/*.js` file that it imports is in the tarball of packages/web.
-//   The build of the runtime emits no file for a module that only re-exports, so a path can be
-//   in src/ and not in dist/.
-// Both: no test file.
+// packages/web-expo and packages/web-metro, which both ship the facade of packages/web-metro:
+// - each file of the facade is in the tarball, so each name of the list has its file under
+//   dist/exports/,
+// - package.json, LICENSE, README.md, CHANGELOG.md, the list of names, asset-registry.js, the
+//   `main` file, and the files of the package are in it, and nothing from src/, scripts/, or test/,
+// - web-metro: each `bin` file is in it,
+// - each `@rootnative/web/internal/*.js` file that the facade imports is in the tarball of
+//   packages/web. The build of the runtime emits no file for a module that only re-exports, so a
+//   path can be in src/ and not in dist/.
+// All: no test file.
 // It lists the files with `npm pack --dry-run --ignore-scripts`: the same packer as
 // `npm stage publish`, but it builds nothing and writes no tarball.
 
@@ -87,34 +88,54 @@ const requireFiles = (name, files, required) => {
   summaries.push(`${manifest.name}@${manifest.version}: ${files.size} files and every export`)
 }
 
-// packages/web-expo
-{
-  const { manifest, files } = pack('web-expo')
-  const built = [...facadeFiles().keys(), ...SOURCE_FILES].map((path) => `dist/${path}`)
-  requireFiles('web-expo', files, [
-    'package.json',
-    'LICENSE',
-    'README.md',
-    'CHANGELOG.md',
-    'expo-exports.json',
-    'asset-registry.js',
-    manifest.main.replace(/^\.\//, ''),
-    ...built,
-  ])
-  const sources = [...files].filter((path) => /^(src|scripts|test)\//.test(path))
-  if (sources.length > 0) {
-    problems.push(`The tarball of web-expo has files of the repo: ${sources.join(', ')}.`)
-  }
+// Each `@rootnative/web/internal/*.js` file that the facade imports.
+const facadeImports = () => {
   const sourceTexts = SOURCE_FILES.map((file) =>
     readFileSync(join(packagesDir, 'web-metro', 'src', file), 'utf8'),
   )
   const imported = [...facadeFiles().values(), ...sourceTexts].flatMap((text) =>
     [...text.matchAll(/'@rootnative\/web\/internal\/([^']+)'/g)].map((match) => `dist/${match[1]}`),
   )
-  const lost = [...new Set(imported)].filter((path) => !webFiles.has(path))
+  return [...new Set(imported)]
+}
+
+// packages/web-expo and packages/web-metro
+for (const [name, ownFiles] of [
+  ['web-expo', ['expo-exports.json', 'metro.cjs']],
+  [
+    'web-metro',
+    [
+      'facade-exports.json',
+      'metro.cjs',
+      'babel-transformer.cjs',
+      'dev-client.js',
+      'page.cjs',
+      'cli.mjs',
+    ],
+  ],
+]) {
+  const { manifest, files } = pack(name)
+  const built = [...facadeFiles().keys(), ...SOURCE_FILES].map((path) => `dist/${path}`)
+  const bins = Object.values(manifest.bin ?? {}).map((path) => path.replace(/^\.\//, ''))
+  requireFiles(name, files, [
+    'package.json',
+    'LICENSE',
+    'README.md',
+    'CHANGELOG.md',
+    'asset-registry.js',
+    manifest.main.replace(/^\.\//, ''),
+    ...ownFiles,
+    ...bins,
+    ...built,
+  ])
+  const sources = [...files].filter((path) => /^(src|scripts|test)\//.test(path))
+  if (sources.length > 0) {
+    problems.push(`The tarball of ${name} has files of the repo: ${sources.join(', ')}.`)
+  }
+  const lost = facadeImports().filter((path) => !webFiles.has(path))
   if (lost.length > 0) {
     problems.push(
-      `web-expo imports files of @rootnative/web that its tarball doesn't have: ${lost.join(', ')}. Export the name from a module that the build emits.`,
+      `${name} imports files of @rootnative/web that its tarball doesn't have: ${lost.join(', ')}. Export the name from a module that the build emits.`,
     )
   }
   summaries.push(

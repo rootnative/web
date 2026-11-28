@@ -2,9 +2,11 @@
 // - packages/web/CHANGELOG.md has a `## [<version>] - <date>` section, and its link footer has a
 //   line for each release up to that version.
 // - The Status page names the version in its "The latest release is" line.
-// - packages/web-expo has the same version, because the two packages release together.
-// - packages/web-expo/CHANGELOG.md has the same section and footer, from its first release on.
-//   Before that release, it has only Unreleased. check-release.mjs requires the section in a release.
+// - packages/web-expo and packages/web-metro have the same version, because the three packages
+//   release together.
+// - Their CHANGELOGs have the same section and footer, from the first release of each package on.
+//   Before that release, a CHANGELOG has only Unreleased. check-release.mjs requires the section in
+//   a release.
 // - The install line of packages/web-expo/README.md names the version.
 // With --fix, it rebuilds the footers, the Status line, and the install line. It never writes a
 // release note, so a missing CHANGELOG section always fails. After a fix, run `pnpm build:llms`:
@@ -99,13 +101,15 @@ const checkChangelog = (changelogPath, { firstReleasePending }) => {
 
 checkChangelog('packages/web/CHANGELOG.md', { firstReleasePending: false })
 
-const expoVersion = JSON.parse(read('packages/web-expo/package.json')).version
-if (expoVersion !== version) {
-  problems.push(
-    `packages/web-expo/package.json has ${expoVersion}, and packages/web/package.json has ${version}. The two packages release together at one version.`,
-  )
+for (const name of ['web-expo', 'web-metro']) {
+  const otherVersion = JSON.parse(read(`packages/${name}/package.json`)).version
+  if (otherVersion !== version) {
+    problems.push(
+      `packages/${name}/package.json has ${otherVersion}, and packages/web/package.json has ${version}. The three packages release together at one version.`,
+    )
+  }
+  checkChangelog(`packages/${name}/CHANGELOG.md`, { firstReleasePending: true })
 }
-checkChangelog('packages/web-expo/CHANGELOG.md', { firstReleasePending: true })
 
 const readmePath = 'packages/web-expo/README.md'
 const readme = read(readmePath)

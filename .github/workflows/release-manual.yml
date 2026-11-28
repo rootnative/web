@@ -4,21 +4,24 @@ name: Release (manual)
 # to the exact `owner/repo` and workflow filename. After a rename, the run fails at the publish
 # step with a 404 on `PUT /@rootnative%2fweb`, after every gate passed.
 #
-# One run releases two packages at one version: @rootnative/web and @rootnative/web-expo. Before
-# the first run, register this file as a trusted publisher of each package on npmjs.com:
-# repository `rootnative/web`, workflow `release-manual.yml`, stage-only. npm takes a trusted
-# publisher only for a package that exists, so a new package needs a first version by hand.
+# One run releases three packages at one version: @rootnative/web, @rootnative/web-expo, and
+# @rootnative/web-metro. Before the first run of a package, register this file as a trusted
+# publisher of it on npmjs.com: repository `rootnative/web`, workflow `release-manual.yml`,
+# stage-only. npm takes a trusted publisher only for a package that exists, so a new package needs
+# a first version by hand.
 #
 # To release:
-# 1. Write the `## [<version>] - <date>` section in packages/web/CHANGELOG.md and in
-#    packages/web-expo/CHANGELOG.md, with the entries from Unreleased. Commit them to main.
+# 1. Write the `## [<version>] - <date>` section in the CHANGELOG of each package
+#    (packages/web, packages/web-expo, packages/web-metro), with the entries from Unreleased.
+#    Commit them to main.
 # 2. Dispatch this workflow from main with that version.
-# 3. Approve the two staged versions with 2FA on npmjs.com (Staged Packages), or with
-#    `npm stage approve`: @rootnative/web first, because web-expo depends on its exact version.
+# 3. Approve the three staged versions with 2FA on npmjs.com (Staged Packages), or with
+#    `npm stage approve`: @rootnative/web first, because the two others depend on its exact
+#    version.
 #
-# The workflow sets the version of both packages, fixes the version references, rebuilds the llms
-# files, and runs every gate on the result. Then it commits `release: web@<version>`, tags it,
-# pushes both, stages the two publishes, creates the GitHub Release, and deploys the docs.
+# The workflow sets the version of the three packages, fixes the version references, rebuilds the
+# llms files, and runs every gate on the result. Then it commits `release: web@<version>`, tags
+# it, pushes both, stages the three publishes, creates the GitHub Release, and deploys the docs.
 #
 # When a run fails after the push, keep the release commit. Delete the tag
 # (`git push --delete origin web@<version>`) and dispatch again with the same version. A package
@@ -63,7 +66,7 @@ concurrency:
 
 jobs:
   release:
-    name: Release @rootnative/web and @rootnative/web-expo
+    name: Release @rootnative/web, web-expo, and web-metro
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -118,6 +121,7 @@ jobs:
           # then failed to publish leaves the version already set.
           npm version "$VERSION" --no-git-tag-version --allow-same-version
           (cd ../web-expo && npm version "$VERSION" --no-git-tag-version --allow-same-version)
+          (cd ../web-metro && npm version "$VERSION" --no-git-tag-version --allow-same-version)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Check the release
@@ -153,7 +157,8 @@ jobs:
           # Each file that the steps above can change.
           git add packages/web/package.json packages/web/CHANGELOG.md packages/web/llms.txt \
             packages/web-expo/package.json packages/web-expo/CHANGELOG.md \
-            packages/web-expo/README.md docs/docs/status.md docs/static/llms-full.txt
+            packages/web-expo/README.md packages/web-metro/package.json \
+            packages/web-metro/CHANGELOG.md docs/docs/status.md docs/static/llms-full.txt
           # A change outside that list would stay out of the commit, and CI on main would fail.
           if ! git diff --quiet; then
             echo "::error::The release changed files outside the commit list:"
@@ -177,7 +182,7 @@ jobs:
       # publish` uploads the tarball with provenance and holds it until a maintainer approves it
       # with 2FA. The dist-tag is set here, and approval can't change it.
       # A version that's already on npm is skipped, so a run that failed after this step can run
-      # again for web-expo.
+      # again for the other two.
       - name: Stage the publish of @rootnative/web on npm
         if: ${{ !inputs.dry_run }}
         working-directory: packages/web
@@ -193,18 +198,20 @@ jobs:
 
       # npm packs package.json as it is, and no install can resolve pnpm's `workspace:*`. The pin
       # comes after the release commit, so it's never committed. A dry run runs it too, and packs
-      # web-expo with no publish, so the dry run checks the package.
-      - name: Pin the version of @rootnative/web in web-expo
+      # both packages with no publish, so the dry run checks them.
+      - name: Pin the version of @rootnative/web in web-expo and web-metro
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          node scripts/pin-workspace-deps.mjs packages/web-expo
-          pinned=$(node -p "require('./packages/web-expo/package.json').dependencies['@rootnative/web']")
-          if [ "$pinned" != "$VERSION" ]; then
-            echo "::error::web-expo would depend on @rootnative/web@$pinned, not $VERSION."
-            exit 1
-          fi
-          (cd packages/web-expo && npm pack --dry-run)
+          for name in web-expo web-metro; do
+            node scripts/pin-workspace-deps.mjs "packages/$name"
+            pinned=$(node -p "require('./packages/$name/package.json').dependencies['@rootnative/web']")
+            if [ "$pinned" != "$VERSION" ]; then
+              echo "::error::$name would depend on @rootnative/web@$pinned, not $VERSION."
+              exit 1
+            fi
+            (cd "packages/$name" && npm pack --dry-run)
+          done
 
       - name: Stage the publish of @rootnative/web-expo on npm
         if: ${{ !inputs.dry_run }}
@@ -219,12 +226,25 @@ jobs:
           fi
           npm stage publish --provenance --access public --tag "$DIST_TAG"
 
+      - name: Stage the publish of @rootnative/web-metro on npm
+        if: ${{ !inputs.dry_run }}
+        working-directory: packages/web-metro
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          DIST_TAG: ${{ inputs.tag }}
+        run: |
+          if [ -n "$(npm view "@rootnative/web-metro@$VERSION" version 2>/dev/null)" ]; then
+            echo "@rootnative/web-metro@$VERSION is on npm already. Skipped."
+            exit 0
+          fi
+          npm stage publish --provenance --access public --tag "$DIST_TAG"
+
       # npm answers a publish without rights with a 404, so its message names a missing package,
       # not the credentials.
       - name: Explain a publish failure
         if: ${{ failure() && !inputs.dry_run }}
         run: |
-          echo "::error::A 404 on PUT /@rootnative%2fweb or /@rootnative%2fweb-expo almost always means authentication, not a missing package."
+          echo "::error::A 404 on PUT /@rootnative%2fweb, /@rootnative%2fweb-expo, or /@rootnative%2fweb-metro almost always means authentication, not a missing package."
           echo "Check, in this order:"
           echo "  1. Is .github/workflows/release-manual.yml a trusted publisher of that package on npmjs.com? npm binds the exact filename, for each package."
           echo "  2. Does the job still have 'id-token: write'?"
@@ -273,7 +293,7 @@ jobs:
             else
               echo "### \`$VERSION\` is staged, not live yet"
               echo ""
-              echo "- npm: \`@rootnative/web@$VERSION\` and \`@rootnative/web-expo@$VERSION\` are staged for the dist-tag \`$DIST_TAG\`. Approve them with 2FA on npmjs.com (Staged Packages), or with \`npm stage approve\`: \`@rootnative/web\` first. Nothing installs until then."
+              echo "- npm: \`@rootnative/web@$VERSION\`, \`@rootnative/web-expo@$VERSION\`, and \`@rootnative/web-metro@$VERSION\` are staged for the dist-tag \`$DIST_TAG\`. Approve them with 2FA on npmjs.com (Staged Packages), or with \`npm stage approve\`: \`@rootnative/web\` first. Nothing installs until then."
               echo "- Commit: \`release: web@$VERSION\` on main"
               echo "- Tag: \`web@$VERSION\`"
               echo "- Docs: deploy started"
