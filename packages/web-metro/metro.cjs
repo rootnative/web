@@ -1,8 +1,8 @@
 // The Metro helper of a React Native app with no Expo. On the web, it runs the app on
 // `@rootnative/web`. On iOS and Android, it changes nothing.
 
-const { readFileSync } = require('node:fs')
-const { join } = require('node:path')
+const { readFileSync, realpathSync } = require('node:fs')
+const { dirname, join } = require('node:path')
 
 const FACADE = '@rootnative/web-metro'
 const REGISTRY = `${FACADE}/asset-registry`
@@ -71,6 +71,21 @@ const pageHTML = (title) => `<!doctype html>
 
 const TRANSFORMER = require.resolve('./babel-transformer.cjs')
 
+// Metro names a module by its real path.
+const DEV_CLIENT = realpathSync(require.resolve('./dev-client.js'))
+
+// The dev client takes two modules from the app's own toolchain: React Refresh from its Babel
+// preset, whose plugin has the same version, and the HMR client from the Metro of its config.
+const TOOLCHAIN = {
+  'react-refresh/runtime': '@react-native/babel-preset',
+  'metro-runtime/src/modules/HMRClient': '@react-native/metro-config',
+}
+
+const toolchainFile = (projectRoot, moduleName) => {
+  const owner = require.resolve(`${TOOLCHAIN[moduleName]}/package.json`, { paths: [projectRoot] })
+  return require.resolve(moduleName, { paths: [dirname(owner)] })
+}
+
 // Metro gives a Babel transformer no config, so the path of the app's own transformer goes to it
 // in the environment. Metro starts its workers after it loads the config, and they inherit it.
 const TRANSFORMER_ENV = 'ROOTNATIVE_WEB_METRO_BABEL_TRANSFORMER'
@@ -87,6 +102,7 @@ exports.withRootNative = (config) => {
   const upstream = config.resolver?.resolveRequest
   const platforms = config.resolver?.platforms ?? ['ios', 'android']
   const enhance = config.server?.enhanceMiddleware
+  const runFirst = config.serializer?.getModulesRunBeforeMainModule
   const appTransformer = config.transformer?.babelTransformerPath
   // A second call must not make the transformer run itself.
   if (appTransformer !== undefined && appTransformer !== TRANSFORMER) {
@@ -102,6 +118,9 @@ exports.withRootNative = (config) => {
       resolveRequest(context, moduleName, platform) {
         const next = upstream ?? context.resolveRequest
         if (platform !== 'web') return next(context, moduleName, platform)
+        if (context.originModulePath === DEV_CLIENT && Object.hasOwn(TOOLCHAIN, moduleName)) {
+          return { type: 'sourceFile', filePath: toolchainFile(config.projectRoot, moduleName) }
+        }
         const web = webContext(context)
         const target = targetOf(moduleName)
         if (target === undefined) return next(web, moduleName, platform)
@@ -109,6 +128,15 @@ exports.withRootNative = (config) => {
       },
     },
     transformer: { ...config.transformer, babelTransformerPath: TRANSFORMER },
+    serializer: {
+      ...config.serializer,
+      // Metro runs a module of this list before the app only when the graph has it. The dev client
+      // is in the graph on the web, in development.
+      getModulesRunBeforeMainModule(entryFilePath) {
+        const first = runFirst?.(entryFilePath) ?? []
+        return first.includes(DEV_CLIENT) ? first : [...first, DEV_CLIENT]
+      },
+    },
     server: {
       ...config.server,
       enhanceMiddleware(middleware, server) {

@@ -27,6 +27,7 @@
     "asset-registry.js",
     "metro.cjs",
     "babel-transformer.cjs",
+    "dev-client.js",
     "LICENSE"
   ],
   "scripts": {

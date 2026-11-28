@@ -1,14 +1,17 @@
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, realpathSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
+import { makeApp } from './fixtures/app.mjs'
+
 const require = createRequire(import.meta.url)
 const { withRootNative } = require('../metro.cjs')
 const TRANSFORMER = require.resolve('../babel-transformer.cjs')
 const TRANSFORMER_ENV = 'ROOTNATIVE_WEB_METRO_BABEL_TRANSFORMER'
+const DEV_CLIENT = realpathSync(require.resolve('../dev-client.js'))
 
 const projectRoot = '/app'
 const appOrigin = join(projectRoot, 'package.json')
@@ -182,5 +185,50 @@ describe('the page on the dev server', () => {
     expect(enhanceMiddleware).toHaveBeenCalledWith(metro, { server: true })
     middleware({ method: 'GET', url: '/status' }, {}, () => {})
     expect(own).toHaveBeenCalledOnce()
+  })
+})
+
+describe('the dev client', () => {
+  test('runs before the app, after the run-first modules of the config, once', () => {
+    const config = withRootNative({
+      projectRoot,
+      serializer: { getModulesRunBeforeMainModule: (entry) => [`/rn/setup-env:${entry}`] },
+    })
+    const first = config.serializer.getModulesRunBeforeMainModule('index.web.js')
+    expect(first).toEqual(['/rn/setup-env:index.web.js', DEV_CLIENT])
+    expect(withRootNative(config).serializer.getModulesRunBeforeMainModule('index.js')).toEqual([
+      '/rn/setup-env:index.js',
+      DEV_CLIENT,
+    ])
+    expect(withRootNative({ projectRoot }).serializer.getModulesRunBeforeMainModule('x')).toEqual([
+      DEV_CLIENT,
+    ])
+  })
+
+  test("takes React Refresh and the HMR client from the app's toolchain", () => {
+    const app = makeApp()
+    const next = vi.fn()
+    const config = withRootNative({ projectRoot: app.root })
+    const fromClient = (moduleName) =>
+      config.resolver.resolveRequest(
+        { ...nativeContext(next), originModulePath: DEV_CLIENT },
+        moduleName,
+        'web',
+      )
+    expect(fromClient('react-refresh/runtime')).toEqual({
+      type: 'sourceFile',
+      filePath: app.refreshRuntime,
+    })
+    expect(fromClient('metro-runtime/src/modules/HMRClient')).toEqual({
+      type: 'sourceFile',
+      filePath: app.hmrClient,
+    })
+    expect(next).not.toHaveBeenCalled()
+  })
+
+  test('leaves the same names from another module to Metro', () => {
+    const { name, context } = resolve('react-refresh/runtime')
+    expect(name).toBe('react-refresh/runtime')
+    expect(context.originModulePath).toBe(libraryOrigin)
   })
 })

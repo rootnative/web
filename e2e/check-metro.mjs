@@ -3,9 +3,12 @@
 // - the app in packages/metro-demo bundles for the web with `react-native bundle`, through
 //   `withRootNative` of `@rootnative/web-metro`,
 // - the bundle has no file of the `react-native` package, and a named import of `react-native`
-//   loads one file of the facade, not the facade root, which loads all of `@rootnative/web`,
+//   loads one file of the facade, not the facade root, which loads all of `@rootnative/web`. It
+//   has no dev client either,
 // - the page works in Chromium, and loads the image file for the screen,
-// - `react-native start` serves the page of `withRootNative` at /index.html, and it works too.
+// - `react-native start` serves the page of `withRootNative` at /index.html, and it works too,
+// - on the dev server, an edit of App.js updates the page with Fast Refresh. The check edits the
+//   file, and puts it back at the end.
 
 import { execFileSync, spawn } from 'node:child_process'
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
@@ -64,6 +67,14 @@ function checkSources() {
   if (facade.some((source) => /web-metro[/\\]dist[/\\]index\.js$/.test(source))) {
     problems.push(
       'The bundle has the root of the facade, which loads all of @rootnative/web. Each named import of react-native in the app must load one file of the facade.',
+    )
+  }
+  const devOnly = sources.filter((source) =>
+    /web-metro[/\\]dev-client\.js$|[/\\]react-refresh[/\\]/.test(source),
+  )
+  if (devOnly.length > 0) {
+    problems.push(
+      `The production bundle has the dev client: ${devOnly.join(', ')}. In production, __DEV__ is false, and Metro must drop it.`,
     )
   }
 }
@@ -241,6 +252,58 @@ async function checkPage(url, { dev }) {
   }
 }
 
+// Fast Refresh: an edit of the label of `Counter` updates the page and keeps the count, with no
+// reload. App.js doesn't export `Counter`, so only the React Refresh Babel plugin can keep it.
+async function checkFastRefresh(url) {
+  const appFile = join(appDir, 'App.js')
+  const source = readFileSync(appFile, 'utf8')
+  const LABEL = '>Add</Text>'
+  const refreshed = 'Add one'
+  const browser = await chromium.launch()
+  try {
+    const page = await browser.newPage()
+    page.setDefaultTimeout(10_000)
+    const errors = []
+    page.on('console', (message) => {
+      if (message.type() === 'error') errors.push(message.text())
+    })
+    page.on('pageerror', (error) => errors.push(String(error)))
+    await page.goto(url, { timeout: 180_000 })
+    await page.locator('h1').waitFor({ timeout: 30_000 })
+    await page.getByTestId('add').click()
+    await page.evaluate(() => {
+      globalThis.loadedBeforeTheEdit = true
+    })
+
+    if (!source.includes(LABEL)) {
+      problems.push(`App.js has no ${LABEL}, which the check of Fast Refresh edits.`)
+      return
+    }
+    writeFileSync(appFile, source.replace(LABEL, `>${refreshed}</Text>`))
+    const updated = await page
+      .getByTestId('add')
+      .filter({ hasText: refreshed })
+      .waitFor({ timeout: 30_000 })
+      .then(() => true)
+      .catch(() => false)
+    if (!updated) {
+      problems.push('On the dev server, an edit of App.js did not update the page in 30 s.')
+    } else {
+      const count = await page.getByTestId('count').textContent()
+      if (count !== '1') {
+        problems.push(`After Fast Refresh, the count is "${count}". The state must stay "1".`)
+      }
+      if (!(await page.evaluate(() => globalThis.loadedBeforeTheEdit === true))) {
+        problems.push('The edit of App.js reloaded the page. Fast Refresh must keep it.')
+      }
+    }
+    for (const message of errors) problems.push(`During Fast Refresh, the page logged: ${message}`)
+  } finally {
+    writeFileSync(appFile, source)
+    await browser.close()
+  }
+}
+
 async function checkDevServer() {
   const server = await startDevServer()
   if (server === undefined) return
@@ -253,6 +316,7 @@ async function checkDevServer() {
       )
     }
     await checkPage(`${server.url}/index.html`, { dev: true })
+    await checkFastRefresh(`${server.url}/index.html`)
   } finally {
     server.stop()
   }
