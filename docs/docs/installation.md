@@ -1,14 +1,51 @@
 ---
 id: installation
 title: Installation
-description: Install @rootnative/web, add its Vite plugin, give TypeScript the react-native types, and mount your app.
+description: Set up @rootnative/web in an Expo app on Metro, or in a Vite app with its plugin.
 ---
 
 # Installation
 
-You need React 19 and React DOM 19. This page uses Vite 8 and the package's Vite plugin. For another bundler, see [Without the plugin](/vite-plugin#without-the-plugin). For an Expo app, see [Expo](/expo). If your app uses react-native-web now, also read [From react-native-web](/from-react-native-web).
+You need React 19 and React DOM 19. Pick the setup for your app:
 
-## Install the package
+- [Expo (Metro)](#expo-metro): an Expo app, also with Expo Router.
+- [Vite](#vite): a web-only app, or server rendering on Vite.
+
+If your app uses react-native-web now, also read [From react-native-web](/from-react-native-web).
+
+## Expo (Metro)
+
+Install `@rootnative/web-expo`, and remove react-native-web:
+
+```bash npm2yarn
+npm install @rootnative/web-expo
+npm uninstall react-native-web
+```
+
+Wrap your Metro config with `withRootNative`. If your app has no `metro.config.js`, add this one:
+
+```js title="metro.config.js"
+const { getDefaultConfig } = require('expo/metro-config')
+const { withRootNative } = require('@rootnative/web-expo/metro.cjs')
+
+module.exports = withRootNative(getDefaultConfig(__dirname))
+```
+
+Restart the dev server with `--clear`:
+
+```bash
+npx expo start --clear
+```
+
+Keep `react-dom` in the `dependencies` of your `package.json`, or Expo stops with an error. Expo still warns that react-native-web isn't installed, but the warning stops nothing.
+
+Your app code and its types don't change. [Expo](/expo) shows a setup with no Metro config, what works, and the Jest setup.
+
+## Vite
+
+This setup uses Vite 8 and the Vite plugin of the package. For another bundler, see [Without the plugin](/vite-plugin#without-the-plugin).
+
+### Install the package
 
 ```bash
 npm install @rootnative/web
@@ -16,7 +53,7 @@ npm install @rootnative/web
 
 React and React DOM are peer dependencies. A Vite React app has them already.
 
-## Add the Vite plugin
+### Add the Vite plugin
 
 Your app imports `react-native`. The plugin resolves that name to `@rootnative/web`:
 
@@ -32,7 +69,7 @@ export default defineConfig({
 
 It also resolves `.web.tsx` files first, defines `__DEV__`, and puts `'web'` in place of `Platform.OS`. See [Vite plugin](/vite-plugin).
 
-## Add the types
+### Add the types
 
 TypeScript needs the same mapping. Add a declaration file to a folder that your `tsconfig.json` includes, for example `src/`:
 
@@ -58,7 +95,7 @@ If your app has `.web.tsx` files, tell TypeScript to look for them first:
 
 Keep the empty string. Without it, TypeScript finds only the `.web` files.
 
-## Mount your app
+### Mount your app
 
 A React Native app expects a root view that fills the screen. Give the page a full-height root element that lays out its child as flex:
 

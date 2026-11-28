@@ -90,7 +90,7 @@ const IconArrowDown = stroke(
   </>,
 )
 
-const INSTALL_COMMAND = 'npm install @rootnative/web'
+const INSTALL_COMMAND = 'npm install @rootnative/web-expo'
 
 function CopyCommand({ command }: { command: string }) {
   const [copied, setCopied] = useState(false)
@@ -282,26 +282,18 @@ const HTML_LINES: readonly Line[] = [
   [['</'], ['main', 'tag'], ['>']],
 ]
 
-const VITE_LINES: readonly Line[] = [
+// The second require is on its own line, so that the panel doesn't scroll at desktop width.
+const METRO_LINES: readonly Line[] = [
   [
-    ['import', 'keyword'],
-    [' { rootnative } '],
-    ['from', 'keyword'],
-    [' '],
-    ["'@rootnative/web/vite'", 'string'],
+    ['const', 'keyword'],
+    [' { getDefaultConfig } = require('],
+    ["'expo/metro-config'", 'string'],
+    [')'],
   ],
-  [
-    ['import', 'keyword'],
-    [' react '],
-    ['from', 'keyword'],
-    [' '],
-    ["'@vitejs/plugin-react'", 'string'],
-  ],
-  [['import', 'keyword'], [' { defineConfig } '], ['from', 'keyword'], [' '], ["'vite'", 'string']],
+  [['const', 'keyword'], [' { withRootNative } =']],
+  [['  require('], ["'@rootnative/web-expo/metro.cjs'", 'string'], [')']],
   [],
-  [['export default', 'keyword'], [' defineConfig({']],
-  [['  plugins: [react(), rootnative()],']],
-  [['})']],
+  [['module.exports = withRootNative(getDefaultConfig(__dirname))']],
 ]
 
 function Hero() {
@@ -479,11 +471,12 @@ function Layers() {
     <section className={`${styles.section} ${styles.sectionMuted}`}>
       <div className={styles.sectionInner}>
         <span className={styles.sectionEyebrow}>How it works</span>
-        <h2 className={styles.sectionTitle}>One plugin. Three layers.</h2>
+        <h2 className={styles.sectionTitle}>One import. Three layers.</h2>
         <p className={styles.sectionLead}>
-          Your app imports <code>react-native</code>. The Vite plugin resolves that name to{' '}
-          <code>@rootnative/web</code>. Import the web entry only in code that runs on the web. A
-          server render needs nothing from this package.
+          Your app imports <code>react-native</code>. On Metro, <code>@rootnative/web-expo</code>{' '}
+          resolves that name to <code>@rootnative/web</code>. On Vite, the plugin does it. Import
+          the web entry only in code that runs on the web. A server render needs nothing from this
+          package.
         </p>
         <div className={styles.layersGrid}>
           {layers.map((layer, index) => (
@@ -510,17 +503,18 @@ function Setup() {
             Point <code>react-native</code> at the package.
           </h2>
           <p className={styles.sectionLead}>
-            Add the plugin to <code>vite.config.ts</code> and one declaration file for TypeScript.
-            The rest of your app stays the same code that runs on iOS and Android.
+            In an Expo app, wrap your Metro config with <code>withRootNative</code>. In a Vite app,
+            add the Vite plugin. The rest of your app stays the same code that runs on iOS and
+            Android.
           </p>
           <Link className={styles.ctaPrimary} to="/installation">
             Read the installation guide
           </Link>
         </div>
         <CodePanel
-          filename="vite.config.ts"
-          lines={VITE_LINES}
-          ariaLabel="A Vite config that adds the rootnative plugin"
+          filename="metro.config.js"
+          lines={METRO_LINES}
+          ariaLabel="An Expo Metro config wrapped with withRootNative"
         />
       </div>
     </section>

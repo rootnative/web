@@ -18,7 +18,7 @@ description: A standalone web runtime for React Native apps. You write react-nat
 
 ## How it works
 
-Your app imports `react-native`. The [Vite plugin](/vite-plugin) resolves that name to `@rootnative/web`. In an Expo app, [`@rootnative/web-expo`](/expo) does it in place of react-native-web. Your app code uses three layers:
+Your app imports `react-native`. In an Expo app, [`@rootnative/web-expo`](/expo) resolves that name to `@rootnative/web` on Metro, in place of react-native-web. In a Vite app, the [Vite plugin](/vite-plugin) does it. Your app code uses three layers:
 
 | Layer  | Import                | What's in it                                                                                                |
 | ------ | --------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -30,6 +30,6 @@ Import `@rootnative/web/dom` only in code that runs on the web. The rest of your
 
 ## Next steps
 
-- [Installation](/installation): set up a Vite app in four steps.
-- [Expo](/expo): run an Expo app, also with Expo Router.
+- [Installation](/installation): set up an Expo app or a Vite app.
+- [Expo](/expo): the details of the Expo setup, also with Expo Router.
 - [Status](/status): what ships today, what's planned, and how it's tested.

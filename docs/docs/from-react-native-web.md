@@ -12,7 +12,7 @@ Your app code stays the same when you move from react-native-web. But react-nati
 - The workarounds that you can remove.
 - The behavior that changes with no change in your code.
 
-To install, see [Installation](/installation) for Vite, or [Expo](/expo). This page compares with react-native-web 0.21.
+To install, see [Installation](/installation). This page compares with react-native-web 0.21.
 
 ## Changes you make
 

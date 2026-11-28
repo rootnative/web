@@ -11,6 +11,29 @@ A standalone web runtime for React Native apps. You write `react-native`. It run
 
 ## Install
 
+### Expo (Metro)
+
+Install `@rootnative/web-expo`, and remove react-native-web:
+
+```bash
+npm install @rootnative/web-expo
+npm uninstall react-native-web
+```
+
+Wrap your Metro config with `withRootNative`:
+
+```js
+// metro.config.js
+const { getDefaultConfig } = require('expo/metro-config')
+const { withRootNative } = require('@rootnative/web-expo/metro.cjs')
+
+module.exports = withRootNative(getDefaultConfig(__dirname))
+```
+
+Your app code doesn't change. [Expo](https://rootnative.github.io/web/expo) shows a setup with no Metro config, and what works.
+
+### Vite
+
 ```bash
 npm install @rootnative/web
 ```

@@ -1,8 +1,9 @@
 # @rootnative/web
 
 > A standalone web runtime for React Native apps. The app imports
-> react-native, the Vite plugin resolves that name to @rootnative/web, and the
-> app runs in the browser as a real web app: semantic HTML, atomic CSS, server
+> react-native. In an Expo app, @rootnative/web-expo resolves that name to
+> @rootnative/web on Metro; in a Vite app, the Vite plugin does. The app runs
+> in the browser as a real web app: semantic HTML, atomic CSS, server
 > rendering, and SEO tags. It doesn't use react-native-web.
 
 Every component and API has tests that run in real browsers: Chromium,
@@ -12,60 +13,10 @@ Docs: https://rootnative.github.io/web/
 Full: https://rootnative.github.io/web/llms-full.txt
 Source: https://github.com/rootnative/web
 
-## Install
+Peers: react ^19.0.0, react-dom ^19.0.0. ESM only. Two setups: an Expo app
+on Metro, or a Vite app.
 
-npm install @rootnative/web
-
-Peers: react ^19.0.0, react-dom ^19.0.0. ESM only.
-
-1. Add the Vite plugin (Vite 8) to vite.config.ts:
-   import { rootnative } from '@rootnative/web/vite'
-   plugins: [react(), rootnative()]
-   With Reanimated, or a library built on it: rootnative({ worklets: true }).
-   It runs the Babel plugin of react-native-worklets on the app code and the
-   libraries. The app needs react-native-worklets and @babel/core.
-   It resolves react-native to @rootnative/web (the exact name only), resolves
-   .web.* files first, defines __DEV__ (true on the dev server, false in a
-   production build, from NODE_ENV), and puts 'web' in place of Platform.OS.
-   It also defines global as globalThis, resolves
-   @react-native/assets-registry/registry to @rootnative/web/assets-registry,
-   resolves the two react-native-web style files that Reanimated 4 imports to
-   @rootnative/web/style, and gives pre-bundled dependencies the .web.*
-   extensions. It resolves expo-font to a module that throws, as a missing
-   module does: the icon sets load expo-font in a try block, and Expo's
-   modules can't load on @rootnative/web, so a project with Expo installed
-   still builds. It adds the font of each @react-native-vector-icons icon
-   set to the page (a FontFace in createIconSet), which the package loads
-   only through Expo.
-   An alias or a __DEV__ define in your own config wins.
-2. Add src/react-native.d.ts (in a folder that tsconfig.json includes):
-   declare module 'react-native' { export * from '@rootnative/web' }
-   The file must have no top-level import or export line. With one,
-   TypeScript reports "Cannot find module 'react-native'". Don't map the name
-   with tsconfig "paths": the package has no main or types field. The file
-   also gives the type of __DEV__. For .web.tsx files, add
-   "moduleSuffixes": [".web", ""] to tsconfig.json.
-3. Give the page a full-height flex root:
-   html, body, #root { height: 100%; margin: 0 }
-   #root { display: flex; flex-direction: column }
-   Then createRoot(document.getElementById('root')!).render(<App />).
-   flex: 1 on the root View fills the window, as on iOS and Android.
-
-Browsers: Chrome 95, Edge 95, Firefox 93, Safari 15.1, iOS Safari 15.1.
-
-Without the plugin (another bundler): alias the exact name react-native to
-@rootnative/web, put a .web variant of each extension first, and define
-__DEV__ and global (as globalThis). In Vite, set the defines in define and in
-optimizeDeps.rolldownOptions.transform.define, and the extensions in
-resolve.extensions and optimizeDeps.rolldownOptions.resolve.extensions: the
-dependency optimizer has its own. Add the compat aliases that a library
-needs. Platform.OS then stays a read at run time.
-
-Server rendering with Vite: the plugin applies to app code on the server. A
-dependency that Vite leaves to Node gets no __DEV__ and throws a
-ReferenceError. Add it to ssr.noExternal.
-
-## Expo
+## Install: Expo (Metro)
 
 An Expo app, also with Expo Router, runs on @rootnative/web through
 @rootnative/web-expo. Install it, remove react-native-web, and wrap the Metro
@@ -119,6 +70,57 @@ the packages that transformIgnorePatterns lets Babel transform (ES modules).
 jsdom has no layout: sizes are 0, onLayout doesn't fire, onContentSizeChange
 fires once on mount, and a scroll does nothing.
 
+## Install: Vite
+
+npm install @rootnative/web
+
+1. Add the Vite plugin (Vite 8) to vite.config.ts:
+   import { rootnative } from '@rootnative/web/vite'
+   plugins: [react(), rootnative()]
+   With Reanimated, or a library built on it: rootnative({ worklets: true }).
+   It runs the Babel plugin of react-native-worklets on the app code and the
+   libraries. The app needs react-native-worklets and @babel/core.
+   It resolves react-native to @rootnative/web (the exact name only), resolves
+   .web.* files first, defines __DEV__ (true on the dev server, false in a
+   production build, from NODE_ENV), and puts 'web' in place of Platform.OS.
+   It also defines global as globalThis, resolves
+   @react-native/assets-registry/registry to @rootnative/web/assets-registry,
+   resolves the two react-native-web style files that Reanimated 4 imports to
+   @rootnative/web/style, and gives pre-bundled dependencies the .web.*
+   extensions. It resolves expo-font to a module that throws, as a missing
+   module does: the icon sets load expo-font in a try block, and Expo's
+   modules can't load on @rootnative/web, so a project with Expo installed
+   still builds. It adds the font of each @react-native-vector-icons icon
+   set to the page (a FontFace in createIconSet), which the package loads
+   only through Expo.
+   An alias or a __DEV__ define in your own config wins.
+2. Add src/react-native.d.ts (in a folder that tsconfig.json includes):
+   declare module 'react-native' { export * from '@rootnative/web' }
+   The file must have no top-level import or export line. With one,
+   TypeScript reports "Cannot find module 'react-native'". Don't map the name
+   with tsconfig "paths": the package has no main or types field. The file
+   also gives the type of __DEV__. For .web.tsx files, add
+   "moduleSuffixes": [".web", ""] to tsconfig.json.
+3. Give the page a full-height flex root:
+   html, body, #root { height: 100%; margin: 0 }
+   #root { display: flex; flex-direction: column }
+   Then createRoot(document.getElementById('root')!).render(<App />).
+   flex: 1 on the root View fills the window, as on iOS and Android.
+
+Browsers: Chrome 95, Edge 95, Firefox 93, Safari 15.1, iOS Safari 15.1.
+
+Without the plugin (another bundler): alias the exact name react-native to
+@rootnative/web, put a .web variant of each extension first, and define
+__DEV__ and global (as globalThis). In Vite, set the defines in define and in
+optimizeDeps.rolldownOptions.transform.define, and the extensions in
+resolve.extensions and optimizeDeps.rolldownOptions.resolve.extensions: the
+dependency optimizer has its own. Add the compat aliases that a library
+needs. Platform.OS then stays a read at run time.
+
+Server rendering with Vite: the plugin applies to app code on the server. A
+dependency that Vite leaves to Node gets no __DEV__ and throws a
+ReferenceError. Add it to ssr.noExternal.
+
 ## From react-native-web
 
 App code stays. Change: flat accessibility props (accessibilityDisabled) to
@@ -153,7 +155,7 @@ https://rootnative.github.io/web/benchmarks
 ## Entry points
 
 - @rootnative/web: the React Native components and APIs. Import it as
-  react-native through the plugin.
+  react-native, through web-expo or the Vite plugin.
 - @rootnative/web/dom: web-only features. Head.
 - @rootnative/web/vite: rootnative(), the Vite plugin. Only in vite.config.ts.
 - Server render: react-dom/server only. Each component puts its CSS into the
@@ -188,10 +190,11 @@ Compat, for libraries only, do not call in app code: unstable_createElement,
 findNodeHandle, TurboModuleRegistry. Compat props: hrefAttrs and dataSet.
 
 NOT IMPLEMENTED, do not import:
+- A Metro setup for a React Native CLI app. Metro works only through Expo.
 - A Next.js plugin, and templates for a Vite app with and without server
   rendering.
 
-Out of scope: Expo, Metro, React 18, CommonJS, Flow.
+Out of scope: React 18, CommonJS, Flow.
 
 A component ref is the DOM element, typed HostInstance (ViewInstance,
 TextInstance, ImageInstance, PressableInstance). It has measure(callback),
