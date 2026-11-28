@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "react-native start",
-    "bundle:web": "react-native bundle --platform web --dev false --entry-file index.web.js --bundle-output dist/index.js --assets-dest dist --sourcemap-output dist/index.js.map"
+    "build:web": "rootnative-web build --sourcemap"
   },
   "dependencies": {
     "@rootnative/web-metro": "workspace:*",

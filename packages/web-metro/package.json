@@ -22,12 +22,18 @@
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
+  "bin": {
+    "rootnative-web": "./bin/rootnative-web.mjs"
+  },
   "files": [
     "dist",
+    "bin",
     "asset-registry.js",
     "metro.cjs",
     "babel-transformer.cjs",
     "dev-client.js",
+    "page.cjs",
+    "cli.mjs",
     "LICENSE"
   ],
   "scripts": {

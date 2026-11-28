@@ -1,8 +1,10 @@
 // The Metro helper of a React Native app with no Expo. On the web, it runs the app on
 // `@rootnative/web`. On iOS and Android, it changes nothing.
 
-const { readFileSync, realpathSync } = require('node:fs')
+const { realpathSync } = require('node:fs')
 const { dirname, join } = require('node:path')
+
+const { DEV_BUNDLE, appTitle, pageHTML } = require('./page.cjs')
 
 const FACADE = '@rootnative/web-metro'
 const REGISTRY = `${FACADE}/asset-registry`
@@ -39,35 +41,6 @@ const webContext = (context) => ({
 // `react-native start` answers `/` with a page of its own, before this middleware runs. It also
 // serves the files of the app folder, so an `index.html` of the app wins over this page.
 const PAGE_PATH = '/index.html'
-
-const escapeHTML = (text) => text.replace(/[&<>"]/g, (char) => `&#${char.charCodeAt(0)};`)
-
-const appTitle = (projectRoot) => {
-  try {
-    const app = JSON.parse(readFileSync(join(projectRoot, 'app.json'), 'utf8'))
-    return String(app.displayName ?? app.name ?? 'React Native')
-  } catch {
-    return 'React Native'
-  }
-}
-
-const pageHTML = (title) => `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${escapeHTML(title)}</title>
-    <style>
-      html, body, #root { height: 100%; margin: 0 }
-      #root { display: flex; flex-direction: column }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script src="/index.bundle?platform=web&amp;dev=true&amp;minify=false"></script>
-  </body>
-</html>
-`
 
 const TRANSFORMER = require.resolve('./babel-transformer.cjs')
 
@@ -108,7 +81,7 @@ exports.withRootNative = (config) => {
   if (appTransformer !== undefined && appTransformer !== TRANSFORMER) {
     process.env[TRANSFORMER_ENV] = appTransformer
   }
-  const html = pageHTML(appTitle(config.projectRoot))
+  const html = pageHTML(appTitle(config.projectRoot), DEV_BUNDLE)
 
   return {
     ...config,

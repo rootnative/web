@@ -1,7 +1,8 @@
 // Checks that a React Native app with no Expo runs on `@rootnative/web` through Metro. Run it
 // after `pnpm build`, which writes the facade of `@rootnative/web-metro`:
-// - the app in packages/metro-demo bundles for the web with `react-native bundle`, through
-//   `withRootNative` of `@rootnative/web-metro`,
+// - `rootnative-web build` builds the app in packages/metro-demo for the web, with
+//   `react-native bundle` through `withRootNative` of `@rootnative/web-metro`. It writes the page
+//   and a bundle with a hashed name,
 // - the bundle has no file of the `react-native` package, and a named import of `react-native`
 //   loads one file of the facade, not the facade root, which loads all of `@rootnative/web`. It
 //   has no dev client either,
@@ -11,7 +12,7 @@
 //   file, and puts it back at the end.
 
 import { execFileSync, spawn } from 'node:child_process'
-import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { createServer as createNetServer } from 'node:net'
 import { dirname, extname, join, normalize } from 'node:path'
@@ -30,27 +31,42 @@ const problems = []
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-function bundleApp() {
+// Returns the file name of the bundle, from the page that the build writes.
+function buildApp() {
   if (!existsSync(join(facadeDir, 'dist', 'index.js'))) {
     problems.push('packages/web-metro/dist has no index.js. Run `pnpm build` first.')
-    return false
+    return undefined
   }
-  rmSync(outDir, { recursive: true, force: true })
   try {
-    execFileSync('pnpm', ['--filter', '@rootnative/metro-demo', 'bundle:web'], {
+    execFileSync('pnpm', ['--filter', '@rootnative/metro-demo', 'build:web'], {
       cwd: repoDir,
       stdio: 'inherit',
     })
-    return true
   } catch {
-    problems.push('react-native bundle --platform web failed. Metro gives the cause above.')
-    return false
+    problems.push('rootnative-web build failed. It gives the cause above.')
+    return undefined
   }
+  const html = readFileSync(join(outDir, 'index.html'), 'utf8')
+  if (!html.includes(`<title>${TITLE}</title>`) || !html.includes('<div id="root">')) {
+    problems.push('The page of the build has no root, or no title from app.json.')
+  }
+  const bundle = /<script src="\/(index-[0-9a-f]{12}\.js)"><\/script>/.exec(html)?.[1]
+  if (bundle === undefined || !existsSync(join(outDir, bundle))) {
+    problems.push('The page of the build has no script of a bundle with a hashed name.')
+    return undefined
+  }
+  if (existsSync(join(outDir, 'index.js'))) {
+    problems.push('The build left dist/index.js, the bundle with no hash in its name.')
+  }
+  return bundle
 }
 
 // The files of the bundle, from its source map. Metro writes one section for each module.
-function checkSources() {
-  const map = JSON.parse(readFileSync(join(outDir, 'index.js.map'), 'utf8'))
+function checkSources(bundle) {
+  if (!readFileSync(join(outDir, bundle), 'utf8').includes(`//# sourceMappingURL=${bundle}.map`)) {
+    problems.push(`${bundle} doesn't point to its source map, ${bundle}.map.`)
+  }
+  const map = JSON.parse(readFileSync(join(outDir, `${bundle}.map`), 'utf8'))
   const sources = (map.sections ?? [{ map }]).flatMap((section) => section.map.sources)
   const native = sources.filter((source) => /[/\\]node_modules[/\\]react-native[/\\]/.test(source))
   if (native.length > 0) {
@@ -77,29 +93,6 @@ function checkSources() {
       `The production bundle has the dev client: ${devOnly.join(', ')}. In production, __DEV__ is false, and Metro must drop it.`,
     )
   }
-}
-
-// `react-native bundle` writes no HTML, so the check writes the page.
-function writePage() {
-  writeFileSync(
-    join(outDir, 'index.html'),
-    `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>${TITLE}</title>
-    <style>
-      html, body, #root { height: 100%; margin: 0 }
-      #root { display: flex; flex-direction: column }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script src="/index.js"></script>
-  </body>
-</html>
-`,
-  )
 }
 
 const contentTypes = {
@@ -326,9 +319,9 @@ async function checkDevServer() {
 const guard = (what, step) =>
   step().catch((error) => problems.push(`${what} stopped: ${String(error).split('\n')[0]}`))
 
-if (bundleApp()) {
-  checkSources()
-  writePage()
+const bundle = buildApp()
+if (bundle !== undefined) {
+  checkSources(bundle)
   const server = await serve()
   try {
     await guard('The check of the bundle', () => checkPage(server.url, { dev: false }))
