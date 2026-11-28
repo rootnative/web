@@ -1,0 +1,101 @@
+name: Compat
+
+# Runs the published Root Native libraries on the packed candidates of @rootnative/web and
+# @rootnative/web-metro, in a React Native CLI app with no Expo. `check:metro` builds a demo app
+# through workspace links. This gate installs the tarballs with Yarn in an app outside the
+# workspace, then checks the peers, the absence of Expo, and a bundle for Android and the web.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/web/**'
+      - 'packages/web-metro/**'
+      - '!packages/**/*.test.*'
+      - '!packages/**/*.test-d.ts'
+      - '!packages/web/parity/**'
+      - '!packages/web-metro/test/**'
+      - '!packages/**/*.md'
+      - '!packages/**/llms.txt'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/compat.yml'
+  pull_request:
+    paths:
+      - 'packages/web/**'
+      - 'packages/web-metro/**'
+      - '!packages/**/*.test.*'
+      - '!packages/**/*.test-d.ts'
+      - '!packages/web/parity/**'
+      - '!packages/web-metro/test/**'
+      - '!packages/**/*.md'
+      - '!packages/**/llms.txt'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/compat.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compat-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  pack:
+    name: Pack candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Newer than the v6.0.10 pin of the other repos: v6.1.0 is the first
+      # release that can install pnpm 12.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # `prepack` builds each package. `pnpm pack` writes the exact version of @rootnative/web
+      # into web-metro, as the release does.
+      - name: Pack web
+        working-directory: packages/web
+        run: pnpm pack --pack-destination ../../pack
+
+      - name: Pack web-metro
+        working-directory: packages/web-metro
+        run: pnpm pack --pack-destination ../../pack
+
+      - name: Upload candidate
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        with:
+          name: candidate-web
+          path: pack/*.tgz
+          if-no-files-found: error
+          retention-days: 1
+
+  # Each library at `latest` runs on the candidate runtime, in the CLI fixture only: the Expo
+  # fixtures don't use web-metro. The range of a library isn't what this repository changes, so
+  # the gate reports it and doesn't fail on it.
+  compat:
+    name: ${{ matrix.package }}
+    needs: pack
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - '@rootnative/inertia'
+          - '@rootnative/components'
+          - '@rootnative/core'
+          - '@rootnative/icons'
+    uses: rootnative/sdk-compat/.github/workflows/compat.yml@main
+    with:
+      package: ${{ matrix.package }}
+      runtime-artifact: candidate-web
+      fixtures: rn-cli-0.88
+      enforce-range: false
