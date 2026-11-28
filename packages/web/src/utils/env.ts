@@ -1,13 +1,15 @@
-declare const process: { env: { NODE_ENV?: string } } | undefined
+declare const process: { env: { NODE_ENV?: string } }
 
-declare global {
-  interface ImportMeta {
-    env?: { MODE?: string }
+// Vite, webpack, and Metro put the mode in place of `process.env.NODE_ENV` at build time, also
+// where a browser has no `process`. So the read has no `typeof process` check. The file has no
+// `import.meta`: a Metro bundle is a classic script, and there it's a syntax error.
+const nodeEnv = (): string | undefined => {
+  try {
+    return process.env.NODE_ENV
+  } catch {
+    return undefined
   }
 }
-
-const nodeEnv = (): string | undefined =>
-  typeof process !== 'undefined' ? process.env.NODE_ENV : import.meta.env?.MODE
 
 export const isTestEnv = (): boolean => nodeEnv() === 'test'
 

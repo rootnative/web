@@ -34,9 +34,19 @@ With no size in the style and no `width` and `height` in the source, the image i
 | An array with mixed entries          | The first entry, as on Android.                                                                                                     |
 | `{ uri, headers }`, `method`, `body` | A `fetch` with the headers, the method, and the body. The `<img>` shows the result.                                                 |
 | A string                             | **Web only.** A URL, for example the one that your bundler gives for an imported image file.                                        |
-| A number                             | A Metro asset id from `require('./image.png')`. It has no meaning on the web, so the image warns once and loads nothing.            |
+| A number                             | A Metro asset id from `require('./image.png')`. See [Local images](#local-images).                                                  |
 
-To use a local image, import it and pass the URL:
+The `src` and `srcSet` props work too, as on native.
+
+## Local images
+
+With Metro, `require('./logo.png')` gives a number, as on native. Metro registers the image, and `Image` loads it from the URL that Metro gives:
+
+- A `srcset` lists the `@2x` and `@3x` files of the image, so the browser loads the file for the pixel density of the screen.
+- The box takes the size of the image when the style has none, as on native.
+- On the dev server, the URL asks for the `.web.png` file of the image when the image has one.
+
+Vite gives no number for `require`. An id that Metro didn't register loads nothing, and the image warns once. With Vite, import the image and pass the URL:
 
 ```tsx
 import { Image } from 'react-native'
@@ -48,8 +58,6 @@ export function Logo() {
 }
 ```
 
-The `src` and `srcSet` props work too, as on native.
-
 ## Props
 
 | Prop                                                                                    | On the web                                                                                                               |
@@ -57,7 +65,7 @@ The `src` and `srcSet` props work too, as on native.
 | `resizeMode`                                                                            | `cover` (the default), `contain`, `stretch`, `center`, and `repeat`. `resizeMode` and `objectFit` in the style work too. |
 | `tintColor`                                                                             | Paints the color through the shape of the image. The box then carries `role="img"` and the label.                        |
 | `blurRadius`                                                                            | A CSS blur.                                                                                                              |
-| `defaultSource`                                                                         | Shows until the source loads.                                                                                            |
+| `defaultSource`                                                                         | Shows until the source loads. It takes a URL, `{ uri }`, or a Metro asset id.                                            |
 | `alt`, `accessibilityLabel`                                                             | The text alternative of the image.                                                                                       |
 | `onLoadStart`, `onLoad`, `onLoadEnd`, `onError`                                         | As on native. `onLoad` gets `nativeEvent.source` with the `uri`, `width`, and `height`.                                  |
 | `onProgress`                                                                            | Never fires. The browser doesn't report progress for an image.                                                           |
@@ -73,13 +81,13 @@ An image that fails to load leaves the box empty, as on native. The `<img>` hide
 
 ## Statics
 
-| Method                                   | On the web                                                                                            |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `Image.getSize(uri)`                     | Loads the image and gives its size. It returns a promise, or calls the success and failure callbacks. |
-| `Image.getSizeWithHeaders(uri, headers)` | The same, with a `fetch` that sends the headers.                                                      |
-| `Image.prefetch(url)`                    | Loads the image into the browser cache. Resolves `true`.                                              |
-| `Image.queryCache(urls)`                 | Resolves `{}`. The browser doesn't show its cache to a page.                                          |
-| `Image.resolveAssetSource(source)`       | `{ uri, width, height, scale }` of the source, or `null` for a number.                                |
+| Method                                   | On the web                                                                                                                                               |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Image.getSize(uri)`                     | Loads the image and gives its size. It returns a promise, or calls the success and failure callbacks.                                                    |
+| `Image.getSizeWithHeaders(uri, headers)` | The same, with a `fetch` that sends the headers.                                                                                                         |
+| `Image.prefetch(url)`                    | Loads the image into the browser cache. Resolves `true`.                                                                                                 |
+| `Image.queryCache(urls)`                 | Resolves `{}`. The browser doesn't show its cache to a page.                                                                                             |
+| `Image.resolveAssetSource(source)`       | `{ uri, width, height, scale }` of the source. For a Metro asset id, the file for the screen, as on native. `null` for an id that Metro didn't register. |
 
 `getSize` needs a browser. On the server it rejects.
 

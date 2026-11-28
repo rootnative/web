@@ -111,6 +111,7 @@ const sizeOf = (img: ImgElement): ImageSize => ({
 
 const placeholderURI = (source: ImageProps['defaultSource']): string | undefined => {
   if (typeof source === 'string') return source
+  if (typeof source === 'number') return resolveAssetSource(source)?.uri
   if (typeof source === 'object' && source !== null) return source.uri
   return undefined
 }

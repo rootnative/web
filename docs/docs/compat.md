@@ -66,7 +66,7 @@ Two types that the type files of a library import from `react-native`:
 
 ## `@rootnative/web/assets-registry`
 
-An entry with `registerAsset` and `getAssetByID`, the two functions of `@react-native/assets-registry/registry`. The [Vite plugin](/vite-plugin) points that module name at this entry, because `react-native-svg` imports it on the web. A web bundler gives an image import a URL, not a number, so the registry stays empty.
+An entry with `registerAsset` and `getAssetByID`, the two functions of `@react-native/assets-registry/registry`. On the web, Metro registers each image that the app requires here, and [`Image`](/image#local-images) loads an asset id from its entry. The [Vite plugin](/vite-plugin) points that module name at this entry, because `react-native-svg` imports it on the web. Vite gives an image import a URL, not a number, so with Vite the registry stays empty.
 
 ## `@rootnative/web/style`
 

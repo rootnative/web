@@ -1,3 +1,6 @@
+import { PixelRatio } from '../../apis/PixelRatio'
+import { getAssetByID, type PackagerAsset } from '../../assets-registry'
+import { isProductionEnv } from '../../utils/env'
 import { warnOnce } from '../../utils/warn'
 import type { ImageResolvedAssetSource, ImageSource, ImageURISource } from './types'
 
@@ -29,7 +32,53 @@ const none: ResolvedSource = Object.freeze({
 })
 
 const ASSET_ID_WARNING =
-  'Image: a numeric source is a Metro asset id, which has no meaning here. Import the image file and pass its URL.'
+  'Image: the asset registry has no image with this numeric source. Metro registers each image that you require. With another bundler, import the image file and pass its URL.'
+
+// The URL of one scale of a Metro asset, by the rules of React Native's `AssetSourceResolver`.
+export const assetURL = (
+  asset: PackagerAsset,
+  scale: number,
+  production: boolean = isProductionEnv(),
+): string => {
+  const file = `${asset.name}${scale === 1 ? '' : `@${scale}x`}.${asset.type}`
+  const location = asset.httpServerLocation
+  // `react-native bundle` writes an asset from outside the project to `_`, in place of `../`.
+  if (production) return `${location.replace(/\.\.\//g, '_')}/${file}`
+  // The dev server picks the `.web` file of an image by the platform.
+  const query = asset.hash === undefined ? 'platform=web' : `platform=web&hash=${asset.hash}`
+  const parent = location.search(/(?:^|\/)\.\.(?:\/|$)/)
+  if (parent === -1) return `${location}/${file}?${query}`
+  // A browser removes a `..` segment from a URL path, so the dev server gets this path in a query.
+  const path = `${location.slice(location.indexOf('..', parent))}/${file}`
+  return `/assets/?unstable_path=${encodeURIComponent(path)}&${query}`
+}
+
+// React Native's rule: the first scale at or above the screen's, or else the largest.
+const scaleForScreen = (scales: ReadonlyArray<number>): number => {
+  const screen = PixelRatio.get()
+  return scales.find((scale) => scale >= screen) ?? scales[scales.length - 1] ?? 1
+}
+
+const scalesOf = (asset: PackagerAsset): ReadonlyArray<number> =>
+  asset.scales.length === 0 ? [1] : asset.scales
+
+// `x` descriptors, so the browser picks the file for the pixel density of the screen. The `list`
+// below can't do it: each entry has the same width, so it would make `w` descriptors.
+const fromAsset = (asset: PackagerAsset): ResolvedSource => {
+  const scales = scalesOf(asset)
+  const base = scales.includes(1) ? 1 : (scales[0] as number)
+  return {
+    src: assetURL(asset, base),
+    srcSet:
+      scales.length === 1
+        ? undefined
+        : scales.map((scale) => `${assetURL(asset, scale)} ${scale}x`).join(', '),
+    sizes: undefined,
+    width: asset.width ?? undefined,
+    height: asset.height ?? undefined,
+    request: undefined,
+  }
+}
 
 const hasURI = (source: ImageURISource): source is ImageURISource & { uri: string } =>
   typeof source.uri === 'string' && source.uri.length > 0
@@ -108,6 +157,8 @@ export const resolveSource = (
   if (source === undefined || source === null) return none
   if (typeof source === 'string') return { ...none, src: source }
   if (typeof source === 'number') {
+    const asset = getAssetByID(source)
+    if (asset !== undefined) return fromAsset(asset)
     warnOnce('image-asset-id', ASSET_ID_WARNING)
     return none
   }
@@ -125,8 +176,18 @@ export const resolveAssetSource = (
 ): ImageResolvedAssetSource | null => {
   if (typeof source === 'string') return { uri: source, scale: 1 }
   if (typeof source === 'number') {
-    warnOnce('image-asset-id', ASSET_ID_WARNING)
-    return null
+    const asset = getAssetByID(source)
+    if (asset === undefined) {
+      warnOnce('image-asset-id', ASSET_ID_WARNING)
+      return null
+    }
+    const scale = scaleForScreen(scalesOf(asset))
+    return {
+      uri: assetURL(asset, scale),
+      width: asset.width ?? undefined,
+      height: asset.height ?? undefined,
+      scale,
+    }
   }
   const first = Array.isArray(source) ? (source as ReadonlyArray<ImageURISource>)[0] : source
   if (first === undefined || first === null || !hasURI(first as ImageURISource)) return null

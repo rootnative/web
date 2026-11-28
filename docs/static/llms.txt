@@ -317,16 +317,20 @@ Image
   size in the style or the source, it's 0 x 0, as on native.
 - source: { uri }; an array with scale (srcset x) or width (srcset w);
   { uri, headers } with method and body (loads with fetch); a URL string from
-  a bundler import (web only). A number from require() loads nothing and
-  warns once.
+  a bundler import (web only). A number from require() with Metro loads from
+  the URL in the asset registry, with a srcset of the @2x and @3x files and
+  the size of the image as the default size. On the dev server the URL has
+  ?platform=web, so a .web.png file wins. An id that nobody registered (Vite
+  gives no number) loads nothing and warns once.
 - resizeMode: cover (default), contain, stretch, center, repeat.
-- tintColor, blurRadius, defaultSource work. onProgress never fires.
+- tintColor, blurRadius, defaultSource (also an asset id) work. onProgress
+  never fires.
 - A failed image leaves the box empty, as on native: the <img> hides, and
   the box carries role="img" and the label. A new source shows it again.
 - loading, fetchPriority, decoding: web only, passed to the <img>.
 - Statics: getSize (rejects on the server), getSizeWithHeaders, prefetch
-  (resolves true), queryCache (resolves {}), resolveAssetSource (null for a
-  number).
+  (resolves true), queryCache (resolves {}), resolveAssetSource (for an asset
+  id, the file for the screen; null for an id that nobody registered).
 
 ImageBackground
 - A View with an Image as its first child, absolutely positioned to fill it,
@@ -844,7 +848,9 @@ StatusBar
 - TurboModuleRegistry: compat. get() returns null, getEnforcing() throws.
 - @rootnative/web/assets-registry: compat entry with registerAsset and
   getAssetByID. The Vite plugin aliases @react-native/assets-registry/registry
-  to it. Empty unless your code registers an asset.
+  to it. On the web, Metro registers each required image here, and Image
+  loads an asset id from it. With Vite it's empty unless your code registers
+  an asset.
 - @rootnative/web/style: compat entry for Reanimated 4. createReactDOMStyle
   (also the default export) gives inline DOM style values, shorthands first.
   createTransformValue and createTextShadowValue give CSS values. Without the

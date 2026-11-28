@@ -4,6 +4,7 @@ import { renderToString } from 'react-dom/server.browser'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { server } from 'vitest/browser'
 
+import { registerAsset } from '../../assets-registry'
 import { resetStyleRegistry } from '../../style/registry'
 import { cleanup, render } from '../../test/render'
 import { renderAsServer } from '../../utils/env'
@@ -229,6 +230,26 @@ describe('Image', () => {
       const uri = png(1, 1)
       const { container } = render(<Image source={uri} />)
       expect(img(container).getAttribute('src')).toBe(uri)
+    })
+
+    test('a Metro asset id is a srcset, and the box takes the size of the asset', () => {
+      const id = registerAsset({
+        httpServerLocation: '/assets',
+        name: 'icon',
+        type: 'png',
+        scales: [1, 2],
+        width: 30,
+        height: 20,
+      })
+      const { container } = render(<Image source={id} />)
+      const image = img(container)
+      expect(image.getAttribute('src')).toBe('/assets/icon.png?platform=web')
+      expect(image.getAttribute('srcset')).toBe(
+        '/assets/icon.png?platform=web 1x, /assets/icon@2x.png?platform=web 2x',
+      )
+      const computed = getComputedStyle(box(container))
+      expect(computed.width).toBe('30px')
+      expect(computed.height).toBe('20px')
     })
 
     test('headers fetch the image and load an object URL', async () => {
@@ -495,6 +516,20 @@ describe('Image', () => {
 
       await settle()
       expect(box(container).querySelectorAll('img')).toHaveLength(1)
+    })
+
+    test('takes a Metro asset id', () => {
+      const id = registerAsset({
+        httpServerLocation: '/assets',
+        name: 'placeholder',
+        type: 'png',
+        scales: [1],
+      })
+      // A new image, so that it isn't in the cache and the placeholder shows.
+      const { container } = render(<Image source={{ uri: png(7, 5, '#00f') }} defaultSource={id} />)
+      expect(box(container).querySelector('img')?.getAttribute('src')).toBe(
+        '/assets/placeholder.png?platform=web',
+      )
     })
   })
 

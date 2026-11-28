@@ -4,6 +4,14 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+### Added
+
+- **`Image` loads a Metro asset id.** When Metro bundles an app for the web, `require('./logo.png')` gives a number, as on native. Before, `Image` warned and loaded nothing. Now it loads the image from the URL in the asset registry. A `srcset` lists the `@2x` and `@3x` files, and the size of the image is the default size of the box. `defaultSource` and `Image.resolveAssetSource` take an asset id too. See [Image](https://rootnative.github.io/web/image#local-images).
+
+### Fixed
+
+- **A Metro bundle that React Native's Babel preset builds can load the package.** Before, the browser stopped at a syntax error. The package read the mode from `import.meta`, and a Metro bundle is a classic script, where `import.meta` isn't allowed. Expo's preset transforms `import.meta`, so an Expo app had no error. Now the package reads only `process.env.NODE_ENV`.
+
 ## [0.0.9] - 2026-11-26
 
 ### Added

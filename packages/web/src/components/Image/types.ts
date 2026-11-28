@@ -25,8 +25,9 @@ export type ImageURISource = {
   scale?: number | undefined
 }
 
-// A number is a Metro asset id, which has no meaning on the web. A string is
-// the URL a web bundler gives for an imported image file.
+// A number is a Metro asset id: Metro registers each image that the app
+// requires, and the URL comes from the registry. A string is the URL that a
+// web bundler gives for an imported image file.
 export type ImageSource = ImageURISource | ReadonlyArray<ImageURISource> | number | string
 
 export type ImageResolvedAssetSource = {
