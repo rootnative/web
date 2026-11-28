@@ -140,7 +140,13 @@ async function startDevServer() {
   const child = spawn(
     join(appDir, 'node_modules', '.bin', 'react-native'),
     ['start', '--port', String(port), '--no-interactive'],
-    { cwd: appDir, detached: true, stdio: ['ignore', 'pipe', 'pipe'] },
+    {
+      cwd: appDir,
+      detached: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      // Metro has no file watcher when CI is set, as on GitHub Actions, and Fast Refresh needs it.
+      env: { ...process.env, CI: 'false' },
+    },
   )
   let log = ''
   child.stdout.on('data', (chunk) => (log += chunk))
@@ -157,7 +163,7 @@ async function startDevServer() {
     const status = await fetch(`${url}/status`)
       .then((response) => response.text())
       .catch(() => '')
-    if (status.includes('packager-status:running')) return { url, stop }
+    if (status.includes('packager-status:running')) return { url, stop, output: () => log }
     if (child.exitCode !== null) break
     await sleep(500)
   }
@@ -247,7 +253,7 @@ async function checkPage(url, { dev }) {
 
 // Fast Refresh: an edit of the label of `Counter` updates the page and keeps the count, with no
 // reload. App.js doesn't export `Counter`, so only the React Refresh Babel plugin can keep it.
-async function checkFastRefresh(url) {
+async function checkFastRefresh(url, output) {
   const appFile = join(appDir, 'App.js')
   const source = readFileSync(appFile, 'utf8')
   const LABEL = '>Add</Text>'
@@ -280,7 +286,10 @@ async function checkFastRefresh(url) {
       .then(() => true)
       .catch(() => false)
     if (!updated) {
-      problems.push('On the dev server, an edit of App.js did not update the page in 30 s.')
+      const tail = output().trim().split('\n').slice(-15).join('\n')
+      problems.push(
+        `On the dev server, an edit of App.js did not update the page in 30 s. The end of the output of Metro:\n${tail}`,
+      )
     } else {
       const count = await page.getByTestId('count').textContent()
       if (count !== '1') {
@@ -309,7 +318,7 @@ async function checkDevServer() {
       )
     }
     await checkPage(`${server.url}/index.html`, { dev: true })
-    await checkFastRefresh(`${server.url}/index.html`)
+    await checkFastRefresh(`${server.url}/index.html`, server.output)
   } finally {
     server.stop()
   }
