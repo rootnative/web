@@ -6,6 +6,12 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.10] - 2026-11-28
+
+### Changed
+
+- **Depends on `@rootnative/web` `0.0.10`.** Its changes are for an app on Metro with no Expo: an `Image` loads a Metro asset id, and a bundle that React Native's Babel preset builds loads the package. The [changelog of `@rootnative/web`](https://github.com/rootnative/web/blob/main/packages/web/CHANGELOG.md) has the details.
+
 ## [0.0.9] - 2026-11-26
 
 ### Changed

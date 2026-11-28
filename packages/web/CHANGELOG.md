@@ -4,9 +4,12 @@ All notable changes to `@rootnative/web` are in this file. The format follows [K
 
 ## [Unreleased]
 
+## [0.0.10] - 2026-11-28
+
 ### Added
 
-- **`Image` loads a Metro asset id.** When Metro bundles an app for the web, `require('./logo.png')` gives a number, as on native. Before, `Image` warned and loaded nothing. Now it loads the image from the URL in the asset registry. A `srcset` lists the `@2x` and `@3x` files, and the size of the image is the default size of the box. `defaultSource` and `Image.resolveAssetSource` take an asset id too. See [Image](https://rootnative.github.io/web/image#local-images).
+- **A React Native app with no Expo runs on `@rootnative/web` with Metro, through the new package `@rootnative/web-metro`.** It adds the web platform to the Metro config, serves the app on the dev server with Fast Refresh, and builds it with `rootnative-web build`. See [React Native CLI](https://rootnative.github.io/web/react-native-cli).
+- **`Image` loads a Metro asset id.** In a React Native app with no Expo, Metro gives a number for `require('./logo.png')`, as on native. Before, `Image` warned and loaded nothing. Now it loads the image from the URL in the asset registry. A `srcset` lists the `@2x` and `@3x` files, and the size of the image is the default size of the box. `defaultSource` and `Image.resolveAssetSource` take an asset id too. See [Image](https://rootnative.github.io/web/image#local-images).
 
 ### Fixed
 

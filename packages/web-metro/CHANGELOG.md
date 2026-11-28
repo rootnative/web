@@ -6,6 +6,8 @@ Each version works only with the same version of `@rootnative/web`. The package 
 
 ## [Unreleased]
 
+## [0.0.10] - 2026-11-28
+
 ### Added
 
 - **Runs a React Native app with no Expo on `@rootnative/web`, with Metro.** `withRootNative` in `metro.config.js` adds the web platform. On the web, it sends `react-native` to `@rootnative/web`, and it loads the browser build of each library, with no `.native` file. On iOS and Android, it changes nothing. See [React Native CLI](https://rootnative.github.io/web/react-native-cli).
