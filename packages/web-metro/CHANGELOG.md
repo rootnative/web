@@ -17,4 +17,5 @@ Each version works only with the same version of `@rootnative/web`. The package 
 - **Small bundles of `@rootnative/web`.** Each named import of `react-native` loads only its own module of `@rootnative/web`, as in an Expo app.
 - **A stub for each name that `@rootnative/web` doesn't have**, such as `Picker`. The import works, and a use throws an error with the name. `facade-exports.json` lists these names under `missing`.
 
-[unreleased]: https://github.com/rootnative/web/compare/web@0.0.9...HEAD
+[unreleased]: https://github.com/rootnative/web/compare/web@0.0.10...HEAD
+[0.0.10]: https://github.com/rootnative/web/releases/tag/web@0.0.10

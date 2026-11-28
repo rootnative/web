@@ -1,6 +1,6 @@
 {
   "name": "@rootnative/web-metro",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Runs a React Native app with no Expo on @rootnative/web, with Metro",
   "license": "MIT",
   "homepage": "https://rootnative.github.io/web/",

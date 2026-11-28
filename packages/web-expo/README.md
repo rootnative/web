@@ -30,7 +30,7 @@ Or, with no Metro config, install this package under the name `react-native-web`
 ```json
 {
   "dependencies": {
-    "react-native-web": "npm:@rootnative/web-expo@0.0.9"
+    "react-native-web": "npm:@rootnative/web-expo@0.0.10"
   }
 }
 ```
